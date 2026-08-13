@@ -1,0 +1,9 @@
+# MoonBit build artifacts
+_build/
+
+# IDE
+.codeartsdoer/
+
+# OS
+Thumbs.db
+Desktop.ini
