@@ -77,7 +77,7 @@ test "slim_json_endpoint JSON端到端" {
     rainfall: [10.0, 20.0],
     evaporation: [2.0, 1.0],
   }
-  let json = @json.to_json(request).stringify()
+  let json = request.to_json().stringify()
   let response = slim_json_endpoint(json)
   assert_true(response.contains("runoff"))
   assert_true(response.contains("success"))

@@ -43,7 +43,7 @@ fn main raise {
   }
   let slim_result = slim_run(slim_request)
   println(
-    "转内试算: 洪峰=\{Repr(slim_result.peak_flow)}, 总量=\{Repr(slim_result.total_volume)}",
+    "转内试算: 洪峰=\{slim_result.peak_flow}, 总量=\{slim_result.total_volume}",
   )
   // 5. 仿真完成，更新Model
   let xaj_model = @shared.XinanjiangModel::new(
@@ -54,7 +54,7 @@ fn main raise {
   let xaj_result = xaj_model.run(model.sim_params.forcings)
   model = update(model, SimulationCompleted(xaj_result))
   println(
-    "仿真完成: 洪峰=\{Repr(model.sim_result.peak_flow)} m³/s, 时段=\{model.sim_result.peak_time}",
+    "仿真完成: 洪峰=\{model.sim_result.peak_flow} m³/s, 时段=\{model.sim_result.peak_time}",
   )
   // 6. 生成视图并渲染为文本
   let view_node = view(model)
@@ -70,10 +70,10 @@ fn main raise {
   println("\n===== wasm_slim_model 轻内试算 =====")
   let quick_result = quick_run([10.0, 20.0, 5.0, 0.0, 30.0])
   println(
-    "快速试算: 洪峰=\{Repr(quick_result.peak_flow)}, 总量=\{Repr(quick_result.total_volume)}",
+    "快速试算: 洪峰=\{quick_result.peak_flow}, 总量=\{quick_result.total_volume}",
   )
   // 8. JSON端到端演示
-  let json_request = @json.to_json(slim_request).stringify()
+  let json_request = slim_request.to_json().stringify()
   let json_response = slim_json_endpoint(json_request)
   let resp_preview = if json_response.length() > 200 {
     json_response[0:200].to_owned() + "..."

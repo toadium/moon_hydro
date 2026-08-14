@@ -84,7 +84,7 @@ pub fn slim_json_endpoint(json_str : String) -> String raise {
   let json = @json.parse(json_str)
   let request : SlimSimRequest = @json.from_json(json)
   let response = slim_run(request)
-  let resp_json = @json.to_json(response)
+  let resp_json = response.to_json()
   resp_json.stringify()
 }
 

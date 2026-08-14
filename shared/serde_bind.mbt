@@ -11,7 +11,7 @@
 ///|
 /// 将任意ToJson类型序列化为JSON字符串
 pub fn[T : ToJson] to_json_string(value : T) -> String {
-  let json = @json.to_json(value)
+  let json = value.to_json()
   json.stringify()
 }
 
