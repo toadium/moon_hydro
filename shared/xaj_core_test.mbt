@@ -116,3 +116,28 @@ test "XinanjiangModel::run 完整仿真-退水过程" {
   // 后续时段无雨，径流应逐渐衰减（退水）
   // 注：由于初始状态为0，第一时段产流可能较小，主要测试不报错
 }
+
+///|
+test "HydroModel trait 通过trait接口调用step/run" {
+  let model = XinanjiangModel::new(
+    params=XinanjiangParams::default(),
+    area=100.0,
+    dt=1.0,
+  )
+  let state = XinanjiangState::initial()
+  let forcing : ForcingData = {
+    rainfall: 30.0,
+    evaporation: 1.0,
+    datetime: "t0",
+  }
+  // 通过HydroModel trait接口调用step
+  let new_state = HydroModel::step(model, forcing, state)
+  assert_true(new_state.r >= 0.0)
+  // 通过HydroModel trait接口调用run
+  let forcings : Array[ForcingData] = [
+    { rainfall: 10.0, evaporation: 2.0, datetime: "t0" },
+    { rainfall: 20.0, evaporation: 1.0, datetime: "t1" },
+  ]
+  let result = HydroModel::run(model, forcings)
+  inspect(result.runoff_series.length(), content="2")
+}

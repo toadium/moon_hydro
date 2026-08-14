@@ -196,8 +196,8 @@ fn XinanjiangModel::compute_routing(
 }
 
 ///|
-/// 单步仿真：输入气象驱动与当前状态，输出更新后状态
-pub fn XinanjiangModel::step(
+/// 单步仿真核心逻辑（私有）
+fn XinanjiangModel::step_impl(
   self : XinanjiangModel,
   forcing : ForcingData,
   state : XinanjiangState,
@@ -213,8 +213,8 @@ pub fn XinanjiangModel::step(
 }
 
 ///|
-/// 完整仿真：输入气象驱动序列，输出仿真结果
-pub fn XinanjiangModel::run(
+/// 完整仿真核心逻辑（私有）
+fn XinanjiangModel::run_impl(
   self : XinanjiangModel,
   forcings : Array[ForcingData],
 ) -> SimResult {
@@ -254,13 +254,32 @@ pub fn XinanjiangModel::run(
 }
 
 ///|
+/// 单步仿真：输入气象驱动与当前状态，输出更新后状态
+pub fn XinanjiangModel::step(
+  self : XinanjiangModel,
+  forcing : ForcingData,
+  state : XinanjiangState,
+) -> XinanjiangState {
+  self.step_impl(forcing, state)
+}
+
+///|
+/// 完整仿真：输入气象驱动序列，输出仿真结果
+pub fn XinanjiangModel::run(
+  self : XinanjiangModel,
+  forcings : Array[ForcingData],
+) -> SimResult {
+  self.run_impl(forcings)
+}
+
+///|
 /// 实现HydroModel trait：单步仿真
-impl HydroModel for XinanjiangModel with fn step(self, forcing, state) {
-  self.step(forcing, state)
+pub impl HydroModel for XinanjiangModel with fn step(self, forcing, state) {
+  self.step_impl(forcing, state)
 }
 
 ///|
 /// 实现HydroModel trait：完整仿真
-impl HydroModel for XinanjiangModel with fn run(self, forcings) {
-  self.run(forcings)
+pub impl HydroModel for XinanjiangModel with fn run(self, forcings) {
+  self.run_impl(forcings)
 }

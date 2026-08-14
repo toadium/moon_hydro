@@ -72,7 +72,7 @@ test "unit_hydrograph_convolution 基本卷积" {
   // Q(1) = UH(0)*P(1) + UH(1)*P(0) = 0.5*20 + 0.3*10 = 13
   // Q(2) = UH(0)*P(2) + UH(1)*P(1) + UH(2)*P(0) = 0 + 0.3*20 + 0.2*10 = 8
   // Q(3) = UH(1)*P(2) + UH(2)*P(1) = 0 + 0.2*20 = 4
-  inspect(q, content="[5, 13, 8, 4]")
+  debug_inspect(q, content="[5, 13, 8, 4]")
 }
 
 ///|
