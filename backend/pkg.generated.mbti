@@ -1,0 +1,13 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "toadium/moon_hydro/backend"
+
+// Values
+
+// Errors
+
+// Types and methods
+type CliResult
+
+// Type aliases
+
+// Traits

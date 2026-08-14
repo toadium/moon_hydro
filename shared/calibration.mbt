@@ -88,6 +88,10 @@ fn dds_perturb(
   rng : @splitmix.RandomState,
 ) -> Array[CalibParam] {
   let n = current.length()
+  // 边界保护：空参数数组直接返回空结果
+  if n == 0 {
+    return []
+  }
   // 复制当前参数
   let new_params : Array[CalibParam] = []
   for p in current {

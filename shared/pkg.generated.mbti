@@ -1,0 +1,670 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "toadium/moon_hydro/shared"
+
+import {
+  "moonbitlang/core/debug",
+  "moonbitlang/core/json",
+}
+
+// Values
+pub fn all_basin_cases() -> Array[BasinCase]
+
+pub fn annual_maxima(Array[Double], year_length~ : Int) -> Array[Double]
+
+pub fn baseflow_separation(Array[Double], alpha? : Double, passes? : Int) -> Array[Double]
+
+pub fn calibrate_basin_case(BasinCase, _algorithm? : String) -> CalibResult
+
+pub fn calibrate_json_endpoint(String) -> String raise
+
+pub fn comprehensive_grade(grade_nse~ : ForecastGrade, grade_pbias~ : ForecastGrade) -> ForecastGrade
+
+pub fn couple_json_endpoint(String) -> String raise
+
+pub fn couple_run(XinanjiangModel, SWEGrid1D, CouplingParams, SWEBoundary, Array[ForcingData], Double) -> CouplingResult
+
+pub fn couple_step(XinanjiangModel, SWEGrid1D, CouplingParams, SWEBoundary, ForcingData, XinanjiangState, Double) -> (XinanjiangState, SWEGrid1D, Double, Double)
+
+pub fn cumulative_sum(Array[Double]) -> Array[Double]
+
+pub fn dds_calibrate(DDSConfig, area~ : Double, dt~ : Double, Array[ForcingData], Array[Double]) -> CalibResult
+
+pub fn default_calib_params() -> Array[CalibParam]
+
+pub fn detect_peaks(Array[Double], threshold? : Double) -> Array[Int]
+
+pub fn evaluate(Array[Double], Array[Double], forecast_type? : ForecastType) -> EvaluationResult
+
+pub fn evaluate_extended(Array[Double], Array[Double]) -> ExtendedEvaluationResult
+
+pub fn evaluate_json_endpoint(String) -> String raise
+
+pub fn feiyunjiang_basin_case() -> BasinCase
+
+pub fn feiyunjiang_basin_params() -> XinanjiangParams
+
+pub fn flow_duration_curve(Array[Double]) -> Array[(Double, Double)]
+
+pub fn forecast_grade_nse(Double) -> ForecastGrade
+
+pub fn forecast_grade_pbias(Double, forecast_type~ : ForecastType) -> ForecastGrade
+
+pub fn forecast_grade_rsr(Double) -> ForecastGrade
+
+pub fn generate_validation_report() -> ValidationReport
+
+pub fn gumbel_estimate(Array[Double]) -> (Double, Double)
+
+pub fn gumbel_return_value(Double, Double, return_period~ : Double) -> Double
+
+pub fn index_of_agreement(Array[Double], Array[Double]) -> Double
+
+pub fn kge(Array[Double], Array[Double]) -> Double
+
+pub fn kge_decomposition(Array[Double], Array[Double]) -> (Double, Double, Double)
+
+pub fn log_nse(Array[Double], Array[Double]) -> Double
+
+pub fn mae(Array[Double], Array[Double]) -> Double
+
+pub fn mock_coupling_params(basin~ : BasinProfile, swe_nx? : Int) -> CouplingParams
+
+pub fn mock_dam_break_grid(nx? : Int, dx? : Double, h_left? : Double, h_right? : Double) -> SWEGrid1D
+
+pub fn mock_dry_period(duration~ : Int, initial_rainfall? : Double, wet_days? : Int) -> Array[ForcingData]
+
+pub fn mock_extreme_flood_params() -> XinanjiangParams
+
+pub fn mock_flood_rainfall(duration~ : Int, peak_rainfall? : Double, evaporation? : Double) -> Array[ForcingData]
+
+pub fn mock_long_term_forcings(n_days~ : Int, seed? : UInt64) -> Array[ForcingData]
+
+pub fn mock_multi_peak_rainfall(n_peaks~ : Int, peak_interval? : Int, peak_duration? : Int, peak_rainfall? : Double) -> Array[ForcingData]
+
+pub fn mock_scenario(scenario~ : TestScenario, basin? : BasinProfile) -> (XinanjiangModel, Array[ForcingData], SWEGrid1D, CouplingParams, SWEBoundary)
+
+pub fn mock_sloped_river_grid(nx? : Int, dx? : Double, h0? : Double, slope? : Double, n_manning? : Double) -> SWEGrid1D
+
+pub fn mock_tidal_wave_grid(nx? : Int, dx? : Double, h_mean? : Double, amplitude? : Double, wavelength? : Double) -> SWEGrid1D
+
+pub fn mock_xaj_params(seed? : UInt64) -> XinanjiangParams
+
+pub fn monte_carlo_uncertainty(XinanjiangParams, Array[CalibParam], n_samples~ : Int, area~ : Double, dt~ : Double, Array[ForcingData], seed? : UInt64) -> MonteCarloResult
+
+pub fn moving_average(Array[Double], window~ : Int) -> Array[Double]
+
+pub fn mse(Array[Double], Array[Double]) -> Double
+
+pub fn nse(Array[Double], Array[Double]) -> Double
+
+pub fn param_sensitivity_scan(XinanjiangParams, param_name~ : String, lower~ : Double, upper~ : Double, n_samples~ : Int, area~ : Double, dt~ : Double, Array[ForcingData], Array[Double]) -> Array[(Double, SimTaskResult)]
+
+pub fn params_to_xaj(Array[CalibParam]) -> XinanjiangParams
+
+pub fn parse_calibrate_request(String) -> CalibrateRequest raise
+
+pub fn parse_couple_request(String) -> CoupleRunRequest raise
+
+pub fn parse_evaluate_request(String) -> EvaluateRequest raise
+
+pub fn parse_swe_request(String) -> SweRunRequest raise
+
+pub fn parse_xaj_request(String) -> XajRunRequest raise
+
+pub fn pbias(Array[Double], Array[Double]) -> Double
+
+pub fn peak_relative_error(Array[Double], Array[Double]) -> Double
+
+pub fn peak_time_error(Array[Double], Array[Double]) -> Int
+
+pub fn percent_forecast_correct(Array[Double], Array[Double], threshold? : Double) -> Double
+
+pub fn persistence_index(Array[Double], Array[Double]) -> Double
+
+pub fn qingyijiang_basin_case() -> BasinCase
+
+pub fn qingyijiang_basin_params() -> XinanjiangParams
+
+pub fn r_squared(Array[Double], Array[Double]) -> Double
+
+pub fn rmse(Array[Double], Array[Double]) -> Double
+
+pub fn rsr(Array[Double], Array[Double]) -> Double
+
+pub fn run_batch_sim(Array[SimTask]) -> BatchSimResult
+
+pub fn run_calibrate(CalibrateRequest) -> CalibrateResponse
+
+pub fn run_couple(CoupleRunRequest) -> CoupleRunResponse
+
+pub fn run_ensemble_sim(basin_name~ : String, Array[XinanjiangParams], area~ : Double, dt~ : Double, Array[ForcingData], observed? : Array[Double]) -> BatchSimResult
+
+pub fn run_evaluate(EvaluateRequest) -> EvaluateResponse
+
+pub fn run_sim_task(SimTask) -> SimTaskResult
+
+pub fn run_swe(SweRunRequest) -> SweRunResponse
+
+pub fn run_xaj(XajRunRequest) -> XajRunResponse
+
+pub fn sceua_calibrate(SCEUAConfig, area~ : Double, dt~ : Double, Array[ForcingData], Array[Double]) -> SCEUAResult
+
+pub fn sceua_calibrate_basin_case(BasinCase, max_iter? : Int) -> SCEUAResult
+
+pub fn sceua_default_calib_params() -> Array[CalibParam]
+
+pub fn set_xaj_param(XinanjiangParams, String, Double) -> XinanjiangParams
+
+pub fn skill_score(Array[Double], Array[Double], Array[Double]) -> Double
+
+pub fn swe_json_endpoint(String) -> String raise
+
+pub fn synthetic_benchmark_case() -> BasinCase
+
+pub fn[T : ToJson] to_json_string(T) -> String
+
+pub fn ts_stats(Array[Double]) -> TimeSeriesStats
+
+pub fn unit_hydrograph_convolution(Array[Double], Array[Double]) -> Array[Double]
+
+pub fn validate_all_basins() -> Array[BasinValidationResult]
+
+pub fn validate_basin_case(BasinCase) -> BasinValidationResult
+
+pub fn volume_relative_error(Array[Double], Array[Double]) -> Double
+
+pub fn xaj_json_endpoint(String) -> String raise
+
+pub fn zhuyi_basin_case() -> BasinCase
+
+pub fn zhuyi_basin_params() -> XinanjiangParams
+
+// Errors
+
+// Types and methods
+pub(all) struct ApiResponse[T] {
+  success : Bool
+  data : T?
+  error : String
+} derive(ToJson, @debug.Debug, @json.FromJson)
+pub fn[T] ApiResponse::err(error~ : String) -> Self[T]
+pub fn[T] ApiResponse::ok(T) -> Self[T]
+
+pub(all) struct BasinCase {
+  name : String
+  description : String
+  area : Double
+  dt : Double
+  params : XinanjiangParams
+  forcings : Array[ForcingData]
+  observed : Array[Double]
+  reference_nse : Double
+  reference_kge : Double
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct BasinProfile {
+  name : String
+  area : Double
+  mean_slope : Double
+  river_length : Double
+  roughness : Double
+  design_rainfall : Double
+  dt : Double
+} derive(Default, ToJson, @debug.Debug, @json.FromJson)
+pub fn BasinProfile::large_basin() -> Self
+pub fn BasinProfile::medium_basin() -> Self
+pub fn BasinProfile::small_basin() -> Self
+
+pub(all) struct BasinValidationResult {
+  case_name : String
+  simulated : Array[Double]
+  nse : Double
+  kge : Double
+  pbias : Double
+  rmse : Double
+  peak_error : Double
+  peak_time_error : Int
+  volume_error : Double
+  grade : ForecastGrade
+  passed : Bool
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct BatchSimResult {
+  results : Array[SimTaskResult]
+  total_tasks : Int
+  success_count : Int
+  failure_count : Int
+  total_time_steps : Int
+  summary_stats : BatchSummaryStats
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct BatchSummaryStats {
+  mean_nse : Double
+  mean_kge : Double
+  mean_pbias : Double
+  best_nse : Double
+  worst_nse : Double
+  mean_peak_flow : Double
+  total_volume : Double
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct CalibConfig {
+  algorithm : String
+  params_range : Array[(String, Double, Double)]
+  max_iter : Int
+  target_metric : String
+} derive(Default, ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct CalibParam {
+  name : String
+  lower : Double
+  upper : Double
+  value : Double
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct CalibResult {
+  best_params : Array[CalibParam]
+  best_metric : Double
+  metric_history : Array[Double]
+  n_iter : Int
+  converged : Bool
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct CalibrateRequest {
+  config : DDSConfig
+  area : Double
+  dt : Double
+  forcings : Array[ForcingData]
+  observed : Array[Double]
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct CalibrateResponse {
+  best_params : Array[CalibParam]
+  best_metric : Double
+  n_iter : Int
+  converged : Bool
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct CoupleRunRequest {
+  params : XinanjiangParams
+  area : Double
+  dt : Double
+  forcings : Array[ForcingData]
+  swe_grid : SWEGrid1D
+  coupling_params : CouplingParams
+  swe_dt : Double
+  boundary : SWEBoundary
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct CoupleRunResponse {
+  lateral_inflow_series : Array[Double]
+  water_level_series : Array[Double]
+  stable : Bool
+  runoff_series : Array[Double]
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct CouplingParams {
+  lateral_inflow_coeff : Double
+  feedback_coeff : Double
+  cell_area : Double
+  river_cells : Array[Int]
+  base_flow_threshold : Double
+  n_river_cells : Int
+} derive(Default, ToJson, @debug.Debug, @json.FromJson)
+pub fn CouplingParams::default() -> Self
+
+pub(all) struct CouplingResult {
+  xaj_states : Array[XinanjiangState]
+  swe_h_series : Array[Array[Double]]
+  swe_hu_series : Array[Array[Double]]
+  lateral_inflow_series : Array[Double]
+  water_level_series : Array[Double]
+  stable : Bool
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct DDSConfig {
+  max_iter : Int
+  r : Double
+  seed : UInt64
+  target_metric : String
+  params : Array[CalibParam]
+} derive(Default, ToJson, @debug.Debug, @json.FromJson)
+pub fn DDSConfig::default() -> Self
+
+pub(all) struct EvaluateRequest {
+  observed : Array[Double]
+  simulated : Array[Double]
+  forecast_type : ForecastType
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct EvaluateResponse {
+  nse : Double
+  kge : Double
+  pbias : Double
+  rmse : Double
+  r_squared : Double
+  peak_error : Double
+  peak_time_error : Int
+  volume_error : Double
+  grade : ForecastGrade
+  grade_nse : ForecastGrade
+  grade_pbias : ForecastGrade
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct EvaluationResult {
+  nse : Double
+  kge : Double
+  pbias : Double
+  rmse : Double
+  r_squared : Double
+  peak_error : Double
+  peak_time_error : Int
+  volume_error : Double
+  grade : ForecastGrade
+  grade_nse : ForecastGrade
+  grade_pbias : ForecastGrade
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct ExtendedEvaluationResult {
+  log_nse : Double
+  r : Double
+  alpha : Double
+  beta : Double
+  mae : Double
+  mse : Double
+  rsr : Double
+  index_of_agreement : Double
+  persistence_index : Double
+  percent_forecast_correct : Double
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct ForcingData {
+  rainfall : Double
+  evaporation : Double
+  datetime : String
+} derive(Default, ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) enum ForecastGrade {
+  Excellent
+  Good
+  Qualified
+  Unqualified
+} derive(Eq, ToJson, @debug.Debug, @json.FromJson)
+pub fn ForecastGrade::to_chinese(Self) -> String
+
+pub(all) enum ForecastType {
+  FloodPeak
+  FloodVolume
+  FloodProcess
+  WaterLevel
+  RunoffDepth
+} derive(Eq, ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct MonteCarloResult {
+  n_samples : Int
+  peak_flow_mean : Double
+  peak_flow_std : Double
+  peak_flow_p5 : Double
+  peak_flow_p95 : Double
+  volume_mean : Double
+  volume_std : Double
+  runoff_p5 : Array[Double]
+  runoff_p50 : Array[Double]
+  runoff_p95 : Array[Double]
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct SCEUAConfig {
+  max_iter : Int
+  n_complexes : Int
+  complex_size : Int
+  cce_iterations : Int
+  seed : UInt64
+  target_metric : String
+  params : Array[CalibParam]
+  convergence_threshold : Double
+  max_no_improve : Int
+} derive(Default, ToJson, @debug.Debug, @json.FromJson)
+pub fn SCEUAConfig::default() -> Self
+
+pub(all) struct SCEUAResult {
+  best_params : Array[CalibParam]
+  best_metric : Double
+  metric_history : Array[Double]
+  n_iter : Int
+  converged : Bool
+  n_function_evals : Int
+  complex_evolution_history : Array[Double]
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) enum SWE2DBoundary {
+  Transmissive
+  SolidWall
+} derive(Eq, ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct SWE2DResult {
+  h_final : Array[Double]
+  hu_final : Array[Double]
+  hv_final : Array[Double]
+  max_depth : Array[Double]
+  stable : Bool
+  n_steps_actual : Int
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct SWE2DSolverConfig {
+  dt : Double
+  n_steps : Int
+  cfl : Double
+  boundary : SWE2DBoundary
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct SWEBoundary {
+  left : SWEBoundaryType
+  right : SWEBoundaryType
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) enum SWEBoundaryType {
+  Transmissive
+  SolidWall
+  Dirichlet(Double)
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct SWEGrid1D {
+  nx : Int
+  dx : Double
+  h : Array[Double]
+  hu : Array[Double]
+  z : Array[Double]
+  n_manning : Array[Double]
+} derive(ToJson, @debug.Debug, @json.FromJson)
+pub fn SWEGrid1D::max_stable_dt(Self, cfl~ : Double) -> Double
+pub fn SWEGrid1D::run(Self, SWESolverConfig) -> SWEResult
+pub fn SWEGrid1D::step_lf(Self, Double, SWEBoundary) -> Self
+pub fn SWEGrid1D::uniform(nx~ : Int, dx~ : Double, h0~ : Double, z0? : Double, n0? : Double) -> Self
+
+pub(all) struct SWEGrid2D {
+  nx : Int
+  ny : Int
+  dx : Double
+  dy : Double
+  h : Array[Double]
+  hu : Array[Double]
+  hv : Array[Double]
+  z : Array[Double]
+  n_manning : Array[Double]
+} derive(ToJson, @debug.Debug, @json.FromJson)
+pub fn SWEGrid2D::run(Self, SWE2DSolverConfig) -> SWE2DResult
+pub fn SWEGrid2D::set_block(Self, i0~ : Int, i1~ : Int, j0~ : Int, j1~ : Int, h_value~ : Double) -> Self
+pub fn SWEGrid2D::set_elevation(Self, i0~ : Int, i1~ : Int, j0~ : Int, j1~ : Int, z_value~ : Double) -> Self
+pub fn SWEGrid2D::step_lf(Self, Double, SWE2DBoundary) -> Self
+pub fn SWEGrid2D::uniform(nx~ : Int, ny~ : Int, dx~ : Double, dy~ : Double, h0~ : Double, z0? : Double, n0? : Double) -> Self
+
+pub(all) struct SWEResult {
+  h_series : Array[Array[Double]]
+  hu_series : Array[Array[Double]]
+  max_depth : Array[Double]
+  stable : Bool
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct SWESolverConfig {
+  dt : Double
+  n_steps : Int
+  cfl : Double
+  boundary : SWEBoundary
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct SimResult {
+  runoff_series : Array[Double]
+  state_series : Array[XinanjiangState]
+  nse : Double
+  kge : Double
+  pbias : Double
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct SimTask {
+  task_id : String
+  basin_name : String
+  params : XinanjiangParams
+  area : Double
+  dt : Double
+  forcings : Array[ForcingData]
+  observed : Array[Double]
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct SimTaskResult {
+  task_id : String
+  basin_name : String
+  runoff_series : Array[Double]
+  peak_flow : Double
+  peak_time : Int
+  total_volume : Double
+  nse : Double
+  kge : Double
+  pbias : Double
+  success : Bool
+  error_message : String
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct SweRunRequest {
+  grid : SWEGrid1D
+  config : SWESolverConfig
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct SweRunResponse {
+  max_depth : Array[Double]
+  stable : Bool
+  final_h : Array[Double]
+  final_hu : Array[Double]
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) enum TestScenario {
+  FloodEvent
+  DryPeriod
+  DamBreak
+  TidalWave
+  MultiPeakFlood
+  LongTermSimulation
+} derive(Eq, ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct TimeSeriesStats {
+  mean : Double
+  stddev : Double
+  min_val : Double
+  max_val : Double
+  range : Double
+  sum : Double
+  count : Int
+  trend : Double
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct ValidationReport {
+  total_cases : Int
+  passed_count : Int
+  failed_count : Int
+  mean_nse : Double
+  mean_kge : Double
+  min_nse : Double
+  max_nse : Double
+  results : Array[BasinValidationResult]
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct XajRunRequest {
+  params : XinanjiangParams
+  area : Double
+  dt : Double
+  forcings : Array[ForcingData]
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct XajRunResponse {
+  runoff_series : Array[Double]
+  nse : Double
+  kge : Double
+  pbias : Double
+  state_count : Int
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct XinanjiangModel {
+  params : XinanjiangParams
+  area : Double
+  dt : Double
+}
+pub fn XinanjiangModel::new(params~ : XinanjiangParams, area~ : Double, dt~ : Double) -> Self
+pub fn XinanjiangModel::run(Self, Array[ForcingData]) -> SimResult
+pub fn XinanjiangModel::step(Self, ForcingData, XinanjiangState) -> XinanjiangState
+pub impl HydroModel for XinanjiangModel
+
+pub(all) struct XinanjiangParams {
+  wm : Double
+  wum : Double
+  wlm : Double
+  wdm : Double
+  b : Double
+  im : Double
+  c : Double
+  sm : Double
+  ex : Double
+  kg : Double
+  ki : Double
+  cg : Double
+  ci : Double
+  cs : Double
+  ke : Double
+  x : Double
+  y : Double
+  n : Int
+  l : Int
+  fr : Double
+  kg1 : Double
+  ki1 : Double
+  kg2 : Double
+  ki2 : Double
+  t0 : Double
+  t1 : Double
+  td : Double
+  u0 : Double
+  u1 : Double
+  u2 : Double
+} derive(Default, ToJson, @debug.Debug, @json.FromJson)
+pub fn XinanjiangParams::default() -> Self
+
+pub(all) struct XinanjiangState {
+  mut w : Double
+  mut wu : Double
+  mut wl : Double
+  mut wd : Double
+  mut s : Double
+  mut r : Double
+  mut rs : Double
+  mut ri : Double
+  mut rg : Double
+  mut e : Double
+  mut q : Double
+} derive(ToJson, @debug.Debug, @json.FromJson)
+pub fn XinanjiangState::initial() -> Self
+
+// Type aliases
+
+// Traits
+pub trait HydroModel {
+  fn step(Self, ForcingData, XinanjiangState) -> XinanjiangState
+  fn run(Self, Array[ForcingData]) -> SimResult
+}

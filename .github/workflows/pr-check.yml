@@ -1,0 +1,28 @@
+name: PR Check
+
+on:
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  quick-check:
+    name: 快速检查
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 安装 MoonBit
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install.sh | bash
+          echo "$HOME/.moon/bin" >> $GITHUB_PATH
+
+      - name: 编译检查
+        run: moon check
+
+      - name: 格式化检查
+        run: |
+          moon fmt
+          git diff --exit-code || (echo "::error::代码格式不规范，请运行 moon fmt" && exit 1)
+
+      - name: 快速测试 (wasm-gc)
+        run: moon test --target wasm-gc

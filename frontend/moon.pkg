@@ -1,5 +1,6 @@
 import {
   "toadium/moon_hydro/shared",
+  "moonbitlang/core/json",
 }
 
 pkgtype(kind: "executable")
