@@ -29,7 +29,7 @@ pub(all) struct SWEGrid1D {
   hu : Array[Double]
   z : Array[Double]
   n_manning : Array[Double]
-} derive(Debug, ToJson)
+} derive(Debug, ToJson, FromJson)
 
 ///|
 /// 边界条件类型
@@ -37,14 +37,14 @@ pub(all) enum SWEBoundaryType {
   Transmissive // 透射边界（零梯度）
   SolidWall // 固壁边界（反射）
   Dirichlet(Double) // 给定值边界
-} derive(Debug, ToJson)
+} derive(Debug, ToJson, FromJson)
 
 ///|
 /// 边界条件配置
 pub(all) struct SWEBoundary {
   left : SWEBoundaryType
   right : SWEBoundaryType
-} derive(Debug, ToJson)
+} derive(Debug, ToJson, FromJson)
 
 ///|
 /// SWE求解器配置
@@ -53,7 +53,7 @@ pub(all) struct SWESolverConfig {
   n_steps : Int // 总时间步数
   cfl : Double // CFL安全系数(用于自适应步长)
   boundary : SWEBoundary
-} derive(Debug, ToJson)
+} derive(Debug, ToJson, FromJson)
 
 ///|
 /// SWE仿真结果
@@ -62,7 +62,7 @@ pub(all) struct SWEResult {
   hu_series : Array[Array[Double]] // 各时刻单宽流量场
   max_depth : Array[Double] // 各单元最大水深
   stable : Bool // 数值稳定性标记
-} derive(Debug, ToJson)
+} derive(Debug, ToJson, FromJson)
 
 ///|
 /// 构造均匀一维浅水网格

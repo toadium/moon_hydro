@@ -11,7 +11,7 @@ pub(all) enum ForecastGrade {
   Good // 良好（乙等）
   Qualified // 合格（丙等）
   Unqualified // 不合格
-} derive(Debug, ToJson, Eq)
+} derive(Debug, ToJson, FromJson, Eq)
 
 ///|
 /// 预报项目类型
@@ -21,7 +21,7 @@ pub(all) enum ForecastType {
   FloodProcess // 洪水过程
   WaterLevel // 水位
   RunoffDepth // 径流深
-} derive(Debug, ToJson, Eq)
+} derive(Debug, ToJson, FromJson, Eq)
 
 ///|
 /// 综合评价指标
@@ -37,7 +37,7 @@ pub(all) struct EvaluationResult {
   grade : ForecastGrade // 综合预报等级
   grade_nse : ForecastGrade // NSE单项等级
   grade_pbias : ForecastGrade // PBIAS单项等级
-} derive(Debug, ToJson)
+} derive(Debug, ToJson, FromJson)
 
 ///|
 /// GB/T 22482预报等级判定标准

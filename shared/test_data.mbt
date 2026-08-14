@@ -15,7 +15,7 @@ pub(all) enum TestScenario {
   TidalWave // 潮波演进
   MultiPeakFlood // 多峰洪水
   LongTermSimulation // 长期仿真
-} derive(Debug, ToJson, Eq)
+} derive(Debug, ToJson, FromJson, Eq)
 
 ///|
 /// 流域特征配置（生产级参数）
@@ -27,7 +27,7 @@ pub(all) struct BasinProfile {
   roughness : Double // 河道糙率
   design_rainfall : Double // 设计降雨量(mm)
   dt : Double // 计算时段(h)
-} derive(Debug, ToJson, Default)
+} derive(Debug, ToJson, FromJson, Default)
 
 ///|
 /// 构造典型流域配置

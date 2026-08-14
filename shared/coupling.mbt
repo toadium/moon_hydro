@@ -15,7 +15,7 @@ pub(all) struct CouplingParams {
   river_cells : Array[Int] // SWE网格中河道对应单元索引
   base_flow_threshold : Double // 基流阈值(m³/s)，低于此值不反馈
   n_river_cells : Int // 河道单元总数
-} derive(Debug, ToJson, Default)
+} derive(Debug, ToJson, FromJson, Default)
 
 ///|
 /// 耦合仿真结果
@@ -26,7 +26,7 @@ pub(all) struct CouplingResult {
   lateral_inflow_series : Array[Double] // 侧向入流过程
   water_level_series : Array[Double] // 河道平均水位过程
   stable : Bool // 耦合稳定性标记
-} derive(Debug, ToJson)
+} derive(Debug, ToJson, FromJson)
 
 ///|
 /// 构造默认耦合参数

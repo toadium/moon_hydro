@@ -11,7 +11,7 @@ pub(all) struct CalibParam {
   lower : Double // 下限
   upper : Double // 上限
   value : Double // 当前值
-} derive(Debug, ToJson)
+} derive(Debug, ToJson, FromJson)
 
 ///|
 /// DDS率定配置
@@ -21,7 +21,7 @@ pub(all) struct DDSConfig {
   seed : UInt64 // 随机种子
   target_metric : String // 目标指标("nse"或"kge")
   params : Array[CalibParam] // 待率定参数
-} derive(Debug, ToJson, Default)
+} derive(Debug, ToJson, FromJson, Default)
 
 ///|
 /// 率定结果
@@ -31,7 +31,7 @@ pub(all) struct CalibResult {
   metric_history : Array[Double] // 指标收敛历史
   n_iter : Int // 实际迭代次数
   converged : Bool // 是否收敛
-} derive(Debug, ToJson)
+} derive(Debug, ToJson, FromJson)
 
 ///|
 /// 构造默认DDS配置

@@ -34,7 +34,7 @@ pub(all) struct XinanjiangParams {
   u0 : Double // 单位线纵坐标0
   u1 : Double // 单位线纵坐标1
   u2 : Double // 单位线纵坐标2
-} derive(Debug, ToJson, Default)
+} derive(Debug, ToJson, FromJson, Default)
 
 ///|
 /// 新安江模型瞬时仿真状态（可变）
@@ -50,7 +50,7 @@ pub(all) struct XinanjiangState {
   mut rg : Double // 地下径流(mm)
   mut e : Double // 时段蒸散发量(mm)
   mut q : Double // 出口断面流量(m³/s)
-} derive(Debug, ToJson)
+} derive(Debug, ToJson, FromJson)
 
 ///|
 /// 气象驱动时序数据
@@ -58,7 +58,7 @@ pub(all) struct ForcingData {
   rainfall : Double // 时段降雨量(mm)
   evaporation : Double // 时段蒸散发能力(mm)
   datetime : String // 时间标识(ISO格式或时段序号)
-} derive(Debug, ToJson, Default)
+} derive(Debug, ToJson, FromJson, Default)
 
 ///|
 /// 仿真输出结果与评价指标
@@ -68,7 +68,7 @@ pub(all) struct SimResult {
   nse : Double // Nash-Sutcliffe效率系数
   kge : Double // Kling-Gupta效率系数
   pbias : Double // 偏差百分比
-} derive(Debug, ToJson)
+} derive(Debug, ToJson, FromJson)
 
 ///|
 /// 率定配置（SCE-UA/DDS）
@@ -77,7 +77,7 @@ pub(all) struct CalibConfig {
   params_range : Array[(String, Double, Double)] // 参数范围(名称,下限,上限)
   max_iter : Int // 最大迭代次数
   target_metric : String // 目标指标("nse"或"kge")
-} derive(Debug, ToJson, Default)
+} derive(Debug, ToJson, FromJson, Default)
 
 ///|
 /// 构造默认新安江参数（三水源新安江模型典型值）

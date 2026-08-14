@@ -1,9 +1,9 @@
 ///|
-/// 沐澜水文 backend 入口 - V0.1
+/// 沐澜水文 backend 入口 - V0.2
 ///
-/// V0.1阶段：native后端编译验证（新安江+SWE+耦合）
-/// 后续V0.2阶段将基于Proton搭建完整RESTful API
-fn main {
+/// CLI演示 + JSON仿真服务库
+/// JSON端点函数在shared/serde_bind.mbt中定义，可被HTTP层直接调用
+fn main raise {
   // ===== 新安江模型仿真 =====
   let xaj_model = @shared.XinanjiangModel::new(
     params=@shared.XinanjiangParams::default(),
@@ -18,10 +18,33 @@ fn main {
     { rainfall: 30.0, evaporation: 2.0, datetime: "2026-09-01T04:00" },
   ]
   let xaj_result = xaj_model.run(forcings)
-  println("===== 沐澜水文 V0.1 - 新安江模型仿真 =====")
+  println("===== 沐澜水文 V0.2 - 新安江模型仿真 =====")
   println("流域面积: 100.0 km², 时段: 1.0 h")
   println("降雨序列: [10, 20, 5, 0, 30] mm")
-  println("径流序列: \{to_repr(xaj_result.runoff_series)}")
+  println("径流序列: \{Repr(xaj_result.runoff_series)}")
+
+  // ===== JSON API 演示 =====
+  println("\n===== JSON API 端到端演示 =====")
+  let xaj_request : @shared.XajRunRequest = {
+    params: @shared.XinanjiangParams::default(),
+    area: 100.0,
+    dt: 1.0,
+    forcings,
+  }
+  let request_json = @shared.to_json_string(xaj_request)
+  let req_preview = if request_json.length() > 200 {
+    request_json[0:200].to_owned() + "..."
+  } else {
+    request_json
+  }
+  println("请求JSON: \{req_preview}")
+  let response_json = @shared.xaj_json_endpoint(request_json)
+  let resp_preview = if response_json.length() > 200 {
+    response_json[0:200].to_owned() + "..."
+  } else {
+    response_json
+  }
+  println("响应JSON: \{resp_preview}")
 
   // ===== SWE浅水方程仿真 =====
   let swe_grid = @shared.SWEGrid1D::uniform(nx=50, dx=1.0, h0=1.0)
@@ -37,9 +60,23 @@ fn main {
   let swe_result = swe_grid.run(swe_config)
   println("\n===== SWE浅水方程仿真 =====")
   println("网格: 50单元, dx=1.0m, 初始水深=1.0m")
-  println("时间步: 50步, dt=0.01s, CFL=0.4")
   println("稳定性: \{swe_result.stable}")
-  println("最大水深: \{to_repr(swe_result.max_depth[25])}")
+  println("最大水深[25]: \{Repr(swe_result.max_depth[25])}")
+
+  // ===== SWE JSON API演示 =====
+  let swe_request : @shared.SweRunRequest = {
+    grid: swe_grid,
+    config: swe_config,
+  }
+  let swe_response_json = @shared.swe_json_endpoint(
+    @shared.to_json_string(swe_request),
+  )
+  let swe_resp_preview = if swe_response_json.length() > 200 {
+    swe_response_json[0:200].to_owned() + "..."
+  } else {
+    swe_response_json
+  }
+  println("SWE响应JSON: \{swe_resp_preview}")
 
   // ===== 新安江+SWE耦合仿真 =====
   let coupling_params : @shared.CouplingParams = {
@@ -59,10 +96,21 @@ fn main {
     xaj_model, coupling_grid, coupling_params, swe_boundary, forcings, 0.005,
   )
   println("\n===== 新安江+SWE耦合仿真 =====")
-  println("河道单元: [10..19], 侧向入流系数: 0.8, 反馈系数: 0.01")
   println("耦合稳定性: \{coupling_result.stable}")
-  println(
-    "侧向入流过程: \{to_repr(coupling_result.lateral_inflow_series)}",
+  println("侧向入流过程: \{Repr(coupling_result.lateral_inflow_series)}")
+  println("河道水位过程: \{Repr(coupling_result.water_level_series)}")
+
+  // ===== 评价API演示 =====
+  println("\n===== 评价API演示 =====")
+  let obs = xaj_result.runoff_series
+  let sim = xaj_result.runoff_series
+  let eval_request : @shared.EvaluateRequest = {
+    observed: obs,
+    simulated: sim,
+    forecast_type: @shared.ForecastType::FloodProcess,
+  }
+  let eval_response_json = @shared.evaluate_json_endpoint(
+    @shared.to_json_string(eval_request),
   )
-  println("河道水位过程: \{to_repr(coupling_result.water_level_series)}")
+  println("评价响应JSON: \{eval_response_json}")
 }
