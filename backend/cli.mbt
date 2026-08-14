@@ -54,6 +54,7 @@ fn cli_help() -> Unit {
   println("  timeseries  时间序列分析")
   println("  metrics     扩展评价指标计算")
   println("  json        JSON API端到端演示")
+  println("  bench       性能基准测试")
   println("  help        显示此帮助信息")
   println("")
   println("用法: moon run -- [subcommand]")
@@ -515,7 +516,20 @@ fn cli_demo() -> Unit raise {
   print_cli_result(cli_timeseries())
   print_cli_result(cli_metrics())
   print_cli_result(cli_json())
+  print_cli_result(cli_bench())
   println("\n" + repeat_str("=", 50))
   println("所有子命令执行完毕")
   cli_help()
+}
+
+///|
+/// 子命令: bench - 性能基准测试
+fn cli_bench() -> CliResult {
+  let report = @shared.run_all_benchmarks()
+  {
+    command: "bench",
+    success: true,
+    message: "性能基准测试完成",
+    details: report,
+  }
 }
