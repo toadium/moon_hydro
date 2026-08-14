@@ -6,9 +6,6 @@ on:
   pull_request:
     branches: [main, master]
 
-env:
-  MOON_HOME: ${{ github.workspace }}/.moon
-
 jobs:
   check:
     name: 编译检查
