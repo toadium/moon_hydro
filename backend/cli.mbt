@@ -59,6 +59,7 @@ fn cli_help() -> Unit {
   println("  auth        权限框架演示(用户/鉴权/方案隔离)")
   println("  ai_forecast AI混合预报演示(LSTM残差校正)")
   println("  gis         GIS接口演示(DEM流向/汇流累积/河网提取)")
+  println("  flood       洪水淹没推演(2D水深/风险图/损失评估)")
   println("  help        显示此帮助信息")
   println("")
   println("用法: moon run -- [subcommand]")
@@ -525,6 +526,7 @@ fn cli_demo() -> Unit raise {
   cli_auth()
   cli_ai_forecast()
   cli_gis()
+  cli_flood()
   println("\n" + repeat_str("=", 50))
   println("所有子命令执行完毕")
   cli_help()
@@ -883,4 +885,51 @@ fn cli_gis() -> Unit {
   println("流域面积: \{basin.area}km²")
   println("流域形心: (\{basin.centroid.x}, \{basin.centroid.y})")
   println("\nGIS接口演示完成")
+}
+
+///|
+/// 子命令: flood - 洪水淹没推演演示
+fn cli_flood() -> Unit {
+  println("沐澜水文 洪水淹没推演演示")
+  println(repeat_str("=", 50))
+  // 1. 构造合成洪水场景
+  println("\n--- 1. 构造洪水场景 ---")
+  let (grid, config) = @flood.synthetic_flood_scenario(nx=40, ny=30)
+  println("网格: \{grid.nx}x\{grid.ny}, 分辨率: \{grid.dx}m x \{grid.dy}m")
+  println("时间步: \{config.n_steps}, dt=\{config.dt}s, CFL=\{config.cfl}")
+  // 2. 运行淹没仿真
+  println("\n--- 2. 运行淹没仿真 ---")
+  let result = @flood.simulate_inundation(grid, config)
+  println(
+    "仿真完成: \{result.n_steps_actual}步, 稳定性: \{result.stable}",
+  )
+  let (count, area, max_h, mean_h) = @flood.inundation_stats(result)
+  println(
+    "淹没单元: \{count}, 淹没面积: \{area}km², 最大水深: \{max_h}m, 平均水深: \{mean_h}m",
+  )
+  // 3. 提取淹没范围
+  println("\n--- 3. 淹没范围 ---")
+  let extent = @flood.extract_inundation_extent(result, threshold=0.1)
+  println("淹没范围(水深>0.1m): \{extent.length()}个单元")
+  // 4. 生成风险图
+  println("\n--- 4. 风险图 ---")
+  let risk_map = @flood.generate_risk_map(
+    result.max_depth,
+    result.hu_final,
+    result.hv_final,
+    nx=result.nx,
+    ny=result.ny,
+  )
+  let risk_stats = @flood.risk_statistics(risk_map)
+  println(risk_stats.to_summary())
+  // 5. ASCII风险图
+  println("\n--- 5. ASCII风险图 ---")
+  let ascii_map = @flood.to_ascii_map(risk_map, max_width=60)
+  println(ascii_map)
+  // 6. 损失评估
+  println("\n--- 6. 损失评估 ---")
+  let land_use = @flood.synthetic_land_use(nx=result.nx, ny=result.ny)
+  let damage = @flood.estimate_damage(result.max_depth, land_use)
+  println(damage.to_summary())
+  println("\n洪水淹没推演演示完成")
 }

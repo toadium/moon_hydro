@@ -6,8 +6,8 @@
 [![PR Check](https://github.com/toadium/moon_hydro/actions/workflows/pr-check.yml/badge.svg)](https://github.com/toadium/moon_hydro/actions/workflows/pr-check.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![MoonBit](https://img.shields.io/badge/MoonBit-0.1.20260713-blue)](https://moonbitlang.com)
-[![Tests](https://img.shields.io/badge/tests-339%20%C3%97%204%20backends-green)]()
-[![Version](https://img.shields.io/badge/version-0.7.0-orange)]()
+[![Tests](https://img.shields.io/badge/tests-374%20%C3%97%204%20backends-green)]()
+[![Version](https://img.shields.io/badge/version-0.8.0-orange)]()
 
 ---
 
@@ -34,6 +34,7 @@
 | **权限框架** | 用户管理 + API 鉴权（Token） + 方案隔离（RBAC） |
 | **AI 混合预报** | LSTM 残差校正 + 物理模型+AI 混合预报 |
 | **GIS 接口** | DEM 分析（D8 流向/汇流累积/流域 delineation）+ 河网提取（Strahler 河序） |
+| **洪水淹没推演** | 2D SWE 淹没仿真 + 风险图（5级分类）+ 损失评估（JRC曲线） |
 
 ---
 
@@ -59,7 +60,7 @@
                           │                  │
                    ┌──────▼────┐    ┌────────▼──────┐
                    │  backend   │    │  frontend     │
-                   │  CLI 19命令 │    │  TEA 架构     │
+                   │  CLI 20命令 │    │  TEA 架构     │
                    │  (native)  │    │  (wasm-gc/js) │
                    └──────┬─────┘    └───────────────┘
                           │
@@ -71,6 +72,12 @@
        │ + C FFI I/O │ │ 混合 │ │ 流域分析│
        │ (native)    │ │ 预报 │ │         │
        └─────────────┘ └──────┘ └─────────┘
+                              │
+                       ┌──────▼──────┐
+                       │   flood/    │
+                       │ 淹没推演    │
+                       │ 风险图+损失 │
+                       └─────────────┘
 ```
 
 ### 四后端编译
@@ -97,11 +104,11 @@ cd moon_hydro
 # 编译检查
 moon check
 
-# 运行测试（四后端 × 339 测试）
+# 运行测试（四后端 × 374 测试）
 moon test --target wasm-gc
 moon test --target native
 
-# 运行后端 CLI（19 个子命令）
+# 运行后端 CLI（20 个子命令）
 moon run --target native backend
 
 # 运行性能基准测试
@@ -112,6 +119,9 @@ moon run --target native backend ai_forecast
 
 # 运行GIS接口演示
 moon run --target native backend gis
+
+# 运行洪水淹没推演演示
+moon run --target native backend flood
 ```
 
 ### CLI 子命令
@@ -135,6 +145,7 @@ moon run --target native backend gis
 | `auth` | 权限框架演示（用户/鉴权/方案隔离） |
 | `ai_forecast` | AI 混合预报演示（LSTM 残差校正） |
 | `gis` | GIS 接口演示（DEM 流向/汇流累积/河网提取） |
+| `flood` | 洪水淹没推演（2D 水深/风险图/损失评估） |
 | `json` | JSON API 端到端演示 |
 | `demo` | 完整功能演示（默认） |
 
@@ -169,13 +180,17 @@ moon_hydro/
 │   ├── types.mbt               # 基础类型（点/线/多边形/DEM/河网）
 │   ├── dem.mbt                 # DEM 分析（D8流向/汇流累积/流域delineation）
 │   └── river.mbt               # 河网处理（Strahler河序/拓扑排序/追溯）
+├── flood/                      # 洪水淹没推演层
+│   ├── inundation.mbt          # 淹没仿真（2D SWE/到达时间/持续时间）
+│   ├── risk_map.mbt            # 风险图（5级分类/ASCII渲染/统计）
+│   └── damage.mbt              # 损失评估（JRC曲线/土地利用/损失统计）
 ├── persistence/                # 持久化存储层
 │   ├── store.mbt               # DataStore + JSON 序列化
 │   ├── file_io.mbt             # C FFI 文件 I/O（native）
 │   └── fileio.c                # C 实现
 ├── backend/                    # 后端 CLI
 │   ├── main.mbt               # 入口分发器
-│   └── cli.mbt                # 19 个子命令
+│   └── cli.mbt                # 20 个子命令
 ├── frontend/                   # 前端 TEA 架构
 │   ├── main.mbt               # 薄入口
 │   └── lib/                   # TEA 库包
@@ -242,7 +257,7 @@ moon_hydro/
 
 ## 开发路线
 
-详见 [roadmap.md](roadmap.md)。当前版本 **V0.7**，四后端 339 测试全通过。
+详见 [roadmap.md](roadmap.md)。当前版本 **V0.8**，四后端 374 测试全通过。
 
 | 版本 | 状态 | 核心内容 |
 |------|------|----------|
@@ -253,8 +268,9 @@ moon_hydro/
 | V0.5 | ✅ | 持久化 + 任务调度 + 性能基准 + 权限框架 |
 | V0.6 | ✅ | AI 混合预报（LSTM + 物理模型残差校正） |
 | V0.7 | ✅ | GIS 接口（DEM 分析 + 河网提取 + 流域 delineation） |
+| V0.8 | ✅ | 洪水淹没推演（2D SWE + 风险图 + 损失评估） |
 | V1.0 | 待开发 | 文档完善 + 开源发布 |
-| V1.1 | 待开发 | 分布式 + 洪水淹没 + 实时数据 |
+| V1.1 | 待开发 | 分布式 + 实时数据 |
 
 ---
 

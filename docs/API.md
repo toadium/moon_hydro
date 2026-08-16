@@ -20,8 +20,8 @@
 - [任务调度](#任务调度)
 - [性能基准](#性能基准)
 - [权限框架](#权限框架)
-
 - [GIS 接口](#gis-接口)
+- [洪水淹没推演](#洪水淹没推演)
 
 ---
 
@@ -456,4 +456,56 @@
 
 ---
 
-*生成时间：2026-08-16｜MoonBit 0.1.20260713｜200+ 个公开函数｜V0.7*
+## 洪水淹没推演
+
+> 模块 `flood/`，提供 2D SWE 淹没仿真、风险图生成、损失评估功能。
+> 包含 `flood/inundation.mbt`（淹没推演）、`flood/risk_map.mbt`（风险图）、`flood/damage.mbt`（损失评估）。
+
+### 淹没推演 API
+
+| 函数 | 签名 | 说明 |
+|------|------|------|
+| `InundationConfig::default` | `() -> InundationConfig` | 默认配置 |
+| `dem_to_swe_grid` | `(DEMGrid, h0~?, manning~?) -> SWEGrid2D` | 从 DEM 构造 SWE 网格 |
+| `set_inflow` | `(SWEGrid2D, i0~, i1~, j0~, j1~, h_value~, ...) -> SWEGrid2D` | 设置入流边界 |
+| `simulate_inundation` | `(SWEGrid2D, InundationConfig) -> InundationResult` | 运行淹没仿真 |
+| `extract_inundation_extent` | `(InundationResult, threshold~?) -> Array[(Int, Int)]` | 提取淹没范围 |
+| `inundation_stats` | `(InundationResult) -> (Int, Double, Double, Double)` | 淹没统计 |
+| `synthetic_flood_scenario` | `(nx~?, ny~?, dx~?, dy~?) -> (SWEGrid2D, InundationConfig)` | 合成洪水场景 |
+
+### 风险图 API
+
+| 函数 | 签名 | 说明 |
+|------|------|------|
+| `classify_risk` | `(Double, Double) -> RiskLevel` | 风险分类（水深+流速） |
+| `generate_risk_map` | `(Array[Double], Array[Double], Array[Double], nx~, ny~) -> RiskMap` | 生成风险图 |
+| `generate_risk_map_depth_only` | `(Array[Double], nx~, ny~) -> RiskMap` | 仅水深版风险图 |
+| `risk_statistics` | `(RiskMap) -> RiskStatistics` | 风险统计 |
+| `to_ascii_map` | `(RiskMap, max_width~?) -> String` | ASCII 艺术风险图 |
+
+### 损失评估 API
+
+| 函数 | 签名 | 说明 |
+|------|------|------|
+| `LandUseMap::uniform` | `(nx~, ny~, land_type~, unit_value~?) -> LandUseMap` | 均匀土地利用图 |
+| `LandUseMap::set_region` | `(Self, i0~, i1~, j0~, j1~, land_type~, unit_value~) -> Unit` | 设置区域土地利用 |
+| `damage_ratio` | `(Double, LandUseType) -> Double` | 水深-损失率曲线（JRC） |
+| `estimate_damage` | `(Array[Double], LandUseMap) -> DamageResult` | 损失评估 |
+| `synthetic_land_use` | `(nx~, ny~) -> LandUseMap` | 合成土地利用图 |
+
+### 数据类型
+
+| 类型 | 说明 |
+|------|------|
+| `InundationConfig` | 淹没推演配置（dt/n_steps/cfl/depth_threshold/output_interval） |
+| `InundationResult` | 淹没推演结果（max_depth/final_depth/arrival_time/duration/inundated_area） |
+| `RiskLevel` | 风险等级枚举（Safe/LowRisk/ModerateRisk/HighRisk/ExtremeRisk） |
+| `RiskMap` | 风险图（levels/max_depth/max_velocity） |
+| `RiskStatistics` | 风险统计（各等级计数/占比） |
+| `LandUseType` | 土地利用类型枚举（Residential/Commercial/Industrial/Agricultural/Forest/Water） |
+| `LandUseMap` | 土地利用图（types/unit_value） |
+| `DamageResult` | 损失评估结果（total_damage/各类型损失/damaged_cells） |
+
+---
+
+*生成时间：2026-08-16｜MoonBit 0.1.20260713｜230+ 个公开函数｜V0.8*

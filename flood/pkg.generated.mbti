@@ -1,0 +1,133 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "toadium/moon_hydro/flood"
+
+import {
+  "moonbitlang/core/debug",
+  "moonbitlang/core/json",
+  "toadium/moon_hydro/gis",
+  "toadium/moon_hydro/shared",
+}
+
+// Values
+pub fn classify_risk(Double, Double) -> RiskLevel
+
+pub fn damage_ratio(Double, LandUseType) -> Double
+
+pub fn dem_to_swe_grid(@gis.DEMGrid, h0? : Double, manning? : Double) -> @shared.SWEGrid2D
+
+pub fn estimate_damage(Array[Double], LandUseMap) -> DamageResult
+
+pub fn extract_inundation_extent(InundationResult, threshold? : Double) -> Array[(Int, Int)]
+
+pub fn generate_risk_map(Array[Double], Array[Double], Array[Double], nx~ : Int, ny~ : Int) -> RiskMap
+
+pub fn generate_risk_map_depth_only(Array[Double], nx~ : Int, ny~ : Int) -> RiskMap
+
+pub fn inundation_stats(InundationResult) -> (Int, Double, Double, Double)
+
+pub fn risk_statistics(RiskMap) -> RiskStatistics
+
+pub fn set_inflow(@shared.SWEGrid2D, i0~ : Int, i1~ : Int, j0~ : Int, j1~ : Int, h_value~ : Double, u_velocity? : Double, v_velocity? : Double) -> @shared.SWEGrid2D
+
+pub fn simulate_inundation(@shared.SWEGrid2D, InundationConfig) -> InundationResult
+
+pub fn synthetic_flood_scenario(nx? : Int, ny? : Int, dx? : Double, dy? : Double) -> (@shared.SWEGrid2D, InundationConfig)
+
+pub fn synthetic_land_use(nx~ : Int, ny~ : Int) -> LandUseMap
+
+pub fn to_ascii_map(RiskMap, max_width? : Int) -> String
+
+// Errors
+
+// Types and methods
+pub(all) struct DamageResult {
+  total_damage : Double
+  residential_damage : Double
+  commercial_damage : Double
+  industrial_damage : Double
+  agricultural_damage : Double
+  forest_damage : Double
+  damaged_cells : Int
+  max_damage_cell : Int
+  max_damage_value : Double
+} derive(ToJson, @debug.Debug, @json.FromJson)
+pub fn DamageResult::to_summary(Self) -> String
+
+pub(all) struct InundationConfig {
+  dt : Double
+  n_steps : Int
+  cfl : Double
+  depth_threshold : Double
+  output_interval : Int
+} derive(ToJson, @debug.Debug, @json.FromJson)
+pub fn InundationConfig::default() -> Self
+
+pub(all) struct InundationResult {
+  nx : Int
+  ny : Int
+  dx : Double
+  dy : Double
+  max_depth : Array[Double]
+  final_depth : Array[Double]
+  hu_final : Array[Double]
+  hv_final : Array[Double]
+  arrival_time : Array[Double]
+  inundation_duration : Array[Double]
+  stable : Bool
+  n_steps_actual : Int
+  total_inundated_cells : Int
+  inundated_area : Double
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct LandUseMap {
+  nx : Int
+  ny : Int
+  types : Array[LandUseType]
+  unit_value : Array[Double]
+} derive(ToJson, @debug.Debug, @json.FromJson)
+pub fn LandUseMap::set_region(Self, i0~ : Int, i1~ : Int, j0~ : Int, j1~ : Int, land_type~ : LandUseType, unit_value~ : Double) -> Unit
+pub fn LandUseMap::uniform(nx~ : Int, ny~ : Int, land_type~ : LandUseType, unit_value? : Double) -> Self
+
+pub(all) enum LandUseType {
+  Residential
+  Commercial
+  Industrial
+  Agricultural
+  Forest
+  Water
+} derive(Eq, ToJson, @debug.Debug, @json.FromJson)
+pub impl Show for LandUseType
+
+pub(all) enum RiskLevel {
+  Safe
+  LowRisk
+  ModerateRisk
+  HighRisk
+  ExtremeRisk
+} derive(Eq, ToJson, @debug.Debug, @json.FromJson)
+pub impl Show for RiskLevel
+
+pub(all) struct RiskMap {
+  nx : Int
+  ny : Int
+  levels : Array[RiskLevel]
+  max_depth : Array[Double]
+  max_velocity : Array[Double]
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct RiskStatistics {
+  total_cells : Int
+  safe_count : Int
+  low_risk_count : Int
+  moderate_risk_count : Int
+  high_risk_count : Int
+  extreme_risk_count : Int
+  safe_ratio : Double
+  inundated_ratio : Double
+  total_area : Double
+} derive(ToJson, @debug.Debug, @json.FromJson)
+pub fn RiskStatistics::to_summary(Self) -> String
+
+// Type aliases
+
+// Traits

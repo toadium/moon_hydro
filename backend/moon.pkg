@@ -3,6 +3,7 @@ import {
   "toadium/moon_hydro/persistence",
   "toadium/moon_hydro/ml",
   "toadium/moon_hydro/gis",
+  "toadium/moon_hydro/flood",
   "moonbitlang/core/math",
   "moonbitlang/core/env",
 }

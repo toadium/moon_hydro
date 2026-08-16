@@ -8,6 +8,31 @@
 - 性能优化与并行仿真（接入async库后）
 - mooncakes.io 包正式发布
 
+## [0.8.0] - 2026-08-16
+
+### 新增
+- 洪水淹没推演模块 `flood/`：2D SWE淹没仿真 + 风险图 + 损失评估
+  - `flood/inundation.mbt`：淹没推演核心
+    - 从DEM构造SWE网格 `dem_to_swe_grid`、设置入流 `set_inflow`
+    - 淹没仿真 `simulate_inundation`（记录最大水深/到达时间/淹没持续时间）
+    - 淹没范围提取 `extract_inundation_extent`、淹没统计 `inundation_stats`
+    - 合成洪水场景 `synthetic_flood_scenario`
+  - `flood/risk_map.mbt`：风险图生成
+    - 风险分类 `classify_risk`（水深×流速危险度指数，5级：安全/低/中/高/极高）
+    - 风险图生成 `generate_risk_map`、ASCII艺术渲染 `to_ascii_map`
+    - 风险统计 `risk_statistics`
+  - `flood/damage.mbt`：损失评估
+    - 土地利用类型（住宅/商业/工业/农业/林地/水体）
+    - JRC水深-损失率曲线 `damage_ratio`
+    - 损失评估 `estimate_damage`、合成土地利用图 `synthetic_land_use`
+  - `flood` CLI子命令演示
+  - 35个测试用例（淹没推演8+风险图13+损失评估14）
+
+### 变更
+- 测试数量 339 → 374（native）
+- CLI子命令 19 → 20（新增 flood）
+- 新增 flood 包依赖到 backend
+
 ## [0.7.0] - 2026-08-16
 
 ### 新增
