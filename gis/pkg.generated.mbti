@@ -1,0 +1,135 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "toadium/moon_hydro/gis"
+
+import {
+  "moonbitlang/core/debug",
+  "moonbitlang/core/json",
+}
+
+// Values
+pub fn compute_flow_accumulation(FlowDirection) -> FlowAccumulation
+
+pub fn compute_flow_direction(DEMGrid) -> FlowDirection
+
+pub fn delineate_watershed(FlowDirection, outlet_i~ : Int, outlet_j~ : Int) -> Array[(Int, Int)]
+
+pub fn dem_stats(DEMGrid) -> (Double, Double, Double, Double)
+
+pub fn extract_network_from_dem(DEMGrid, FlowAccumulation, threshold~ : Int) -> RiverNetwork
+
+pub fn extract_river_network(FlowAccumulation, threshold~ : Int) -> Array[(Int, Int)]
+
+pub fn polygon_area(Polygon) -> Double
+
+pub fn polygon_centroid(Polygon) -> XYPoint
+
+pub fn polyline_length(Polyline) -> Double
+
+pub fn synthetic_dem(nx~ : Int, ny~ : Int, dx? : Double, dy? : Double) -> DEMGrid
+
+pub fn watershed_area(DEMGrid, Array[(Int, Int)]) -> Double
+
+pub fn xy_distance(XYPoint, XYPoint) -> Double
+
+// Errors
+
+// Types and methods
+pub(all) struct BasinBoundary {
+  name : String
+  polygon : Polygon
+  area : Double
+  centroid : XYPoint
+} derive(Default, ToJson, @debug.Debug, @json.FromJson)
+pub fn BasinBoundary::from_polygon(name~ : String, Polygon) -> Self
+
+pub(all) struct DEMGrid {
+  nx : Int
+  ny : Int
+  dx : Double
+  dy : Double
+  x0 : Double
+  y0 : Double
+  elevations : Array[Array[Double]]
+  nodata : Double
+} derive(ToJson, @debug.Debug, @json.FromJson)
+pub fn DEMGrid::get_elevation(Self, Int, Int) -> Double
+pub fn DEMGrid::has_data(Self, Int, Int) -> Bool
+pub fn DEMGrid::set_elevation(Self, Int, Int, Double) -> Unit
+pub fn DEMGrid::uniform(nx~ : Int, ny~ : Int, dx~ : Double, dy~ : Double, x0? : Double, y0? : Double, h0? : Double, nodata? : Double) -> Self
+
+pub(all) struct FlowAccumulation {
+  nx : Int
+  ny : Int
+  accum : Array[Array[Int]]
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct FlowDirection {
+  nx : Int
+  ny : Int
+  dirs : Array[Array[Int]]
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct GeoPoint {
+  lon : Double
+  lat : Double
+} derive(Default, ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct Polygon {
+  exterior : Array[XYPoint]
+  holes : Array[Array[XYPoint]]
+  name : String
+} derive(Default, ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct Polyline {
+  points : Array[XYPoint]
+  name : String
+} derive(Default, ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct RiverNetwork {
+  nodes : Map[Int, RiverNode]
+  reaches : Array[RiverReach]
+  mut outlet_id : Int
+} derive(@debug.Debug)
+pub fn RiverNetwork::add_node(Self, RiverNode) -> Unit
+pub fn RiverNetwork::add_reach(Self, RiverReach) -> Unit
+pub fn RiverNetwork::compute_strahler_orders(Self) -> Unit
+pub fn RiverNetwork::downstream_reaches(Self, Int) -> Array[RiverReach]
+pub fn RiverNetwork::new() -> Self
+pub fn RiverNetwork::stats(Self) -> String
+pub fn RiverNetwork::topological_order(Self) -> Array[Int]
+pub fn RiverNetwork::trace_to_outlet(Self, Int) -> Array[Int]
+pub fn RiverNetwork::trace_to_sources(Self, Int) -> Array[Int]
+pub fn RiverNetwork::upstream_reaches(Self, Int) -> Array[RiverReach]
+
+pub(all) struct RiverNode {
+  id : Int
+  point : XYPoint
+  elevation : Double
+  mut node_type : RiverNodeType
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) enum RiverNodeType {
+  Source
+  Confluence
+  Outlet
+  Intermediate
+} derive(Eq, ToJson, @debug.Debug, @json.FromJson)
+pub impl Show for RiverNodeType
+
+pub(all) struct RiverReach {
+  id : Int
+  from_node : Int
+  to_node : Int
+  length : Double
+  slope : Double
+  mut order : Int
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct XYPoint {
+  x : Double
+  y : Double
+} derive(Default, ToJson, @debug.Debug, @json.FromJson)
+
+// Type aliases
+
+// Traits

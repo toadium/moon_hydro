@@ -55,6 +55,19 @@
 - [x] mooncakes.io发布dry-run验证通过
 - [x] 权限框架（`shared/auth.mbt`）：用户管理 + API鉴权 + 方案隔离（26测试）
 
+### V0.6 — AI 混合预报 ✅
+
+- [x] LSTM 洪水预报 AI 模型（`ml/lstm.mbt`，前向传播+权重展平+随机搜索训练）
+- [x] 混合预报（物理模型 + AI 校正）（`ml/hybrid.mbt`，残差学习+NSE改进）
+- [x] AI矩阵运算库（`ml/matrix.mbt`，乘法/转置/sigmoid/tanh/归一化/Xavier初始化）
+
+### V0.7 — GIS 接口 ✅
+
+- [x] GIS基础类型（`gis/types.mbt`：点/线/多边形/DEM/河网拓扑）
+- [x] DEM分析（`gis/dem.mbt`：D8流向/汇流累积/流域delineation/河网提取）
+- [x] 河网处理（`gis/river.mbt`：Strahler河序/拓扑排序/上下游追溯）
+- [x] `gis` CLI子命令演示
+
 ---
 
 ## 待开发版本
@@ -75,8 +88,8 @@
 
 - [x] LSTM 洪水预报 AI 模型 ✅ V0.6（`ml/lstm.mbt`，前向传播+权重展平+随机搜索训练）
 - [x] 混合预报（物理模型 + AI 校正） ✅ V0.6（`ml/hybrid.mbt`，残差学习+NSE改进）
+- [x] GIS 接口（流域边界/河网/DEM） ✅ V0.7（`gis/`，D8流向/汇流累积/Strahler河序）
 - [ ] 分布式集群仿真调度
-- [ ] GIS 接口（流域边界/河网/DEM）
 - [ ] 洪水淹没推演（2D 水深/淹没范围/风险图）
 - [ ] RISC-V 嵌入式边缘终端适配
 - [ ] 实时数据接入（气象雷达/雨量站/水位站）
@@ -114,8 +127,9 @@
 | V0.4 | 194 | 35 | ✅ |
 | V0.5 | 282 | 44 | ✅ |
 | V0.6 | 315 | 51 | ✅ |
+| V0.7 | 339 | 57 | ✅ |
 | V1.0 | — | — | 待开发 |
 
 ---
 
-*最后更新：2026-08-16｜当前版本：V0.6｜四后端 315 测试全通过｜CI/CD 全绿｜mooncakes.io dry-run通过*
+*最后更新：2026-08-16｜当前版本：V0.7｜四后端 339 测试全通过｜CI/CD 全绿｜mooncakes.io dry-run通过*

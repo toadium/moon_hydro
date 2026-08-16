@@ -58,6 +58,7 @@ fn cli_help() -> Unit {
   println("  persistence 持久化存储演示(方案/结果/参数集)")
   println("  auth        权限框架演示(用户/鉴权/方案隔离)")
   println("  ai_forecast AI混合预报演示(LSTM残差校正)")
+  println("  gis         GIS接口演示(DEM流向/汇流累积/河网提取)")
   println("  help        显示此帮助信息")
   println("")
   println("用法: moon run -- [subcommand]")
@@ -523,6 +524,7 @@ fn cli_demo() -> Unit raise {
   print_cli_result(cli_persistence())
   cli_auth()
   cli_ai_forecast()
+  cli_gis()
   println("\n" + repeat_str("=", 50))
   println("所有子命令执行完毕")
   cli_help()
@@ -788,4 +790,97 @@ fn cli_ai_forecast() -> Unit {
     println("\{i}    \{phys}    \{corr}    \{hybrid}    \{obs}")
   }
   println("\nAI混合预报演示完成")
+}
+
+///|
+/// 子命令: gis - GIS接口演示
+fn cli_gis() -> Unit {
+  println("沐澜水文 GIS接口演示")
+  println(repeat_str("=", 50))
+  // 1. 生成合成DEM
+  println("\n--- 1. 生成合成DEM ---")
+  let dem = @gis.synthetic_dem(nx=20, ny=15, dx=100.0, dy=100.0)
+  let (min_h, max_h, mean_h, cell_count) = @gis.dem_stats(dem)
+  println("DEM尺寸: \{dem.nx}x\{dem.ny}, 分辨率: \{dem.dx}m x \{dem.dy}m")
+  println(
+    "高程范围: \{min_h}m ~ \{max_h}m, 平均: \{mean_h}m, 单元数: \{cell_count}",
+  )
+  // 2. D8流向分析
+  println("\n--- 2. D8流向分析 ---")
+  let fd = @gis.compute_flow_direction(dem)
+  let mut dir_counts = 0
+  for i in 0..<fd.ny {
+    for j in 0..<fd.nx {
+      if fd.dirs[i][j] > 0 {
+        dir_counts = dir_counts + 1
+      }
+    }
+  }
+  println(
+    "流向计算完成: \{dir_counts}个单元有流向(共\{fd.nx * fd.ny}个)",
+  )
+  // 3. 汇流累积
+  println("\n--- 3. 汇流累积 ---")
+  let fa = @gis.compute_flow_accumulation(fd)
+  let mut max_accum = 0
+  let mut max_i = 0
+  let mut max_j = 0
+  for i in 0..<fa.ny {
+    for j in 0..<fa.nx {
+      if fa.accum[i][j] > max_accum {
+        max_accum = fa.accum[i][j]
+        max_i = i
+        max_j = j
+      }
+    }
+  }
+  println(
+    "汇流累积计算完成, 最大累积值: \{max_accum}(位于[\{max_i},\{max_j}])",
+  )
+  // 4. 流域delineation
+  println("\n--- 4. 流域delineation ---")
+  let watershed = @gis.delineate_watershed(fd, outlet_i=max_i, outlet_j=max_j)
+  let ws_area = @gis.watershed_area(dem, watershed)
+  println(
+    "流域单元数: \{watershed.length()}, 流域面积: \{ws_area}km²",
+  )
+  // 5. 河网提取
+  println("\n--- 5. 河网提取 ---")
+  let threshold = max_accum / 5
+  let river_cells = @gis.extract_river_network(fa, threshold~)
+  println(
+    "河网阈值: \{threshold}, 河道单元数: \{river_cells.length()}",
+  )
+  // 6. 河网拓扑分析
+  println("\n--- 6. 河网拓扑分析 ---")
+  let network = @gis.extract_network_from_dem(dem, fa, threshold~)
+  println("河网统计: \{network.stats()}")
+  // 拓扑排序
+  let topo_order = network.topological_order()
+  println("拓扑排序河段数: \{topo_order.length()}")
+  // 追溯源头和出口
+  if network.outlet_id >= 0 {
+    let sources = network.trace_to_sources(network.outlet_id)
+    let outlet_path = network.trace_to_outlet(network.outlet_id)
+    println("从出口追溯源头数: \{sources.length()}")
+    println("出口路径长度: \{outlet_path.length()}")
+  }
+  // 7. 流域边界多边形演示
+  println("\n--- 7. 流域边界多边形 ---")
+  let boundary_pts : Array[@gis.XYPoint] = [
+    { x: 0.0, y: 1000.0 },
+    { x: 5000.0, y: 1000.0 },
+    { x: 5000.0, y: 0.0 },
+    { x: 0.0, y: 0.0 },
+  ]
+  let polygon : @gis.Polygon = {
+    exterior: boundary_pts,
+    holes: [],
+    name: "示例流域",
+  }
+  let basin = @gis.BasinBoundary::from_polygon(name="示例流域", polygon)
+  println("流域名称: \{basin.name}")
+  println("流域面积: \{basin.area}km²")
+  println("流域形心: (\{basin.centroid.x}, \{basin.centroid.y})")
+  println("\nGIS接口演示完成")
 }

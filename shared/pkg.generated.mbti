@@ -63,11 +63,15 @@ pub fn format_bench_result(BenchResult) -> String
 
 pub fn format_bench_suite(BenchSuiteResult) -> String
 
+pub fn generate_token(seed~ : UInt64) -> String
+
 pub fn generate_validation_report() -> ValidationReport
 
 pub fn gumbel_estimate(Array[Double]) -> (Double, Double)
 
 pub fn gumbel_return_value(Double, Double, return_period~ : Double) -> Double
+
+pub fn hash_password(String) -> UInt64
 
 pub fn index_of_agreement(Array[Double], Array[Double]) -> Double
 
@@ -141,6 +145,8 @@ pub fn r_squared(Array[Double], Array[Double]) -> Double
 
 pub fn rmse(Array[Double], Array[Double]) -> Double
 
+pub fn role_has_permission(Role, Permission) -> Bool
+
 pub fn rsr(Array[Double], Array[Double]) -> Double
 
 pub fn run_all_benchmarks() -> String
@@ -198,6 +204,16 @@ pub fn zhuyi_basin_case() -> BasinCase
 pub fn zhuyi_basin_params() -> XinanjiangParams
 
 // Errors
+pub(all) suberror AuthError {
+  UserAlreadyExists(String)
+  UserNotFound(String)
+  InvalidPassword
+  InvalidToken(String)
+  TokenExpired(String)
+  PermissionDenied(String)
+  SchemeNotOwned(String)
+} derive(ToJson, @debug.Debug, @json.FromJson)
+pub impl Show for AuthError
 
 // Types and methods
 pub(all) struct ApiResponse[T] {
@@ -207,6 +223,27 @@ pub(all) struct ApiResponse[T] {
 } derive(ToJson, @debug.Debug, @json.FromJson)
 pub fn[T] ApiResponse::err(error~ : String) -> Self[T]
 pub fn[T] ApiResponse::ok(T) -> Self[T]
+
+pub(all) struct AuthManager {
+  users : Map[String, User]
+  usernames : Map[String, String]
+  sessions : Map[String, Session]
+  scheme_owners : Map[String, SchemeOwnership]
+} derive(ToJson, @debug.Debug, @json.FromJson)
+pub fn AuthManager::check_permission(Self, User, Permission) -> Unit raise
+pub fn AuthManager::check_scheme_access(Self, User, String, write? : Bool) -> Unit raise
+pub fn AuthManager::delete_user(Self, String) -> Bool
+pub fn AuthManager::grant_scheme_ownership(Self, user_id~ : String, scheme_id~ : String, is_public? : Bool) -> Unit
+pub fn AuthManager::list_user_schemes(Self, String) -> Array[String]
+pub fn AuthManager::list_users(Self) -> Array[User]
+pub fn AuthManager::login(Self, username~ : String, password~ : String, timestamp~ : UInt64, ttl_seconds? : UInt64) -> String raise
+pub fn AuthManager::logout(Self, String) -> Bool
+pub fn AuthManager::make_scheme_public(Self, String) -> Bool
+pub fn AuthManager::new() -> Self
+pub fn AuthManager::register(Self, username~ : String, password~ : String, role~ : Role, timestamp~ : UInt64) -> String raise
+pub fn AuthManager::stats(Self) -> String
+pub fn AuthManager::verify_token(Self, String, current_time~ : UInt64) -> User raise
+pub impl Default for AuthManager
 
 pub(all) struct BasinCase {
   name : String
@@ -448,12 +485,30 @@ pub(all) struct MonteCarloResult {
   runoff_p95 : Array[Double]
 } derive(ToJson, @debug.Debug, @json.FromJson)
 
+pub(all) enum Permission {
+  SimRun
+  Calibrate
+  SchemeRead
+  SchemeWrite
+  SchemeDelete
+  UserManage
+  BenchmarkRun
+} derive(Eq, ToJson, @debug.Debug, @json.FromJson)
+pub impl Show for Permission
+
 pub(all) struct ProgressInfo {
   completed : Int
   total : Int
   current_task_id : String
   percentage : Double
 } derive(Default, ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) enum Role {
+  Admin
+  Engineer
+  Viewer
+} derive(Eq, ToJson, @debug.Debug, @json.FromJson)
+pub impl Show for Role
 
 pub(all) struct SCEUAConfig {
   max_iter : Int
@@ -554,6 +609,19 @@ pub(all) struct SWESolverConfig {
   boundary : SWEBoundary
 } derive(ToJson, @debug.Debug, @json.FromJson)
 
+pub(all) struct SchemeOwnership {
+  scheme_id : String
+  owner_id : String
+  is_public : Bool
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct Session {
+  token : String
+  user_id : String
+  created_at : UInt64
+  expires_at : UInt64
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
 pub(all) struct SimResult {
   runoff_series : Array[Double]
   state_series : Array[XinanjiangState]
@@ -648,6 +716,14 @@ pub(all) struct TimeSeriesStats {
   sum : Double
   count : Int
   trend : Double
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct User {
+  id : String
+  username : String
+  password_hash : UInt64
+  role : Role
+  created_at : UInt64
 } derive(ToJson, @debug.Debug, @json.FromJson)
 
 pub(all) struct ValidationReport {

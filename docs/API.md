@@ -21,6 +21,8 @@
 - [性能基准](#性能基准)
 - [权限框架](#权限框架)
 
+- [GIS 接口](#gis-接口)
+
 ---
 
 ## 新安江模型
@@ -388,4 +390,70 @@
 
 ---
 
-*生成时间：2026-08-16｜MoonBit 0.1.20260713｜180+ 个公开函数｜V0.5*
+## GIS 接口
+
+> 模块 `gis/`，提供 DEM 分析、河网提取、流域 delineation 功能。
+> 包含 `gis/types.mbt`（基础类型）、`gis/dem.mbt`（DEM 处理）、`gis/river.mbt`（河网处理）。
+
+### 基础类型
+
+| 类型 | 说明 |
+|------|------|
+| `GeoPoint` | 地理坐标点（经纬度） |
+| `XYPoint` | 平面坐标点（投影坐标，如 UTM） |
+| `Polyline` | 多段线（河流走向、边界线） |
+| `Polygon` | 多边形（流域边界，外边界 + 内部空洞） |
+| `BasinBoundary` | 流域边界（名称 + 多边形 + 面积 + 形心） |
+| `DEMGrid` | DEM 网格（规则网格高程数据） |
+| `RiverNode` | 河流节点（ID + 坐标 + 高程 + 类型） |
+| `RiverNodeType` | 河流节点类型枚举（Source/Confluence/Outlet/Intermediate） |
+| `RiverReach` | 河段（起止节点 + 长度 + 坡度 + Strahler 河序） |
+| `RiverNetwork` | 河网（节点表 + 河段表 + 出口 ID） |
+| `FlowDirection` | D8 流向矩阵 |
+| `FlowAccumulation` | 汇流累积矩阵 |
+
+### 几何运算 API
+
+| 函数 | 签名 | 说明 |
+|------|------|------|
+| `polygon_area` | `(Polygon) -> Double` | 多边形面积（Shoelace 公式） |
+| `polygon_centroid` | `(Polygon) -> XYPoint` | 多边形形心 |
+| `xy_distance` | `(XYPoint, XYPoint) -> Double` | 两点距离 |
+| `polyline_length` | `(Polyline) -> Double` | 多段线长度 |
+| `BasinBoundary::from_polygon` | `(name~, Polygon) -> BasinBoundary` | 从多边形构造流域边界 |
+
+### DEM 处理 API
+
+| 函数 | 签名 | 说明 |
+|------|------|------|
+| `DEMGrid::uniform` | `(nx~, ny~, dx~, dy~, ...) -> DEMGrid` | 构造均匀高程 DEM |
+| `DEMGrid::get_elevation` | `(Self, Int, Int) -> Double` | 获取某点高程 |
+| `DEMGrid::set_elevation` | `(Self, Int, Int, Double) -> Unit` | 设置某点高程 |
+| `DEMGrid::has_data` | `(Self, Int, Int) -> Bool` | 判断是否有数据 |
+| `compute_flow_direction` | `(DEMGrid) -> FlowDirection` | D8 流向分析 |
+| `compute_flow_accumulation` | `(FlowDirection) -> FlowAccumulation` | 汇流累积（BFS 拓扑排序） |
+| `delineate_watershed` | `(FlowDirection, outlet_i~, outlet_j~) -> Array[(Int, Int)]` | 流域 delineation（反向 BFS） |
+| `watershed_area` | `(DEMGrid, Array[(Int, Int)]) -> Double` | 流域面积（km²） |
+| `extract_river_network` | `(FlowAccumulation, threshold~) -> Array[(Int, Int)]` | 河网提取 |
+| `dem_stats` | `(DEMGrid) -> (Double, Double, Double, Double)` | DEM 统计（最小/最大/均值/计数） |
+| `synthetic_dem` | `(nx~, ny~, dx~?, dy~?) -> DEMGrid` | 生成合成 DEM |
+
+### 河网处理 API
+
+| 函数 | 签名 | 说明 |
+|------|------|------|
+| `RiverNetwork::new` | `() -> RiverNetwork` | 构造空河网 |
+| `RiverNetwork::add_node` | `(Self, RiverNode) -> Unit` | 添加节点 |
+| `RiverNetwork::add_reach` | `(Self, RiverReach) -> Unit` | 添加河段 |
+| `RiverNetwork::upstream_reaches` | `(Self, Int) -> Array[RiverReach]` | 获取上游河段 |
+| `RiverNetwork::downstream_reaches` | `(Self, Int) -> Array[RiverReach]` | 获取下游河段 |
+| `RiverNetwork::compute_strahler_orders` | `(Self) -> Unit` | 计算 Strahler 河序 |
+| `RiverNetwork::topological_order` | `(Self) -> Array[Int]` | 拓扑排序（汇流顺序） |
+| `RiverNetwork::trace_to_sources` | `(Self, Int) -> Array[Int]` | 追溯源头 |
+| `RiverNetwork::trace_to_outlet` | `(Self, Int) -> Array[Int]` | 追溯出口 |
+| `RiverNetwork::stats` | `(Self) -> String` | 河网统计信息 |
+| `extract_network_from_dem` | `(DEMGrid, FlowAccumulation, threshold~) -> RiverNetwork` | 从 DEM 提取河网拓扑 |
+
+---
+
+*生成时间：2026-08-16｜MoonBit 0.1.20260713｜200+ 个公开函数｜V0.7*

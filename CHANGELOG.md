@@ -8,6 +8,31 @@
 - 性能优化与并行仿真（接入async库后）
 - mooncakes.io 包正式发布
 
+## [0.7.0] - 2026-08-16
+
+### 新增
+- GIS接口模块 `gis/`：DEM分析 + 河网提取 + 流域delineation
+  - `gis/types.mbt`：基础类型（GeoPoint/XYPoint/Polyline/Polygon/BasinBoundary/DEMGrid/RiverNode/RiverReach/RiverNetwork）
+    - 多边形面积（Shoelace公式）、形心计算、距离/长度计算
+  - `gis/dem.mbt`：DEM处理
+    - D8流向分析 `compute_flow_direction`
+    - 汇流累积 `compute_flow_accumulation`（BFS拓扑排序）
+    - 流域delineation `delineate_watershed`（反向BFS追溯）
+    - 河网提取 `extract_river_network`、DEM统计、合成DEM生成
+  - `gis/river.mbt`：河网处理
+    - Strahler河序计算 `compute_strahler_orders`
+    - 拓扑排序 `topological_order`
+    - 源头追溯 `trace_to_sources`、出口追溯 `trace_to_outlet`
+    - 从DEM+汇流累积提取河网拓扑 `extract_network_from_dem`
+  - `gis` CLI子命令演示
+  - 24个测试用例（类型8+DEM9+河网7）
+
+### 变更
+- 测试数量 315 → 339（native）/ 309（wasm-gc/wasm/js）
+- CLI子命令 18 → 19（新增 gis）
+- 新增 gis 包依赖到 backend
+- 消除全部编译警告（0 warnings）
+
 ## [0.6.0] - 2026-08-16
 
 ### 新增

@@ -6,8 +6,8 @@
 [![PR Check](https://github.com/toadium/moon_hydro/actions/workflows/pr-check.yml/badge.svg)](https://github.com/toadium/moon_hydro/actions/workflows/pr-check.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![MoonBit](https://img.shields.io/badge/MoonBit-0.1.20260713-blue)](https://moonbitlang.com)
-[![Tests](https://img.shields.io/badge/tests-315%20%C3%97%204%20backends-green)]()
-[![Version](https://img.shields.io/badge/version-0.6.0-orange)]()
+[![Tests](https://img.shields.io/badge/tests-339%20%C3%97%204%20backends-green)]()
+[![Version](https://img.shields.io/badge/version-0.7.0-orange)]()
 
 ---
 
@@ -33,6 +33,7 @@
 | **性能基准** | 10 项基准测试，均值/标准差/吞吐量统计 |
 | **权限框架** | 用户管理 + API 鉴权（Token） + 方案隔离（RBAC） |
 | **AI 混合预报** | LSTM 残差校正 + 物理模型+AI 混合预报 |
+| **GIS 接口** | DEM 分析（D8 流向/汇流累积/流域 delineation）+ 河网提取（Strahler 河序） |
 
 ---
 
@@ -52,22 +53,24 @@
                     │  │ 批量仿真  │  │ 评价指标 │         │
                     │  └──────────┘  └──────────┘         │
                     │  ┌──────────┐  ┌──────────┐         │
-                    │  │ 任务调度  │  │ 性能基准  │         │
-                    │  └──────────┘  └──────────┘         │
-                    └──────┬──────────────────┬──────────┘
-                           │                  │
-                  ┌────────▼────┐    ┌────────▼──────┐
-                  │  backend    │    │  frontend     │
-                  │  CLI 16命令  │    │  TEA 架构     │
-                  │  (native)   │    │  (wasm-gc/js) │
-                  └──────┬──────┘    └───────────────┘
-                         │
-                  ┌──────▼──────┐
-                  │ persistence │
-                  │ DataStore   │
-                  │ + C FFI I/O │
-                  │ (native)    │
-                  └─────────────┘
+                   │  │ 任务调度  │  │ 性能基准  │         │
+                   │  └──────────┘  └──────────┘         │
+                   └──────┬──────────────────┬──────────┘
+                          │                  │
+                   ┌──────▼────┐    ┌────────▼──────┐
+                   │  backend   │    │  frontend     │
+                   │  CLI 19命令 │    │  TEA 架构     │
+                   │  (native)  │    │  (wasm-gc/js) │
+                   └──────┬─────┘    └───────────────┘
+                          │
+              ┌───────────┼───────────┐
+              │           │           │
+       ┌──────▼──────┐ ┌──▼───┐ ┌────▼────┐
+       │ persistence │ │ ml/  │ │  gis/   │
+       │ DataStore   │ │ LSTM │ │ DEM/河网│
+       │ + C FFI I/O │ │ 混合 │ │ 流域分析│
+       │ (native)    │ │ 预报 │ │         │
+       └─────────────┘ └──────┘ └─────────┘
 ```
 
 ### 四后端编译
@@ -94,11 +97,11 @@ cd moon_hydro
 # 编译检查
 moon check
 
-# 运行测试（四后端 × 315 测试）
+# 运行测试（四后端 × 339 测试）
 moon test --target wasm-gc
 moon test --target native
 
-# 运行后端 CLI（18 个子命令）
+# 运行后端 CLI（19 个子命令）
 moon run --target native backend
 
 # 运行性能基准测试
@@ -106,6 +109,9 @@ moon run --target native backend benchmark
 
 # 运行AI混合预报演示
 moon run --target native backend ai_forecast
+
+# 运行GIS接口演示
+moon run --target native backend gis
 ```
 
 ### CLI 子命令
@@ -128,6 +134,7 @@ moon run --target native backend ai_forecast
 | `benchmark` | 性能基准测试（10 项基准） |
 | `auth` | 权限框架演示（用户/鉴权/方案隔离） |
 | `ai_forecast` | AI 混合预报演示（LSTM 残差校正） |
+| `gis` | GIS 接口演示（DEM 流向/汇流累积/河网提取） |
 | `json` | JSON API 端到端演示 |
 | `demo` | 完整功能演示（默认） |
 
@@ -158,13 +165,17 @@ moon_hydro/
 │   ├── matrix.mbt              # 矩阵/向量运算
 │   ├── lstm.mbt                # LSTM 模型（前向传播/训练）
 │   └── hybrid.mbt              # 混合预报（物理+AI残差校正）
+├── gis/                        # GIS 接口层
+│   ├── types.mbt               # 基础类型（点/线/多边形/DEM/河网）
+│   ├── dem.mbt                 # DEM 分析（D8流向/汇流累积/流域delineation）
+│   └── river.mbt               # 河网处理（Strahler河序/拓扑排序/追溯）
 ├── persistence/                # 持久化存储层
 │   ├── store.mbt               # DataStore + JSON 序列化
 │   ├── file_io.mbt             # C FFI 文件 I/O（native）
 │   └── fileio.c                # C 实现
 ├── backend/                    # 后端 CLI
 │   ├── main.mbt               # 入口分发器
-│   └── cli.mbt                # 16 个子命令
+│   └── cli.mbt                # 19 个子命令
 ├── frontend/                   # 前端 TEA 架构
 │   ├── main.mbt               # 薄入口
 │   └── lib/                   # TEA 库包
@@ -231,7 +242,7 @@ moon_hydro/
 
 ## 开发路线
 
-详见 [roadmap.md](roadmap.md)。当前版本 **V0.6**，四后端 315 测试全通过。
+详见 [roadmap.md](roadmap.md)。当前版本 **V0.7**，四后端 339 测试全通过。
 
 | 版本 | 状态 | 核心内容 |
 |------|------|----------|
@@ -241,8 +252,9 @@ moon_hydro/
 | V0.4 | ✅ | 率定 + 批量仿真 + 流域校验 + CI/CD |
 | V0.5 | ✅ | 持久化 + 任务调度 + 性能基准 + 权限框架 |
 | V0.6 | ✅ | AI 混合预报（LSTM + 物理模型残差校正） |
+| V0.7 | ✅ | GIS 接口（DEM 分析 + 河网提取 + 流域 delineation） |
 | V1.0 | 待开发 | 文档完善 + 开源发布 |
-| V1.1 | 待开发 | 分布式 + GIS + 洪水淹没 + 实时数据 |
+| V1.1 | 待开发 | 分布式 + 洪水淹没 + 实时数据 |
 
 ---
 

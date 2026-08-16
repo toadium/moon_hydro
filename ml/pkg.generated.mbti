@@ -1,0 +1,131 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "toadium/moon_hydro/ml"
+
+import {
+  "moonbitlang/core/debug",
+  "moonbitlang/core/json",
+  "moonbitlang/core/quickcheck/splitmix",
+  "toadium/moon_hydro/shared",
+}
+
+// Values
+pub fn extract_rainfall(Array[@shared.ForcingData]) -> Array[Double]
+
+pub fn hybrid_forecast(HybridConfig, Array[Double], Array[Double]) -> HybridResult
+
+pub fn lstm_weight_count(LSTMConfig) -> Int
+
+pub fn mat_flatten(Array[Array[Double]]) -> Array[Double]
+
+pub fn mat_random(Int, Int, @splitmix.RandomState) -> Array[Array[Double]]
+
+pub fn mat_transpose(Array[Array[Double]]) -> Array[Array[Double]]
+
+pub fn mat_vec_mul(Array[Array[Double]], Array[Double]) -> Array[Double]
+
+pub fn mat_zeros(Int, Int) -> Array[Array[Double]]
+
+pub fn prepare_rainfall_runoff(Array[Double], Array[Double], Int) -> (Array[Array[Double]], Array[Array[Double]])
+
+pub fn prepare_sequences(Array[Double], Int) -> (Array[Array[Double]], Array[Array[Double]])
+
+pub fn sigmoid(Double) -> Double
+
+pub fn tanh_fn(Double) -> Double
+
+pub fn train_residual_lstm(HybridConfig, Array[Double], Array[Double]) -> LSTM
+
+pub fn vec_add(Array[Double], Array[Double]) -> Array[Double]
+
+pub fn vec_add_scalar(Array[Double], Double) -> Array[Double]
+
+pub fn vec_concat(Array[Double], Array[Double]) -> Array[Double]
+
+pub fn vec_denormalize(Array[Double], Double, Double) -> Array[Double]
+
+pub fn vec_dot(Array[Double], Array[Double]) -> Double
+
+pub fn vec_mean(Array[Double]) -> Double
+
+pub fn vec_mul(Array[Double], Array[Double]) -> Array[Double]
+
+pub fn vec_norm(Array[Double]) -> Double
+
+pub fn vec_normalize(Array[Double]) -> (Array[Double], Double, Double)
+
+pub fn vec_random(Int, @splitmix.RandomState) -> Array[Double]
+
+pub fn vec_reshape(Array[Double], Int, Int) -> Array[Array[Double]]
+
+pub fn vec_sigmoid(Array[Double]) -> Array[Double]
+
+pub fn vec_std(Array[Double]) -> Double
+
+pub fn vec_tanh(Array[Double]) -> Array[Double]
+
+pub fn vec_zeros(Int) -> Array[Double]
+
+// Errors
+
+// Types and methods
+pub(all) struct HybridConfig {
+  lstm_config : LSTMConfig
+  lookback : Int
+  n_forecast : Int
+  train_ratio : Double
+  seed : UInt64
+} derive(Default, ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct HybridResult {
+  physical_forecast : Array[Double]
+  ai_correction : Array[Double]
+  hybrid_forecast : Array[Double]
+  observed : Array[Double]
+  physical_nse : Double
+  hybrid_nse : Double
+  improvement : Double
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct LSTM {
+  config : LSTMConfig
+  weights : LSTMWeights
+} derive(ToJson, @debug.Debug, @json.FromJson)
+pub fn LSTM::forecast(Self, Array[Array[Double]], Int) -> Array[Array[Double]]
+pub fn LSTM::forward(Self, Array[Array[Double]]) -> Array[Array[Double]]
+pub fn LSTM::forward_with_state(Self, Array[Array[Double]]) -> (Array[Array[Double]], LSTMState)
+pub fn LSTM::mse(Self, Array[Array[Double]], Array[Array[Double]]) -> Double
+pub fn LSTM::new(LSTMConfig, seed? : UInt64) -> Self
+pub fn LSTM::step(Self, Array[Double], LSTMState) -> (Array[Double], LSTMState)
+pub fn LSTM::with_weights(LSTMConfig, LSTMWeights) -> Self
+
+pub(all) struct LSTMConfig {
+  input_dim : Int
+  hidden_dim : Int
+  output_dim : Int
+} derive(Default, ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct LSTMState {
+  h : Array[Double]
+  c : Array[Double]
+} derive(ToJson, @debug.Debug, @json.FromJson)
+pub fn LSTMState::initial(Int) -> Self
+
+pub(all) struct LSTMWeights {
+  w_i : Array[Array[Double]]
+  w_f : Array[Array[Double]]
+  w_g : Array[Array[Double]]
+  w_o : Array[Array[Double]]
+  b_i : Array[Double]
+  b_f : Array[Double]
+  b_g : Array[Double]
+  b_o : Array[Double]
+  w_out : Array[Array[Double]]
+  b_out : Array[Double]
+} derive(ToJson, @debug.Debug, @json.FromJson)
+pub fn LSTMWeights::flatten(Self) -> Array[Double]
+pub fn LSTMWeights::from_flat(Array[Double], LSTMConfig) -> Self
+pub fn LSTMWeights::random_init(LSTMConfig, seed? : UInt64) -> Self
+
+// Type aliases
+
+// Traits
