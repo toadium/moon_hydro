@@ -1,6 +1,6 @@
 import {
-  "toadium/moon_hydro/frontend/lib",
-  "toadium/moon_hydro/shared",
+  "walkzzz/moon_hydro/frontend/lib",
+  "walkzzz/moon_hydro/shared",
   "moonbitlang/core/json",
 }
 

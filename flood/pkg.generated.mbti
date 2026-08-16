@@ -1,11 +1,11 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "toadium/moon_hydro/flood"
+package "walkzzz/moon_hydro/flood"
 
 import {
   "moonbitlang/core/debug",
   "moonbitlang/core/json",
-  "toadium/moon_hydro/gis",
-  "toadium/moon_hydro/shared",
+  "walkzzz/moon_hydro/gis",
+  "walkzzz/moon_hydro/shared",
 }
 
 // Values

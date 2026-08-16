@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "toadium/moon_hydro/gis"
+package "walkzzz/moon_hydro/gis"
 
 import {
   "moonbitlang/core/debug",

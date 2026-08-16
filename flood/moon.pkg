@@ -1,6 +1,6 @@
 import {
-  "toadium/moon_hydro/shared",
-  "toadium/moon_hydro/gis",
+  "walkzzz/moon_hydro/shared",
+  "walkzzz/moon_hydro/gis",
   "moonbitlang/core/math",
   "moonbitlang/core/json",
 }
