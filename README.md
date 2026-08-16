@@ -6,8 +6,8 @@
 [![PR Check](https://github.com/toadium/moon_hydro/actions/workflows/pr-check.yml/badge.svg)](https://github.com/toadium/moon_hydro/actions/workflows/pr-check.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![MoonBit](https://img.shields.io/badge/MoonBit-0.1.20260713-blue)](https://moonbitlang.com)
-[![Tests](https://img.shields.io/badge/tests-282%20%C3%97%204%20backends-green)]()
-[![Version](https://img.shields.io/badge/version-0.5.0-orange)]()
+[![Tests](https://img.shields.io/badge/tests-315%20%C3%97%204%20backends-green)]()
+[![Version](https://img.shields.io/badge/version-0.6.0-orange)]()
 
 ---
 
@@ -32,6 +32,7 @@
 | **任务调度** | 批量仿真任务队列 + 进度回调 + 状态跟踪 |
 | **性能基准** | 10 项基准测试，均值/标准差/吞吐量统计 |
 | **权限框架** | 用户管理 + API 鉴权（Token） + 方案隔离（RBAC） |
+| **AI 混合预报** | LSTM 残差校正 + 物理模型+AI 混合预报 |
 
 ---
 
@@ -93,15 +94,18 @@ cd moon_hydro
 # 编译检查
 moon check
 
-# 运行测试（四后端 × 282 测试）
+# 运行测试（四后端 × 315 测试）
 moon test --target wasm-gc
 moon test --target native
 
-# 运行后端 CLI（17 个子命令）
+# 运行后端 CLI（18 个子命令）
 moon run --target native backend
 
 # 运行性能基准测试
 moon run --target native backend benchmark
+
+# 运行AI混合预报演示
+moon run --target native backend ai_forecast
 ```
 
 ### CLI 子命令
@@ -123,6 +127,7 @@ moon run --target native backend benchmark
 | `persistence` | 持久化存储演示（方案/结果/参数库 CRUD） |
 | `benchmark` | 性能基准测试（10 项基准） |
 | `auth` | 权限框架演示（用户/鉴权/方案隔离） |
+| `ai_forecast` | AI 混合预报演示（LSTM 残差校正） |
 | `json` | JSON API 端到端演示 |
 | `demo` | 完整功能演示（默认） |
 
@@ -149,6 +154,10 @@ moon_hydro/
 │   ├── benchmark.mbt           # 性能基准测试框架
 │   ├── auth.mbt                # 权限框架（用户/鉴权/方案隔离）
 │   └── serde_bind.mbt          # JSON 序列化
+├── ml/                         # AI 机器学习层
+│   ├── matrix.mbt              # 矩阵/向量运算
+│   ├── lstm.mbt                # LSTM 模型（前向传播/训练）
+│   └── hybrid.mbt              # 混合预报（物理+AI残差校正）
 ├── persistence/                # 持久化存储层
 │   ├── store.mbt               # DataStore + JSON 序列化
 │   ├── file_io.mbt             # C FFI 文件 I/O（native）
@@ -222,7 +231,7 @@ moon_hydro/
 
 ## 开发路线
 
-详见 [roadmap.md](roadmap.md)。当前版本 **V0.5**，四后端 282 测试全通过。
+详见 [roadmap.md](roadmap.md)。当前版本 **V0.6**，四后端 315 测试全通过。
 
 | 版本 | 状态 | 核心内容 |
 |------|------|----------|
@@ -230,9 +239,10 @@ moon_hydro/
 | V0.2 | ✅ | JSON API + 耦合 + 2D SWE + 时间序列 |
 | V0.3 | ✅ | 前端 TEA 架构 + 浏览器内试算 |
 | V0.4 | ✅ | 率定 + 批量仿真 + 流域校验 + CI/CD |
-| V0.5 | ✅ | 持久化 + 任务调度 + 性能基准 + 覆盖率提升 |
-| V1.0 | 待开发 | 文档完善 + 权限框架 + 开源发布 |
-| V1.1 | 待开发 | AI 预测 + 分布式 + GIS + 洪水淹没 |
+| V0.5 | ✅ | 持久化 + 任务调度 + 性能基准 + 权限框架 |
+| V0.6 | ✅ | AI 混合预报（LSTM + 物理模型残差校正） |
+| V1.0 | 待开发 | 文档完善 + 开源发布 |
+| V1.1 | 待开发 | 分布式 + GIS + 洪水淹没 + 实时数据 |
 
 ---
 

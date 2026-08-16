@@ -1,6 +1,8 @@
 import {
   "toadium/moon_hydro/shared",
   "toadium/moon_hydro/persistence",
+  "toadium/moon_hydro/ml",
+  "moonbitlang/core/math",
   "moonbitlang/core/env",
 }
 

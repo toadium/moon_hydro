@@ -5,9 +5,23 @@
 ## [Unreleased]
 
 ### 计划中
-- 全套文档完善（用户手册/API 文档/部署指南）
 - 性能优化与并行仿真（接入async库后）
 - mooncakes.io 包正式发布
+
+## [0.6.0] - 2026-08-16
+
+### 新增
+- AI机器学习模块 `ml/`：LSTM洪水预报 + 物理模型+AI混合预报
+  - `ml/matrix.mbt`：矩阵/向量运算（乘法/转置/sigmoid/tanh/归一化/Xavier初始化）
+  - `ml/lstm.mbt`：LSTM模型（前向传播/多步预报/权重展平/MSE目标函数）
+  - `ml/hybrid.mbt`：混合预报（物理模型残差学习+随机搜索训练+NSE改进评价）
+  - `ai_forecast` CLI子命令演示
+  - 33个测试用例（矩阵15+LSTM10+混合预报8）
+
+### 变更
+- 测试数量 282 → 315（native）/ 309（wasm-gc/wasm/js）
+- CLI子命令 17 → 18（新增 ai_forecast）
+- 新增 ml 包依赖到 backend
 
 ## [0.5.1] - 2026-08-16
 

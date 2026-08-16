@@ -57,6 +57,7 @@ fn cli_help() -> Unit {
   println("  bench       性能基准测试")
   println("  persistence 持久化存储演示(方案/结果/参数集)")
   println("  auth        权限框架演示(用户/鉴权/方案隔离)")
+  println("  ai_forecast AI混合预报演示(LSTM残差校正)")
   println("  help        显示此帮助信息")
   println("")
   println("用法: moon run -- [subcommand]")
@@ -521,6 +522,7 @@ fn cli_demo() -> Unit raise {
   print_cli_result(cli_bench())
   print_cli_result(cli_persistence())
   cli_auth()
+  cli_ai_forecast()
   println("\n" + repeat_str("=", 50))
   println("所有子命令执行完毕")
   cli_help()
@@ -725,4 +727,65 @@ fn cli_auth() -> Unit raise {
   println("登出: engineer1, viewer1 已登出")
   println(auth.stats())
   println("\n权限框架演示完成")
+}
+
+///|
+/// 子命令: ai_forecast - AI混合预报演示
+fn cli_ai_forecast() -> Unit {
+  println("沐澜水文 AI混合预报演示")
+  println(repeat_str("=", 50))
+  // 生成合成降雨-径流数据
+  let forcings : Array[@shared.ForcingData] = []
+  let observed : Array[Double] = []
+  for i in 0..<50 {
+    let r = if i < 10 {
+      20.0 - i.to_double()
+    } else if i < 30 {
+      5.0 + 10.0 * @math.sin(i.to_double() * 0.3)
+    } else {
+      3.0
+    }
+    forcings.push({ rainfall: r, evaporation: 1.0, datetime: "t\{i}" })
+    // 合成径流：非线性变换 + 噪声
+    let q = r * 0.8 + r * r * 0.01 + 2.0
+    observed.push(q)
+  }
+  println("生成合成数据: 50步降雨-径流序列")
+  // 物理模型预报（新安江）
+  let xaj_model = @shared.XinanjiangModel::new(
+    params=@shared.XinanjiangParams::default(),
+    area=100.0,
+    dt=1.0,
+  )
+  let sim_result = xaj_model.run(forcings)
+  let physical = sim_result.runoff_series
+  println("物理模型(新安江)预报完成: \{physical.length()}步")
+  // AI混合预报
+  let config : @ml.HybridConfig = {
+    lstm_config: { input_dim: 5, hidden_dim: 8, output_dim: 1 },
+    lookback: 5,
+    n_forecast: 5,
+    train_ratio: 0.6,
+    seed: 42,
+  }
+  println("LSTM配置: input=5, hidden=8, output=1, lookback=5")
+  let result = @ml.hybrid_forecast(config, physical, observed)
+  // 输出结果
+  println("\n--- 预报结果对比 ---")
+  println("物理模型NSE: \{result.physical_nse}")
+  println("混合预报NSE: \{result.hybrid_nse}")
+  println("NSE改进: \{result.improvement}")
+  // 显示部分预报值
+  println("\n--- 预报序列(后10步) ---")
+  let n = result.hybrid_forecast.length()
+  let start = if n > 10 { n - 10 } else { 0 }
+  println("步数  物理预报    AI校正    混合预报    观测值")
+  for i in start..<n {
+    let phys = result.physical_forecast[i]
+    let corr = result.ai_correction[i]
+    let hybrid = result.hybrid_forecast[i]
+    let obs = result.observed[i]
+    println("\{i}    \{phys}    \{corr}    \{hybrid}    \{obs}")
+  }
+  println("\nAI混合预报演示完成")
 }
