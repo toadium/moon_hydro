@@ -37,7 +37,7 @@ fn print_cli_result(result : CliResult) -> Unit {
 ///|
 /// 子命令: help - 显示帮助信息
 fn cli_help() -> Unit {
-  println("沐澜水文 V0.4 - 命令行子命令")
+  println("沐澜水文 V0.5 - 命令行子命令")
   println(repeat_str("=", 50))
   println("可用子命令:")
   println("  demo        完整功能演示(默认)")
@@ -55,6 +55,8 @@ fn cli_help() -> Unit {
   println("  metrics     扩展评价指标计算")
   println("  json        JSON API端到端演示")
   println("  bench       性能基准测试")
+  println("  persistence 持久化存储演示(方案/结果/参数集)")
+  println("  auth        权限框架演示(用户/鉴权/方案隔离)")
   println("  help        显示此帮助信息")
   println("")
   println("用法: moon run -- [subcommand]")
@@ -501,7 +503,7 @@ fn cli_json() -> CliResult raise {
 ///|
 /// 子命令: demo - 完整功能演示
 fn cli_demo() -> Unit raise {
-  println("沐澜水文 V0.4 - 完整功能演示")
+  println("沐澜水文 V0.5 - 完整功能演示")
   println(repeat_str("=", 50))
   print_cli_result(cli_sim())
   print_cli_result(cli_calibrate())
@@ -517,6 +519,8 @@ fn cli_demo() -> Unit raise {
   print_cli_result(cli_metrics())
   print_cli_result(cli_json())
   print_cli_result(cli_bench())
+  print_cli_result(cli_persistence())
+  cli_auth()
   println("\n" + repeat_str("=", 50))
   println("所有子命令执行完毕")
   cli_help()
@@ -532,4 +536,193 @@ fn cli_bench() -> CliResult {
     message: "性能基准测试完成",
     details: report,
   }
+}
+
+///|
+/// 子命令: persistence - 持久化存储演示
+fn cli_persistence() -> CliResult raise {
+  let store = @persistence.DataStore::new()
+  let now = @env.now()
+  // 保存仿真方案
+  let scheme : @persistence.SimulationScheme = {
+    id: @persistence.generate_id("scheme", now),
+    name: "闽江竹岐基准方案",
+    basin_name: "闽江竹岐",
+    area: 54500.0,
+    dt: 6.0,
+    params: @shared.XinanjiangParams::default(),
+    forcings: [
+      { rainfall: 10.0, evaporation: 2.0, datetime: "t0" },
+      { rainfall: 20.0, evaporation: 1.0, datetime: "t1" },
+    ],
+    created_at: now,
+    updated_at: now,
+  }
+  store.save_scheme(scheme)
+  // 保存参数集
+  let param_set : @persistence.ParameterSet = {
+    id: @persistence.generate_id("param", now),
+    name: "闽江默认参数",
+    basin_name: "闽江竹岐",
+    params: @shared.XinanjiangParams::default(),
+    description: "闽江竹岐流域默认新安江参数",
+    created_at: now,
+  }
+  store.save_param_set(param_set)
+  // 运行仿真并保存结果
+  let xaj_model = @shared.XinanjiangModel::new(
+    params=@shared.XinanjiangParams::default(),
+    area=100.0,
+    dt=1.0,
+  )
+  let forcings : Array[@shared.ForcingData] = [
+    { rainfall: 10.0, evaporation: 2.0, datetime: "t0" },
+    { rainfall: 20.0, evaporation: 1.0, datetime: "t1" },
+    { rainfall: 5.0, evaporation: 3.0, datetime: "t2" },
+  ]
+  let sim_result = xaj_model.run(forcings)
+  // 计算洪峰
+  let mut peak_flow = 0.0
+  let mut peak_time = 0
+  for i in 0..<sim_result.runoff_series.length() {
+    if sim_result.runoff_series[i] > peak_flow {
+      peak_flow = sim_result.runoff_series[i]
+      peak_time = i
+    }
+  }
+  let result_record : @persistence.ResultRecord = {
+    id: @persistence.generate_id("result", now),
+    scheme_id: scheme.id,
+    basin_name: "闽江竹岐",
+    peak_flow,
+    peak_time,
+    nse: sim_result.nse,
+    kge: sim_result.kge,
+    pbias: sim_result.pbias,
+    runoff_series: sim_result.runoff_series,
+    created_at: now,
+  }
+  store.save_result(result_record)
+  // JSON序列化演示
+  let json_str = store.to_json_string()
+  let json_preview = if json_str.length() > 300 {
+    json_str[0:300].to_owned() + "..."
+  } else {
+    json_str
+  }
+  // 反序列化验证
+  let store2 = @persistence.DataStore::from_json_string(json_str)
+  let stats = store2.stats()
+  {
+    command: "persistence",
+    success: true,
+    message: "持久化存储演示完成",
+    details: "统计: \{stats}\nJSON预览: \{json_preview}",
+  }
+}
+
+///|
+/// 子命令: auth - 权限框架演示
+fn cli_auth() -> Unit raise {
+  println("沐澜水文 权限框架演示")
+  println(repeat_str("=", 50))
+  let now = @env.now()
+  let auth = @shared.AuthManager::new()
+  // 注册用户
+  let admin_id = auth.register(
+    username="admin",
+    password="admin123",
+    role=@shared.Role::Admin,
+    timestamp=now,
+  )
+  let engineer_id = auth.register(
+    username="engineer1",
+    password="eng123",
+    role=@shared.Role::Engineer,
+    timestamp=now + 1UL,
+  )
+  let viewer_id = auth.register(
+    username="viewer1",
+    password="view123",
+    role=@shared.Role::Viewer,
+    timestamp=now + 2UL,
+  )
+  println(
+    "注册用户: admin(管理员), engineer1(工程师), viewer1(查看者)",
+  )
+  // 登录
+  let admin_token = auth.login(
+    username="admin",
+    password="admin123",
+    timestamp=now + 100UL,
+  )
+  let eng_token = auth.login(
+    username="engineer1",
+    password="eng123",
+    timestamp=now + 101UL,
+  )
+  let viewer_token = auth.login(
+    username="viewer1",
+    password="view123",
+    timestamp=now + 102UL,
+  )
+  println("登录成功: 3个用户均获取Token")
+  // 方案所有权
+  auth.grant_scheme_ownership(user_id=engineer_id, scheme_id="scheme_A")
+  auth.grant_scheme_ownership(
+    user_id=engineer_id,
+    scheme_id="scheme_B",
+    is_public=true,
+  )
+  auth.grant_scheme_ownership(user_id=admin_id, scheme_id="scheme_C")
+  println(
+    "方案所有权: engineer1拥有scheme_A(私有)+scheme_B(公开), admin拥有scheme_C",
+  )
+  // 权限检查
+  let admin_user = auth.users[admin_id]
+  let eng_user = auth.users[engineer_id]
+  let viewer_user = auth.users[viewer_id]
+  println("\n--- 权限检查 ---")
+  // Admin可以用户管理
+  auth.check_permission(admin_user, @shared.Permission::UserManage)
+  println("[OK] admin -> 用户管理权限")
+  // Engineer不能用户管理
+  let eng_perm = try {
+    auth.check_permission(eng_user, @shared.Permission::UserManage)
+    true
+  } catch {
+    _ => false
+  }
+  let eng_status = if eng_perm { "OK" } else { "DENY" }
+  println("[\{eng_status}] engineer1 -> 用户管理权限")
+  // 方案访问
+  println("\n--- 方案隔离 ---")
+  auth.check_scheme_access(eng_user, "scheme_A")
+  println("[OK] engineer1 -> 访问自己的scheme_A")
+  auth.check_scheme_access(viewer_user, "scheme_B")
+  println("[OK] viewer1 -> 只读访问公开scheme_B")
+  auth.check_scheme_access(admin_user, "scheme_A")
+  println("[OK] admin -> 访问任何scheme_A")
+  let viewer_access_private = try {
+    auth.check_scheme_access(viewer_user, "scheme_A")
+    true
+  } catch {
+    _ => false
+  }
+  let viewer_status = if viewer_access_private { "OK" } else { "DENY" }
+  println("[\{viewer_status}] viewer1 -> 访问私有scheme_A")
+  // 统计
+  println("\n--- 统计 ---")
+  println(auth.stats())
+  // Token验证
+  let verified = auth.verify_token(admin_token, current_time=now + 200UL)
+  println(
+    "Token验证: admin -> \{verified.username}(\{verified.role.to_string()})",
+  )
+  // 登出
+  assert_true(auth.logout(eng_token))
+  assert_true(auth.logout(viewer_token))
+  println("登出: engineer1, viewer1 已登出")
+  println(auth.stats())
+  println("\n权限框架演示完成")
 }

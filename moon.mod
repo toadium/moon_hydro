@@ -1,6 +1,6 @@
 name = "toadium/moon_hydro"
 
-version = "0.1.0"
+version = "0.5.1"
 
 readme = "README.md"
 

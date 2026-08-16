@@ -1,5 +1,7 @@
 import {
   "toadium/moon_hydro/shared",
+  "toadium/moon_hydro/persistence",
+  "moonbitlang/core/env",
 }
 
 pkgtype(kind: "executable")

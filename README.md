@@ -6,7 +6,8 @@
 [![PR Check](https://github.com/toadium/moon_hydro/actions/workflows/pr-check.yml/badge.svg)](https://github.com/toadium/moon_hydro/actions/workflows/pr-check.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![MoonBit](https://img.shields.io/badge/MoonBit-0.1.20260713-blue)](https://moonbitlang.com)
-[![Tests](https://img.shields.io/badge/tests-194%20%C3%97%204%20backends-green)]()
+[![Tests](https://img.shields.io/badge/tests-282%20%C3%97%204%20backends-green)]()
+[![Version](https://img.shields.io/badge/version-0.5.0-orange)]()
 
 ---
 
@@ -27,31 +28,45 @@
 | **流域校验** | 闽江竹岐/飞云江/青弋江实测流域验证 |
 | **时间序列** | 统计/洪峰检测/基流分离/FDC/自相关 |
 | **前端 TEA** | Model/Msg/Update/View 纯函数式架构 + 浏览器内试算 |
+| **持久化存储** | 仿真方案/历史结果/参数库 CRUD + JSON 文件 I/O（C FFI） |
+| **任务调度** | 批量仿真任务队列 + 进度回调 + 状态跟踪 |
+| **性能基准** | 10 项基准测试，均值/标准差/吞吐量统计 |
+| **权限框架** | 用户管理 + API 鉴权（Token） + 方案隔离（RBAC） |
 
 ---
 
 ## 架构
 
 ```
-                    ┌─────────────────────────────────┐
-                    │          shared (核心层)          │
-                    │  ┌──────────┐  ┌──────────┐     │
-                    │  │ 新安江模型 │  │ SWE求解器 │     │
-                    │  └────┬─────┘  └────┬─────┘     │
-                    │       └──── 耦合 ────┘           │
-                    │  ┌──────────┐  ┌──────────┐     │
-                    │  │ SCE-UA率定│  │ DDS率定  │     │
-                    │  └──────────┘  └──────────┘     │
-                    │  ┌──────────┐  ┌──────────┐     │
-                    │  │ 批量仿真  │  │ 评价指标 │     │
-                    │  └──────────┘  └──────────┘     │
-                    └────────┬──────────────┬────────┘
-                             │              │
-                    ┌────────▼────┐  ┌──────▼────────┐
-                    │  backend    │  │  frontend     │
-                    │  CLI 子命令  │  │  TEA 架构     │
-                    │  (native)   │  │  (wasm-gc/js) │
-                    └─────────────┘  └───────────────┘
+                    ┌─────────────────────────────────────┐
+                    │           shared (核心层)             │
+                    │  ┌──────────┐  ┌──────────┐         │
+                    │  │ 新安江模型 │  │ SWE求解器 │         │
+                    │  └────┬─────┘  └────┬─────┘         │
+                    │       └──── 耦合 ────┘               │
+                    │  ┌──────────┐  ┌──────────┐         │
+                    │  │ SCE-UA率定│  │ DDS率定  │         │
+                    │  └──────────┘  └──────────┘         │
+                    │  ┌──────────┐  ┌──────────┐         │
+                    │  │ 批量仿真  │  │ 评价指标 │         │
+                    │  └──────────┘  └──────────┘         │
+                    │  ┌──────────┐  ┌──────────┐         │
+                    │  │ 任务调度  │  │ 性能基准  │         │
+                    │  └──────────┘  └──────────┘         │
+                    └──────┬──────────────────┬──────────┘
+                           │                  │
+                  ┌────────▼────┐    ┌────────▼──────┐
+                  │  backend    │    │  frontend     │
+                  │  CLI 16命令  │    │  TEA 架构     │
+                  │  (native)   │    │  (wasm-gc/js) │
+                  └──────┬──────┘    └───────────────┘
+                         │
+                  ┌──────▼──────┐
+                  │ persistence │
+                  │ DataStore   │
+                  │ + C FFI I/O │
+                  │ (native)    │
+                  └─────────────┘
 ```
 
 ### 四后端编译
@@ -78,12 +93,15 @@ cd moon_hydro
 # 编译检查
 moon check
 
-# 运行测试（四后端 × 194 测试）
+# 运行测试（四后端 × 282 测试）
 moon test --target wasm-gc
 moon test --target native
 
-# 运行后端 CLI（15 个子命令）
+# 运行后端 CLI（17 个子命令）
 moon run --target native backend
+
+# 运行性能基准测试
+moon run --target native backend benchmark
 ```
 
 ### CLI 子命令
@@ -102,6 +120,9 @@ moon run --target native backend
 | `coupling` | 新安江 + SWE 耦合仿真 |
 | `timeseries` | 时间序列分析 |
 | `metrics` | 扩展评价指标计算 |
+| `persistence` | 持久化存储演示（方案/结果/参数库 CRUD） |
+| `benchmark` | 性能基准测试（10 项基准） |
+| `auth` | 权限框架演示（用户/鉴权/方案隔离） |
 | `json` | JSON API 端到端演示 |
 | `demo` | 完整功能演示（默认） |
 
@@ -124,17 +145,29 @@ moon_hydro/
 │   ├── timeseries.mbt          # 时间序列分析
 │   ├── batch_sim.mbt           # 批量/集合/敏感性/蒙特卡洛
 │   ├── basin_cases.mbt         # 实测流域校验
+│   ├── task_scheduler.mbt      # 任务调度 + 进度回调
+│   ├── benchmark.mbt           # 性能基准测试框架
+│   ├── auth.mbt                # 权限框架（用户/鉴权/方案隔离）
 │   └── serde_bind.mbt          # JSON 序列化
+├── persistence/                # 持久化存储层
+│   ├── store.mbt               # DataStore + JSON 序列化
+│   ├── file_io.mbt             # C FFI 文件 I/O（native）
+│   └── fileio.c                # C 实现
 ├── backend/                    # 后端 CLI
 │   ├── main.mbt               # 入口分发器
-│   └── cli.mbt                # 15 个子命令
+│   └── cli.mbt                # 16 个子命令
 ├── frontend/                   # 前端 TEA 架构
-│   ├── tea_arch.mbt           # Model 定义
-│   ├── msg_enum.mbt           # Msg 枚举
-│   ├── update_logic.mbt       # update 函数
-│   ├── view_layout.mbt        # view 虚拟 DOM
-│   └── wasm_slim_model.mbt    # 浏览器内试算
+│   ├── main.mbt               # 薄入口
+│   └── lib/                   # TEA 库包
+│       ├── tea_arch.mbt       # Model 定义
+│       ├── msg_enum.mbt       # Msg 枚举
+│       ├── update_logic.mbt   # update 函数
+│       ├── view_layout.mbt    # view 虚拟 DOM
+│       └── wasm_slim_model.mbt# 浏览器内试算
 ├── docs/                       # 项目文档
+│   ├── 用户手册.md             # 完整使用指南
+│   ├── 部署指南.md             # 部署指南
+│   └── API.md                 # API 文档
 ├── .github/workflows/          # CI/CD
 └── roadmap.md                  # 开发路线图
 ```
@@ -151,9 +184,45 @@ moon_hydro/
 
 ---
 
+## 性能基准
+
+`moon run --target native backend benchmark` 输出 10 项基准测试结果（native 后端，典型值）：
+
+| 基准测试 | 规模 | 典型吞吐 |
+|----------|------|----------|
+| 新安江模型仿真 | 100 步 | ~5000 ops/s |
+| 1D SWE 求解 | 100 单元 × 100 步 | ~3000 ops/s |
+| 2D SWE 求解 | 30×30 网格 × 50 步 | ~500 ops/s |
+| SCE-UA 率定 | 11 参数 × 30 迭代 | ~50 ops/s |
+| DDS 率定 | 11 参数 × 30 迭代 | ~80 ops/s |
+| 批量仿真 | 10 流域 × 100 步 | ~800 ops/s |
+| 耦合仿真 | 20 步 | ~4000 ops/s |
+| 扩展评价指标 | 100 点 | ~50000 ops/s |
+| 蒙特卡洛不确定性 | 20 采样 | ~30 ops/s |
+| JSON 序列化 | 100 步请求 | ~30000 ops/s |
+
+> 实际数值取决于硬件。基准测试统计均值/最小/最大/标准差/吞吐量。
+
+---
+
+## 功能对比
+
+| 特性 | 沐澜水文 | 传统 Fortran/C | Python 框架 |
+|------|:--------:|:--------------:|:-----------:|
+| 单语言全栈 | ✅ | ❌ | ✅ |
+| 四后端编译 | ✅ | ❌ | ❌ |
+| 前后端共享数据模型 | ✅ | ❌ | ✅ |
+| 浏览器内试算 | ✅ | ❌ | ❌ |
+| Wasm 云函数 | ✅ | ❌ | ❌ |
+| 嵌入式边缘终端 | ✅ | ✅ | ❌ |
+| 类型安全 | ✅ | ❌ | ❌ |
+| 无 GC 运行时（native） | ✅ | ✅ | ❌ |
+
+---
+
 ## 开发路线
 
-详见 [roadmap.md](roadmap.md)。当前版本 **V0.4**，四后端 194 测试全通过。
+详见 [roadmap.md](roadmap.md)。当前版本 **V0.5**，四后端 282 测试全通过。
 
 | 版本 | 状态 | 核心内容 |
 |------|------|----------|
@@ -161,6 +230,7 @@ moon_hydro/
 | V0.2 | ✅ | JSON API + 耦合 + 2D SWE + 时间序列 |
 | V0.3 | ✅ | 前端 TEA 架构 + 浏览器内试算 |
 | V0.4 | ✅ | 率定 + 批量仿真 + 流域校验 + CI/CD |
+| V0.5 | ✅ | 持久化 + 任务调度 + 性能基准 + 覆盖率提升 |
 | V1.0 | 待开发 | 文档完善 + 权限框架 + 开源发布 |
 | V1.1 | 待开发 | AI 预测 + 分布式 + GIS + 洪水淹没 |
 

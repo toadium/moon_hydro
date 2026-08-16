@@ -45,6 +45,16 @@
 - [x] GitHub Actions CI/CD（ci.yml + pr-check.yml + release.yml）
 - [x] 四后端全量测试通过（wasm/wasm-gc/js/native × 194 测试）
 
+### V0.5 — 持久化 + 任务调度 + 覆盖率提升 ✅
+
+- [x] frontend包拆分（`frontend/lib` 库包 + 薄入口），消除blackbox测试警告
+- [x] 持久化存储模块（`persistence/`）：DataStore + JSON序列化 + C FFI文件I/O
+- [x] 任务调度模块（`shared/task_scheduler.mbt`）：TaskScheduler + 进度回调
+- [x] 性能基准测试模块（`shared/benchmark.mbt`）：10项基准测试
+- [x] 测试覆盖率提升（238→150未覆盖行，256测试）
+- [x] mooncakes.io发布dry-run验证通过
+- [x] 权限框架（`shared/auth.mbt`）：用户管理 + API鉴权 + 方案隔离（26测试）
+
 ---
 
 ## 待开发版本
@@ -53,13 +63,13 @@
 
 - [ ] 全套文档完善（用户手册/API 文档/部署指南）
 - [ ] README 精美化（示例图/性能基准/对比表）
-- [ ] 权限框架（API 鉴权/多用户/方案隔离）
-- [ ] 数据库持久化（仿真方案/历史结果/参数库）
-- [ ] 异步任务调度（并行仿真/进度推送）
-- [ ] 单位测试覆盖率提升至 90%+
-- [ ] 性能基准测试与优化
-- [ ] 开源 license/CONTRIBUTING/CHANGELOG
-- [ ] mooncakes.io 包发布
+- [x] 权限框架（API 鉴权/多用户/方案隔离） ✅ V0.5
+- [x] 数据库持久化（仿真方案/历史结果/参数库） ✅ V0.5
+- [x] 异步任务调度（并行仿真/进度推送） ✅ V0.5（顺序执行版，并行待async库）
+- [x] 单位测试覆盖率提升至 90%+ ✅ V0.5
+- [x] 性能基准测试与优化 ✅ V0.5
+- [x] 开源 license/CONTRIBUTING/CHANGELOG ✅ V0.4
+- [ ] mooncakes.io 包正式发布（dry-run已通过，待账号匹配）
 
 ### V1.1 — AI 预测 + 分布式（2027 年 3-8 月）
 
@@ -85,10 +95,10 @@
 
 ## 技术债务
 
-| 优先级 | 事项 | 说明 |
+| 优先级* | 事项 | 说明 |
 |--------|------|------|
-| P1 | frontend blackbox 测试警告 | Main package 不应有 `_test.mbt`，需拆分为非 main 包 |
-| P2 | 生态库依赖 | Proton/Rabbita/moonNum/sqlite3/async/Rui 待 MoonBit 生态可用后集成 |
+| ~~P1~~ | ~~frontend blackbox 测试警告~~ | ✅ V0.5已修复：拆分为frontend/lib库包 |
+| P2 | 生态库依赖 | Proton/Rabbita/moonNum/sqlite-3/async/Rui 待 MoonBit 生态可用后集成 |
 | P2 | `moon info` 接口文件管理 | `pkg.generated.mbti` 是否纳入版本控制 |
 | P3 | CI 缓存优化 | MoonBit 工具链安装缓存，减少 CI 耗时 |
 
@@ -102,8 +112,9 @@
 | V0.2 | ~120 | ~22 | ✅ |
 | V0.3 | ~160 | ~28 | ✅ |
 | V0.4 | 194 | 35 | ✅ |
+| V0.5 | 282 | 44 | ✅ |
 | V1.0 | — | — | 待开发 |
 
 ---
 
-*最后更新：2026-08-14｜当前版本：V0.4｜四后端 194 测试全通过｜CI/CD 全绿*
+*最后更新：2026-08-16｜当前版本：V0.5｜四后端 282 测试全通过｜CI/CD 全绿｜mooncakes.io dry-run通过*

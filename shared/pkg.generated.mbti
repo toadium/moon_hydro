@@ -13,6 +13,10 @@ pub fn annual_maxima(Array[Double], year_length~ : Int) -> Array[Double]
 
 pub fn baseflow_separation(Array[Double], alpha? : Double, passes? : Int) -> Array[Double]
 
+pub fn bench(name~ : String, n_iters~ : Int, () -> Unit) -> BenchResult
+
+pub fn bench_suite(suite_name~ : String, Array[BenchResult]) -> BenchSuiteResult
+
 pub fn calibrate_basin_case(BasinCase, _algorithm? : String) -> CalibResult
 
 pub fn calibrate_json_endpoint(String) -> String raise
@@ -24,6 +28,10 @@ pub fn couple_json_endpoint(String) -> String raise
 pub fn couple_run(XinanjiangModel, SWEGrid1D, CouplingParams, SWEBoundary, Array[ForcingData], Double) -> CouplingResult
 
 pub fn couple_step(XinanjiangModel, SWEGrid1D, CouplingParams, SWEBoundary, ForcingData, XinanjiangState, Double) -> (XinanjiangState, SWEGrid1D, Double, Double)
+
+pub fn create_basin_tasks(Array[BasinCase]) -> Array[SimTask]
+
+pub fn create_task_from_basin(String, BasinCase) -> SimTask
 
 pub fn cumulative_sum(Array[Double]) -> Array[Double]
 
@@ -50,6 +58,10 @@ pub fn forecast_grade_nse(Double) -> ForecastGrade
 pub fn forecast_grade_pbias(Double, forecast_type~ : ForecastType) -> ForecastGrade
 
 pub fn forecast_grade_rsr(Double) -> ForecastGrade
+
+pub fn format_bench_result(BenchResult) -> String
+
+pub fn format_bench_suite(BenchSuiteResult) -> String
 
 pub fn generate_validation_report() -> ValidationReport
 
@@ -131,6 +143,8 @@ pub fn rmse(Array[Double], Array[Double]) -> Double
 
 pub fn rsr(Array[Double], Array[Double]) -> Double
 
+pub fn run_all_benchmarks() -> String
+
 pub fn run_batch_sim(Array[SimTask]) -> BatchSimResult
 
 pub fn run_calibrate(CalibrateRequest) -> CalibrateResponse
@@ -144,6 +158,10 @@ pub fn run_evaluate(EvaluateRequest) -> EvaluateResponse
 pub fn run_sim_task(SimTask) -> SimTaskResult
 
 pub fn run_swe(SweRunRequest) -> SweRunResponse
+
+pub fn run_task(SimTask) -> TaskExecResult
+
+pub fn run_tasks(Array[SimTask], (ProgressInfo) -> Unit) -> Array[TaskExecResult]
 
 pub fn run_xaj(XajRunRequest) -> XajRunResponse
 
@@ -247,6 +265,23 @@ pub(all) struct BatchSummaryStats {
   mean_peak_flow : Double
   total_volume : Double
 } derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct BenchResult {
+  name : String
+  iterations : Int
+  total_ms : Double
+  mean_ms : Double
+  min_ms : Double
+  max_ms : Double
+  stddev_ms : Double
+  ops_per_sec : Double
+}
+
+pub(all) struct BenchSuiteResult {
+  suite_name : String
+  results : Array[BenchResult]
+  total_ms : Double
+}
 
 pub(all) struct CalibConfig {
   algorithm : String
@@ -413,6 +448,13 @@ pub(all) struct MonteCarloResult {
   runoff_p95 : Array[Double]
 } derive(ToJson, @debug.Debug, @json.FromJson)
 
+pub(all) struct ProgressInfo {
+  completed : Int
+  total : Int
+  current_task_id : String
+  percentage : Double
+} derive(Default, ToJson, @debug.Debug, @json.FromJson)
+
 pub(all) struct SCEUAConfig {
   max_iter : Int
   n_complexes : Int
@@ -555,6 +597,38 @@ pub(all) struct SweRunResponse {
   final_h : Array[Double]
   final_hu : Array[Double]
 } derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct TaskExecResult {
+  task_id : String
+  success : Bool
+  result : SimResult?
+  error : String
+  duration_ms : UInt64
+} derive(Default, ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct TaskScheduler {
+  tasks : Array[SimTask]
+  results : Array[TaskExecResult]
+  status : Map[String, TaskStatus]
+} derive(ToJson, @debug.Debug, @json.FromJson)
+pub fn TaskScheduler::add_task(Self, SimTask) -> Unit
+pub fn TaskScheduler::add_tasks(Self, Array[SimTask]) -> Unit
+pub fn TaskScheduler::completed_count(Self) -> Int
+pub fn TaskScheduler::get_results(Self) -> Array[TaskExecResult]
+pub fn TaskScheduler::get_status(Self, String) -> TaskStatus?
+pub fn TaskScheduler::new() -> Self
+pub fn TaskScheduler::progress_report(Self) -> String
+pub fn TaskScheduler::run(Self, (ProgressInfo) -> Unit) -> Unit
+pub fn TaskScheduler::task_count(Self) -> Int
+pub impl Default for TaskScheduler
+
+pub(all) enum TaskStatus {
+  Pending
+  Running
+  Completed
+  Failed
+} derive(Eq, ToJson, @debug.Debug, @json.FromJson)
+pub impl Show for TaskStatus
 
 pub(all) enum TestScenario {
   FloodEvent

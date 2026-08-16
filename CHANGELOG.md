@@ -6,11 +6,51 @@
 
 ### 计划中
 - 全套文档完善（用户手册/API 文档/部署指南）
-- 权限框架（API 鉴权/多用户/方案隔离）
-- 数据库持久化（仿真方案/历史结果/参数库）
-- 异步任务调度（并行仿真/进度推送）
-- 性能基准测试与优化
-- mooncakes.io 包发布
+- 性能优化与并行仿真（接入async库后）
+- mooncakes.io 包正式发布
+
+## [0.5.1] - 2026-08-16
+
+### 新增
+- 权限框架模块 `shared/auth.mbt`：用户管理 + API鉴权 + 方案隔离
+  - `Role` 枚举（Admin/Engineer/Viewer）、`Permission` 枚举（7项权限）
+  - `AuthManager` 认证管理器：注册/登录/登出/Token验证
+  - 方案所有权隔离：`grant_scheme_ownership`/`check_scheme_access`/`make_scheme_public`
+  - 密码哈希（FNV-1a + splitmix）、Token生成（splitmix伪随机）
+  - `auth` CLI子命令演示
+  - 26个测试用例（角色权限/注册登录/Token验证/方案隔离/用户删除清理）
+
+### 变更
+- 测试数量 256 → 282（native）/ 276（wasm/wasm-gc/js）
+- CLI子命令 16 → 17（新增 auth）
+- API文档 150+ → 180+ 公开函数
+
+## [0.5.0] - 2026-08-15
+
+### 新增
+- 持久化存储模块 `persistence/`：仿真方案/历史结果/参数库的JSON文件持久化读写
+  - 内存DataStore + JSON序列化（全后端） + C FFI文件I/O（native）
+  - `DataStore` CRUD操作、`SimulationScheme`/`ResultRecord`/`ParameterSet` 数据类型
+  - `save_to_file`/`load_from_file` 文件持久化（native后端）
+  - `persistence` CLI子命令
+- 任务调度模块 `shared/task_scheduler.mbt`：批量仿真任务调度与进度推送
+  - `TaskScheduler` 调度器、`TaskStatus` 状态跟踪、`ProgressInfo` 进度信息
+  - `run_task`/`run_tasks` 带进度回调的批量执行
+  - `create_task_from_basin`/`create_basin_tasks` 流域任务创建
+- frontend包拆分：`frontend/lib` 库包 + `frontend` 薄入口，消除blackbox测试警告
+- backend CLI白盒测试（18个用例），覆盖所有子命令函数
+- frontend/lib TEA架构测试补充（16个用例），覆盖所有Msg变体与视图页面
+- 性能基准测试模块 `shared/benchmark.mbt`：10项基准测试 + `bench` CLI子命令
+
+### 修复
+- MoonBit API适配：`@json.to_json(value)` → `value.to_json()`，`Repr` → 字符串插值
+- frontend main package blackbox测试警告消除
+- `persistence/fileio.c` C FFI文件I/O（fopen/fread/fwrite/fclose）
+
+### 变更
+- 版本号 0.4.0 → 0.5.0
+- 测试数量 200 → 256（native）/ 250（wasm/wasm-gc/js）
+- 未覆盖代码行 238 → 150
 
 ## [0.4.0] - 2026-08-14
 

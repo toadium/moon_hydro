@@ -1,0 +1,10 @@
+import {
+  "toadium/moon_hydro/shared",
+  "moonbitlang/core/json",
+  "moonbitlang/core/encoding/utf8",
+}
+
+options(
+  "native-stub": [ "fileio.c" ],
+  targets: { "file_io.mbt": [ "native" ], "file_io_test.mbt": [ "native" ] },
+)

@@ -1,0 +1,91 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "toadium/moon_hydro/persistence"
+
+import {
+  "moonbitlang/core/debug",
+  "moonbitlang/core/json",
+  "toadium/moon_hydro/shared",
+}
+
+// Values
+pub fn file_exists(String) -> Bool
+
+pub fn generate_id(String, UInt64) -> String
+
+pub fn read_file(String) -> String raise
+
+pub fn write_file(String, String) -> Unit raise
+
+// Errors
+pub(all) suberror FileError {
+  FileNotFound(String)
+  WriteFailed(String)
+  ReadFailed(String)
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+// Types and methods
+pub(all) struct DataStore {
+  schemes : Map[String, SimulationScheme]
+  results : Array[ResultRecord]
+  param_sets : Map[String, ParameterSet]
+} derive(ToJson, @debug.Debug, @json.FromJson)
+pub fn DataStore::delete_param_set(Self, String) -> Bool
+pub fn DataStore::delete_scheme(Self, String) -> Bool
+pub fn DataStore::from_json_string(String) -> Self raise
+pub fn DataStore::list_all_results(Self) -> Array[ResultRecord]
+pub fn DataStore::list_param_sets(Self) -> Array[String]
+pub fn DataStore::list_results(Self, String) -> Array[ResultRecord]
+pub fn DataStore::list_schemes(Self) -> Array[String]
+pub fn DataStore::load_from_file(String) -> Self raise
+pub fn DataStore::load_param_set(Self, String) -> ParameterSet?
+pub fn DataStore::load_scheme(Self, String) -> SimulationScheme?
+pub fn DataStore::new() -> Self
+pub fn DataStore::save_param_set(Self, ParameterSet) -> Unit
+pub fn DataStore::save_result(Self, ResultRecord) -> Unit
+pub fn DataStore::save_scheme(Self, SimulationScheme) -> Unit
+pub fn DataStore::save_to_file(Self, String) -> Unit raise
+pub fn DataStore::stats(Self) -> String
+pub fn DataStore::to_json_string(Self) -> String
+pub impl Default for DataStore
+
+pub(all) struct ParameterSet {
+  id : String
+  name : String
+  basin_name : String
+  params : @shared.XinanjiangParams
+  description : String
+  created_at : UInt64
+} derive(Default, ToJson, @debug.Debug, @json.FromJson)
+pub fn ParameterSet::load_from_file(String) -> Self raise
+pub fn ParameterSet::save_to_file(Self, String) -> Unit raise
+
+pub(all) struct ResultRecord {
+  id : String
+  scheme_id : String
+  basin_name : String
+  peak_flow : Double
+  peak_time : Int
+  nse : Double
+  kge : Double
+  pbias : Double
+  runoff_series : Array[Double]
+  created_at : UInt64
+} derive(Default, ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) struct SimulationScheme {
+  id : String
+  name : String
+  basin_name : String
+  area : Double
+  dt : Double
+  params : @shared.XinanjiangParams
+  forcings : Array[@shared.ForcingData]
+  created_at : UInt64
+  updated_at : UInt64
+} derive(Default, ToJson, @debug.Debug, @json.FromJson)
+pub fn SimulationScheme::load_from_file(String) -> Self raise
+pub fn SimulationScheme::save_to_file(Self, String) -> Unit raise
+
+// Type aliases
+
+// Traits
