@@ -75,6 +75,17 @@
 - [x] 损失评估（`flood/damage.mbt`：JRC水深-损失率曲线/6种土地利用/损失统计）
 - [x] `flood` CLI子命令演示
 
+### V0.9 — 全面代码审查与修复 ✅
+
+- [x] 4路并行代码审查（shared/frontend+backend/ml+gis+flood/persistence+CI/CD+docs）
+- [x] 105 项问题发现（1P0 + 19P1 + 43P2 + 42P3）
+- [x] 102 项问题修复（3项P3合理跳过）
+- [x] P0 修复：dem_to_swe_grid 索引顺序修正（非方阵网格不再错位）
+- [x] P1 修复：C FFI 安全性、CLI argv 解析、评价功能实现、LSTM 优化等 19 项
+- [x] CI/CD 增强：工具链缓存、Release 测试门禁、SHA256 校验和、PR native 检查
+- [x] 新增 5 个回归测试，测试总数 368→373
+- [x] moon check 0 错误 0 警告，CI/CD 全绿
+
 ---
 
 ## 待开发版本
@@ -118,9 +129,12 @@
 | 优先级* | 事项 | 说明 |
 |--------|------|------|
 | ~~P1~~ | ~~frontend blackbox 测试警告~~ | ✅ V0.5已修复：拆分为frontend/lib库包 |
+| ~~P1~~ | ~~全面代码审查与修复~~ | ✅ V0.9已完成：102/105项修复 |
+| ~~P3~~ | ~~CI 缓存优化~~ | ✅ V0.9已修复：添加 actions/cache |
 | P2 | 生态库依赖 | Proton/Rabbita/moonNum/sqlite-3/async/Rui 待 MoonBit 生态可用后集成 |
 | P2 | `moon info` 接口文件管理 | `pkg.generated.mbti` 是否纳入版本控制 |
-| P3 | CI 缓存优化 | MoonBit 工具链安装缓存，减少 CI 耗时 |
+| P3 | moon.mod 包名与仓库 URL 组织不一致 | walkzzz vs toadium，变更需同步所有内部导入 |
+| P3 | CI 覆盖率报告 | MoonBit 工具链尚无内置覆盖率支持 |
 
 ---
 

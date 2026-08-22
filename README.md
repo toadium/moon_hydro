@@ -104,7 +104,7 @@ cd moon_hydro
 # 编译检查
 moon check
 
-# 运行测试（四后端 × 368 测试）
+# 运行测试（四后端 × 373 测试）
 moon test --target wasm-gc
 moon test --target native
 

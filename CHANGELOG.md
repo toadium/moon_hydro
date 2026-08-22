@@ -5,8 +5,60 @@
 ## [Unreleased]
 
 ### 计划中
-- 性能优化与并行仿真（接入async库后）
 - mooncakes.io 包正式发布
+- 分布式集群仿真调度
+
+## [0.9.0] - 2026-08-22
+
+### 综述
+全面代码审查与修复版本。4路并行审查发现 105 项问题（1P0+19P1+43P2+42P3），修复 102 项（3项P3合理跳过）。49 文件修改，+856 行，-351 行。测试 368→373（新增 5 回归测试），moon check 0 错误 0 警告，CI/CD 全绿。
+
+### 修复 — shared/ 核心算法（27项，7P1+12P2+8P3）
+- **P1**: step 函数路由状态丢失修复（xaj_core.mbt prev_qs/qi/qg 状态传递）
+- **P1**: DDS 率定 target_metric 配置生效（calibration.mbt 支持 NSE/KGE 选择）
+- **P1**: run_couple 返回 runoff_series（serde_bind.mbt API 层补全径流输出）
+- **P1**: mock_flood_rainfall duration=1 除零修复（test_data.mbt）
+- **P1**: HydroModel trait 泛化（状态类型参数化，支持 LSTM/SWE 等模型）
+- **P1**: 密码哈希安全性增强（auth.mbt 改用更强哈希策略）
+- **P1**: apply_boundary 不可变修复（swe_core.mbt 返回新网格而非就地修改）
+- **P2/P3**: 12 项 P2 + 8 项 P3 修复（数值稳定性、代码简化、测试补充等）
+
+### 修复 — frontend/ + backend/（24项，5P1+10P2+9P3）
+- **P1**: CLI argv 解析实现（20 个子命令可通过命令行调用）
+- **P1**: View 函数纯函数式修复（view_layout.mbt 移除 push 副作用）
+- **P1**: AddHistory 函数式修复（update_logic.mbt）
+- **P1**: RunEvaluation/EvaluationCompleted 评价功能实现
+- **P1**: CalibrationCompleted 率定结果存入状态
+- **P2/P3**: 10 项 P2 + 9 项 P3 修复（UI 改进、测试补充等）
+
+### 修复 — ml/ + gis/ + flood/（23项，1P0+3P1+10P2+9P3）
+- **P0**: dem_to_swe_grid 索引顺序修正（row*nx+col → i*ny+j，非方阵网格不再错位）
+- **P1**: train_residual_lstm 整合 SCE-UA 优化
+- **P1**: hybrid_forecast 时序上下文正确传递
+- **P1**: lookback/input_dim 隐式耦合修复
+- **P2/P3**: 10 项 P2 + 9 项 P3 修复（数值稳定性、测试补充等）
+
+### 修复 — persistence/ + CI/CD + 文档 + 配置（31项，4P1+11P2+16P3）
+- **P1**: C FFI 缓冲区溢出修复（fileio.c 添加 INT32_MAX 检查 + 1GB 大小上限）
+- **P1**: Release 测试门禁（release.yml 新增 test job，测试通过后才构建发布）
+- **P1**: README 测试数徽章修正（374→373）+ MoonBit 版本徽章更新
+- **P1**: docs/04-README.md 完全替换（从 V0.1-dev 更新至 V0.9）
+- **P2**: 空文件语义修复（新增 hydro_file_exists C FFI，区分空文件与文件不存在）
+- **P2**: 测试文件清理（新增 hydro_delete_file C FFI + delete_file 封装）
+- **P2**: CI/CD 工具链缓存（ci.yml/pr-check.yml/release.yml 添加 actions/cache）
+- **P2**: release.yml 移除 `|| true` 静默吞错
+- **P2**: .gitignore 补全（target/、.moon/、test_hydro_*.json 等）
+- **P2**: 3 份文档版本更新（技术文档/用户手册/部署指南）
+- **P3**: fclose 返回值检查、负值防御、冗余模式匹配简化、generate_id 验证
+- **P3**: 4 个边界测试（空文件/大内容/delete_file）
+- **P3**: CI 产物上传、PR native 检查、Release SHA256 校验和
+- **P3**: 3 项跳过（list_all_results 优化/CI 覆盖率/moon.mod 包名变更）
+
+### 变更
+- 版本号 0.8.0 → 0.9.0
+- 测试数量 368 → 373（wasm-gc），新增 5 回归测试
+- MoonBit 工具链版本 0.1.20260819
+- CI/CD 全绿，moon check 0 错误 0 警告
 
 ## [0.8.0] - 2026-08-16
 

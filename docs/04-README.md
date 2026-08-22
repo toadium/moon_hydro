@@ -6,8 +6,8 @@
 [![PR Check](https://github.com/toadium/moon_hydro/actions/workflows/pr-check.yml/badge.svg)](https://github.com/toadium/moon_hydro/actions/workflows/pr-check.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![MoonBit](https://img.shields.io/badge/MoonBit-0.1.20260819-blue)](https://moonbitlang.com)
-[![Tests](https://img.shields.io/badge/tests-368%20%C3%97%204%20backends-green)]()
-[![Version](https://img.shields.io/badge/version-0.8.0-orange)]()
+[![Tests](https://img.shields.io/badge/tests-373%20%C3%97%204%20backends-green)]()
+[![Version](https://img.shields.io/badge/version-0.9.0-orange)]()
 
 ---
 

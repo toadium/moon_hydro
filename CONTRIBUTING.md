@@ -6,7 +6,7 @@
 
 ### 前置要求
 
-- [MoonBit](https://moonbitlang.com) 工具链 >= 0.1.20260713
+- [MoonBit](https://moonbitlang.com) 工具链 >= 0.1.20260819
 - [Git](https://git-scm.com/)
 
 ### 本地开发
@@ -83,7 +83,7 @@ type 可选值:
 示例：
 - `feat: 添加SCE-UA全局优化率定算法`
 - `fix: 修复DDS率定空参数除零崩溃`
-- `docs: 更新技术文档反映V0.4进展`
+- `docs: 更新技术文档反映V0.9进展`
 
 ## Pull Request 流程
 
