@@ -275,5 +275,3 @@ pub fn extract_network_from_dem(
   network.compute_strahler_orders()
   network
 }
-
-

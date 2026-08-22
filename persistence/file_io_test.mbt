@@ -9,7 +9,11 @@ test "write_file/read_file 基本文件读写" {
   let read_back = read_file(path)
   assert_eq(read_back, content)
   // P2-4: 测试清理
-  try delete_file(path) catch { _ => () } noraise { _ => () }
+  try delete_file(path) catch {
+    _ => ()
+  } noraise {
+    _ => ()
+  }
 }
 
 ///|
@@ -19,7 +23,11 @@ test "file_exists 文件存在检查" {
   assert_true(file_exists(path))
   assert_false(file_exists("nonexistent_file_xyz.json"))
   // P2-4: 测试清理
-  try delete_file(path) catch { _ => () } noraise { _ => () }
+  try delete_file(path) catch {
+    _ => ()
+  } noraise {
+    _ => ()
+  }
 }
 
 ///|
@@ -95,7 +103,11 @@ test "DataStore save_to_file/load_from_file" {
   guard loaded_param is Some(p) else { fail("参数集未找到") }
   assert_eq(p.name, "文件测试参数集")
   // P2-4: 测试清理
-  try delete_file(file_path) catch { _ => () } noraise { _ => () }
+  try delete_file(file_path) catch {
+    _ => ()
+  } noraise {
+    _ => ()
+  }
 }
 
 ///|
@@ -118,7 +130,11 @@ test "SimulationScheme save_to_file/load_from_file" {
   assert_eq(loaded.basin_name, "飞云江")
   assert_true((loaded.area - 1930.0).abs() < 0.001)
   // P2-4: 测试清理
-  try delete_file(path) catch { _ => () } noraise { _ => () }
+  try delete_file(path) catch {
+    _ => ()
+  } noraise {
+    _ => ()
+  }
 }
 
 ///|
@@ -138,7 +154,11 @@ test "ParameterSet save_to_file/load_from_file" {
   assert_eq(loaded.basin_name, "青弋江")
   assert_eq(loaded.description, "青弋江流域参数")
   // P2-4: 测试清理
-  try delete_file(path) catch { _ => () } noraise { _ => () }
+  try delete_file(path) catch {
+    _ => ()
+  } noraise {
+    _ => ()
+  }
 }
 
 ///|
@@ -152,7 +172,11 @@ test "write_file/read_file 空文件读写" {
   let content = read_file(path)
   assert_eq(content, "")
   // 测试清理
-  try delete_file(path) catch { _ => () } noraise { _ => () }
+  try delete_file(path) catch {
+    _ => ()
+  } noraise {
+    _ => ()
+  }
 }
 
 ///|
@@ -162,7 +186,11 @@ test "file_exists 空文件返回true" {
   write_file(path, "")
   assert_true(file_exists(path))
   // 测试清理
-  try delete_file(path) catch { _ => () } noraise { _ => () }
+  try delete_file(path) catch {
+    _ => ()
+  } noraise {
+    _ => ()
+  }
 }
 
 ///|
@@ -179,7 +207,11 @@ test "write_file/read_file 大内容读写" {
   let read_back = read_file(path)
   assert_eq(read_back.length(), content.length())
   // 测试清理
-  try delete_file(path) catch { _ => () } noraise { _ => () }
+  try delete_file(path) catch {
+    _ => ()
+  } noraise {
+    _ => ()
+  }
 }
 
 ///|

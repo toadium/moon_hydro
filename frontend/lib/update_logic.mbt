@@ -125,10 +125,7 @@ pub fn update(model : AppModel, msg : Msg) -> AppModel {
     ToggleChart =>
       {
         ..model,
-        ui_state: {
-          ..model.ui_state,
-          show_chart: !model.ui_state.show_chart,
-        },
+        ui_state: { ..model.ui_state, show_chart: !model.ui_state.show_chart },
       }
     SetChartType(ct) =>
       { ..model, ui_state: { ..model.ui_state, chart_type: ct } }

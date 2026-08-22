@@ -208,7 +208,11 @@ fn view_history(history : Array[HistoryEntry]) -> ViewNode {
       h.timestamp,
       h.action,
       h.basin_name,
-      if h.success { "成功" } else { "失败" },
+      if h.success {
+        "成功"
+      } else {
+        "失败"
+      },
     ]
   })
   VTable(headers, rows)

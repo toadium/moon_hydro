@@ -37,7 +37,14 @@ pub(all) struct CalibResult {
 ///|
 /// 构造默认DDS配置
 pub fn DDSConfig::default() -> DDSConfig {
-  { max_iter: 1000, r: 0.2, seed: 42, target_metric: "nse", params: [], max_no_improve: 100 }
+  {
+    max_iter: 1000,
+    r: 0.2,
+    seed: 42,
+    target_metric: "nse",
+    params: [],
+    max_no_improve: 100,
+  }
 }
 
 ///|
@@ -246,7 +253,12 @@ pub fn dds_calibrate(
   }
   // 初始目标函数值
   let mut best_metric = objective_nse(
-    current_params, area, dt, forcings, observed, config.target_metric,
+    current_params,
+    area,
+    dt,
+    forcings,
+    observed,
+    config.target_metric,
   )
   let mut best_params : Array[CalibParam] = []
   for p in current_params {
@@ -268,7 +280,12 @@ pub fn dds_calibrate(
     let candidate = dds_perturb(current_params, dim, config.r, rng)
     // 计算新目标函数值
     let candidate_metric = objective_nse(
-      candidate, area, dt, forcings, observed, config.target_metric,
+      candidate,
+      area,
+      dt,
+      forcings,
+      observed,
+      config.target_metric,
     )
     // 接受准则：如果更好则更新
     if candidate_metric < best_metric {
