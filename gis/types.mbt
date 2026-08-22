@@ -156,7 +156,7 @@ pub fn RiverNetwork::downstream_reaches(
 }
 
 ///|
-/// 计算多边形面积（Shoelace公式）
+/// 计算多边形面积（Shoelace公式，返回绝对值）
 pub fn polygon_area(polygon : Polygon) -> Double {
   let pts = polygon.exterior
   let n = pts.length()
@@ -168,7 +168,12 @@ pub fn polygon_area(polygon : Polygon) -> Double {
     let j = (i + 1) % n
     sum = sum + pts[i].x * pts[j].y - pts[j].x * pts[i].y
   }
-  sum / 2.0
+  // 取绝对值，避免顶点顺序（CW/CCW）导致负面积
+  if sum < 0.0 {
+    -sum / 2.0
+  } else {
+    sum / 2.0
+  }
 }
 
 ///|

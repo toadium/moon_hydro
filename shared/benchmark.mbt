@@ -192,6 +192,7 @@ pub fn run_all_benchmarks() -> String {
     seed: 42,
     target_metric: "nse",
     params: default_calib_params(),
+    max_no_improve: 100,
   }
   let dds_bench = bench(name="DDS率定(11参数x30迭代)", n_iters=5, fn() {
     ignore(dds_calibrate(dds_cfg, area=100.0, dt=1.0, xaj_forcings, obs))

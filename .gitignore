@@ -1,9 +1,19 @@
 # MoonBit build artifacts
 _build/
+target/
+
+# MoonBit toolchain
+.moon/
+
+# Test artifacts
+test_hydro_*.json
 
 # IDE
 .codeartsdoer/
+.vscode/
+.idea/
 
 # OS
 Thumbs.db
 Desktop.ini
+.DS_Store

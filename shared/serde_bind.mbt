@@ -94,11 +94,16 @@ pub fn run_couple(request : CoupleRunRequest) -> CoupleRunResponse {
     request.forcings,
     request.swe_dt,
   )
+  // P1-3修复：从xaj_states提取径流过程
+  let runoff_series : Array[Double] = []
+  for state in result.xaj_states {
+    runoff_series.push(state.q)
+  }
   {
     lateral_inflow_series: result.lateral_inflow_series,
     water_level_series: result.water_level_series,
     stable: result.stable,
-    runoff_series: [],
+    runoff_series,
   }
 }
 

@@ -36,6 +36,7 @@ pub(all) struct SimTaskResult {
   nse : Double // NSE(若有观测)
   kge : Double // KGE(若有观测)
   pbias : Double // PBIAS(若有观测)
+  has_obs : Bool // P2-9修复：标记是否有观测数据
   success : Bool // 是否成功
   error_message : String // 错误信息
 } derive(Debug, ToJson, FromJson)
@@ -107,6 +108,7 @@ pub fn run_sim_task(task : SimTask) -> SimTaskResult {
     nse: nse_val,
     kge: kge_val,
     pbias: pbias_val,
+    has_obs,
     success: true,
     error_message: "",
   }
@@ -155,7 +157,8 @@ fn compute_batch_summary(results : Array[SimTaskResult]) -> BatchSummaryStats {
   let mut worst_nse = 1000000000.0
   let mut valid_count = 0
   for r in results {
-    if r.success && r.nse != 0.0 {
+    // P2-9修复：使用has_obs标志替代nse!=0.0过滤
+    if r.success && r.has_obs {
       nse_sum = nse_sum + r.nse
       kge_sum = kge_sum + r.kge
       pbias_sum = pbias_sum + r.pbias

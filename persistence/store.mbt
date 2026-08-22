@@ -79,10 +79,7 @@ pub fn DataStore::load_scheme(
   self : DataStore,
   id : String,
 ) -> SimulationScheme? {
-  match self.schemes.get(id) {
-    Some(s) => Some(s)
-    None => None
-  }
+  self.schemes.get(id)
 }
 
 ///|

@@ -57,6 +57,8 @@ pub fn prepare_sequences(
 ///
 /// 输入：[rainfall_t, rainfall_{t+1}, ..., rainfall_{t+lookback-1}]
 /// 目标：[runoff_{t+lookback}]
+/// P3-8：每个输入包含2*lookback个元素（runoff+rainfall交替），
+/// 调用方应确保LSTMConfig.input_dim == 2*lookback
 pub fn prepare_rainfall_runoff(
   rainfall : Array[Double],
   runoff : Array[Double],
@@ -86,7 +88,11 @@ pub fn prepare_rainfall_runoff(
 }
 
 ///|
-/// 训练LSTM残差模型（使用SCE-UA优化权重）
+/// 训练LSTM残差模型（多起点随机搜索 + 自适应扰动优化）
+///
+/// 采用多起点全局搜索 + 自适应步长局部微调策略优化LSTM权重。
+/// 注：shared/sceua_calibrate 为新安江模型专用率定接口，
+/// 此处使用通用多起点优化，待 shared 提供通用 SCE-UA 接口后可升级。
 ///
 /// physical_forecast: 物理模型预报序列
 /// observed: 观测序列
@@ -112,12 +118,14 @@ pub fn train_residual_lstm(
   if inputs.length() == 0 {
     return LSTM::new(config.lstm_config, seed=config.seed)
   }
-  // 用随机搜索 + 局部微调优化LSTM权重
+  // 多起点随机搜索 + 自适应步长局部微调
   let weight_count = lstm_weight_count(config.lstm_config)
   let rng = @splitmix.new(seed=config.seed)
   let mut best_mse = 999999.0
   let mut best_flat : Array[Double] = []
-  for _ in 0..<20 {
+  // 全局搜索：50个随机起点
+  let n_global = 50
+  for _ in 0..<n_global {
     let flat : Array[Double] = []
     for _ in 0..<weight_count {
       flat.push((rng.next_double() * 2.0 - 1.0) * 0.5)
@@ -130,24 +138,45 @@ pub fn train_residual_lstm(
       best_flat = flat
     }
   }
-  // 局部微调：在最优解附近随机扰动
+  // 自适应局部微调：逐步缩小扰动范围
   if best_flat.length() > 0 {
-    for _ in 0..<30 {
-      let flat : Array[Double] = []
-      for i in 0..<weight_count {
-        let perturb = (rng.next_double() * 2.0 - 1.0) * 0.1
-        flat.push(best_flat[i] + perturb)
+    let n_local_rounds = 5
+    let n_perturb_per_round = 30
+    for round in 0..<n_local_rounds {
+      // 扰动幅度从0.1递减到0.01
+      let perturb_scale = 0.1 * @math.pow(0.5, round.to_double())
+      let mut improved = false
+      for _ in 0..<n_perturb_per_round {
+        let flat : Array[Double] = []
+        for i in 0..<weight_count {
+          let perturb = (rng.next_double() * 2.0 - 1.0) * perturb_scale
+          flat.push(best_flat[i] + perturb)
+        }
+        let weights = LSTMWeights::from_flat(flat, config.lstm_config)
+        let lstm = LSTM::with_weights(config.lstm_config, weights)
+        let mse = lstm.mse(inputs, targets)
+        if mse < best_mse {
+          best_mse = mse
+          best_flat = flat
+          improved = true
+        }
       }
-      let weights = LSTMWeights::from_flat(flat, config.lstm_config)
-      let lstm = LSTM::with_weights(config.lstm_config, weights)
-      let mse = lstm.mse(inputs, targets)
-      if mse < best_mse {
-        best_mse = mse
-        best_flat = flat
+      // 若本轮无改进，提前终止局部搜索
+      if !improved {
+        break
       }
     }
   }
   if best_flat.length() > 0 {
+    // P3-9：权重裁剪（clipping），防止极端权重值导致数值不稳定
+    let weight_bound = 5.0
+    for i in 0..<best_flat.length() {
+      if best_flat[i] > weight_bound {
+        best_flat[i] = weight_bound
+      } else if best_flat[i] < -weight_bound {
+        best_flat[i] = -weight_bound
+      }
+    }
     let best_weights = LSTMWeights::from_flat(best_flat, config.lstm_config)
     LSTM::with_weights(config.lstm_config, best_weights)
   } else {
@@ -172,24 +201,41 @@ pub fn hybrid_forecast(
   let test_start = if train_n < n { train_n } else { 0 }
   // 对测试段进行残差预报
   let ai_correction : Array[Double] = []
+  // P1-2修复：维护持久LSTM状态，避免每步从initial开始导致时序信息丢失
+  let mut lstm_state = LSTMState::initial(config.lstm_config.hidden_dim)
+  // P1-3修复：验证lookback与input_dim的兼容性
+  let input_dim = config.lstm_config.input_dim
+  let lookback = config.lookback
   for i in test_start..<n {
     // 用过去lookback步的残差作为输入
     let input : Array[Double] = []
-    for j in 0..<config.lookback {
-      let idx = i - config.lookback + j
+    for j in 0..<lookback {
+      let idx = i - lookback + j
       if idx >= 0 && idx < observed.length() && idx < physical_forecast.length() {
         input.push(observed[idx] - physical_forecast[idx])
       } else {
         input.push(0.0)
       }
     }
-    if input.length() == config.lstm_config.input_dim {
-      let state = LSTMState::initial(config.lstm_config.hidden_dim)
-      let (y_t, _) = lstm.step(input, state)
-      ai_correction.push(if y_t.length() > 0 { y_t[0] } else { 0.0 })
+    // P1-3修复：当lookback≠input_dim时，通过填充/截断使输入维度匹配
+    let adjusted_input : Array[Double] = []
+    if input.length() >= input_dim {
+      // 截断：取前input_dim个
+      for k in 0..<input_dim {
+        adjusted_input.push(input[k])
+      }
     } else {
-      ai_correction.push(0.0)
+      // 填充：用0.0补齐到input_dim
+      for v in input {
+        adjusted_input.push(v)
+      }
+      for _ in input.length()..<input_dim {
+        adjusted_input.push(0.0)
+      }
     }
+    let (y_t, new_state) = lstm.step(adjusted_input, lstm_state)
+    lstm_state = new_state
+    ai_correction.push(if y_t.length() > 0 { y_t[0] } else { 0.0 })
   }
   // 补齐前段
   let full_correction : Array[Double] = []

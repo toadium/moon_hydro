@@ -134,11 +134,17 @@ fn lax_friedrichs_flux(
 }
 
 ///|
-/// 应用边界条件（直接修改grid的边界单元）
-fn apply_boundary(grid : SWEGrid1D, boundary : SWEBoundary) -> Unit {
-  let h = grid.h
-  let hu = grid.hu
+/// 应用边界条件（返回新网格，不修改输入）
+/// P1-7修复：不再就地修改输入grid，改为返回副本
+fn apply_boundary(grid : SWEGrid1D, boundary : SWEBoundary) -> SWEGrid1D {
   let nx = grid.nx
+  // 复制数组避免修改原grid
+  let h = Array::make(nx, 0.0)
+  let hu = Array::make(nx, 0.0)
+  for i in 0..<nx {
+    h[i] = grid.h[i]
+    hu[i] = grid.hu[i]
+  }
   // 左边界
   match boundary.left {
     Transmissive => {
@@ -169,6 +175,7 @@ fn apply_boundary(grid : SWEGrid1D, boundary : SWEBoundary) -> Unit {
       hu[nx - 1] = 0.0
     }
   }
+  { ..grid, h, hu }
 }
 
 ///|
@@ -182,18 +189,18 @@ pub fn SWEGrid1D::step_lf(
 ) -> SWEGrid1D {
   let nx = self.nx
   let dx = self.dx
-  // 应用边界条件
-  apply_boundary(self, boundary)
+  // P1-7修复：使用apply_boundary返回的副本进行通量计算
+  let bounded = apply_boundary(self, boundary)
   // 计算所有界面通量（i=0..nx-2，共nx-1个界面）
   let n_faces = nx - 1
   let f1_arr : Array[Double] = Array::make(n_faces, 0.0)
   let f2_arr : Array[Double] = Array::make(n_faces, 0.0)
   for i in 0..<n_faces {
     let (f1, f2) = lax_friedrichs_flux(
-      self.h[i],
-      self.hu[i],
-      self.h[i + 1],
-      self.hu[i + 1],
+      bounded.h[i],
+      bounded.hu[i],
+      bounded.h[i + 1],
+      bounded.hu[i + 1],
     )
     f1_arr[i] = f1
     f2_arr[i] = f2
@@ -202,20 +209,20 @@ pub fn SWEGrid1D::step_lf(
   let h_new = Array::make(nx, 0.0)
   let hu_new = Array::make(nx, 0.0)
   for i in 0..<nx {
-    h_new[i] = self.h[i]
-    hu_new[i] = self.hu[i]
+    h_new[i] = bounded.h[i]
+    hu_new[i] = bounded.hu[i]
   }
   let n_inner = nx - 1
   for i in 1..<n_inner {
     // 守恒变量更新：U_i^{n+1} = U_i^n - dt/dx * (F_{i+1/2} - F_{i-1/2})
-    h_new[i] = self.h[i] - dt / dx * (f1_arr[i] - f1_arr[i - 1])
-    hu_new[i] = self.hu[i] - dt / dx * (f2_arr[i] - f2_arr[i - 1])
+    h_new[i] = bounded.h[i] - dt / dx * (f1_arr[i] - f1_arr[i - 1])
+    hu_new[i] = bounded.hu[i] - dt / dx * (f2_arr[i] - f2_arr[i - 1])
     // 源项：底坡 + Manning摩阻
-    let dz = self.z[i + 1] - self.z[i - 1]
+    let dz = bounded.z[i + 1] - bounded.z[i - 1]
     let h_avg = h_new[i]
-    if h_avg > 0.000001 {
+    if h_avg > 0.001 {
       let u_avg = hu_new[i] / h_avg
-      let n_val = self.n_manning[i]
+      let n_val = bounded.n_manning[i]
       // 底坡源项：-gh∂z/∂x
       let s_bed = -g_gravity * h_avg * dz / (2.0 * dx)
       // Manning摩阻源项：-g*n²*u*|u|/h^(4/3)
@@ -233,11 +240,11 @@ pub fn SWEGrid1D::step_lf(
       hu_new[i] = 0.0
     }
   }
-  // 边界单元保持
-  h_new[0] = self.h[0]
-  hu_new[0] = self.hu[0]
-  h_new[nx - 1] = self.h[nx - 1]
-  hu_new[nx - 1] = self.hu[nx - 1]
+  // 边界单元使用已应用边界条件的值
+  h_new[0] = bounded.h[0]
+  hu_new[0] = bounded.hu[0]
+  h_new[nx - 1] = bounded.h[nx - 1]
+  hu_new[nx - 1] = bounded.hu[nx - 1]
   { nx, dx, h: h_new, hu: hu_new, z: self.z, n_manning: self.n_manning }
 }
 

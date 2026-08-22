@@ -141,6 +141,8 @@ fn apply_water_level_feedback(
 /// 3. SWE模型单步推进
 /// 4. SWE河道水位 → 反馈新安江地下水储量
 /// 返回更新后的新安江状态和SWE网格
+/// P2-8说明：swe_dt为固定步长，未做CFL自适应检查
+/// P3-7说明：返回四元组(XinanjiangState, SWEGrid1D, Double, Double)可读性较差
 pub fn couple_step(
   xaj_model : XinanjiangModel,
   swe_grid : SWEGrid1D,
@@ -222,6 +224,9 @@ pub fn couple_run(
       rg: new_xaj.rg,
       e: new_xaj.e,
       q: new_xaj.q,
+      qs: new_xaj.qs,
+      qi: new_xaj.qi,
+      qg: new_xaj.qg,
     })
     let h_copy = Array::make(new_swe.nx, 0.0)
     let hu_copy = Array::make(new_swe.nx, 0.0)
@@ -249,6 +254,9 @@ pub fn couple_run(
     xaj_state.rg = new_xaj.rg
     xaj_state.e = new_xaj.e
     xaj_state.q = new_xaj.q
+    xaj_state.qs = new_xaj.qs
+    xaj_state.qi = new_xaj.qi
+    xaj_state.qg = new_xaj.qg
     current_swe = new_swe
   }
   {

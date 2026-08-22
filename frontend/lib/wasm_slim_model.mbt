@@ -48,7 +48,8 @@ pub fn slim_run(request : SlimSimRequest) -> SlimSimResponse {
     forcings.push({
       rainfall: request.rainfall[i],
       evaporation: request.evaporation[i],
-      datetime: "t\{i}",
+      // P2-9修复：使用ISO格式时间戳，与backend保持一致
+      datetime: "2026-09-01T\{if i < 10 { "0" } else { "" } }\{i}:00",
     })
   }
   // 使用默认参数运行仿真

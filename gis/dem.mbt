@@ -60,6 +60,7 @@ let d8_distances : Array[Double] = [
 /// 计算D8流向
 ///
 /// 对每个单元，找出8邻域中高程最低（最大落差）的方向
+/// P3-4：平坦区域（无落差）方向设为0，后续汇流累积中作为洼地处理
 pub fn compute_flow_direction(dem : DEMGrid) -> FlowDirection {
   let dirs : Array[Array[Int]] = []
   for _ in 0..<dem.ny {
@@ -165,6 +166,15 @@ pub fn compute_flow_accumulation(fd : FlowDirection) -> FlowAccumulation {
       }
     }
   }
+  // P2-5修复：处理洼地/循环中的未处理单元
+  // 拓扑排序后仍有in_count>0的单元属于循环或洼地，赋予基础累积值1
+  for i in 0..<fd.ny {
+    for j in 0..<fd.nx {
+      if in_count[i][j] > 0 && accum[i][j] == 0 {
+        accum[i][j] = 1
+      }
+    }
+  }
   { nx: fd.nx, ny: fd.ny, accum }
 }
 
@@ -245,20 +255,28 @@ pub fn extract_river_network(
 
 ///|
 /// 计算DEM统计信息
+/// P3-5：使用首个有效高程初始化min/max，避免999999.0哨兵值问题
 pub fn dem_stats(dem : DEMGrid) -> (Double, Double, Double, Double) {
-  let mut min_val = 999999.0
-  let mut max_val = -999999.0
+  let mut min_val = 0.0
+  let mut max_val = 0.0
   let mut sum = 0.0
   let mut count = 0
+  let mut initialized = false
   for i in 0..<dem.ny {
     for j in 0..<dem.nx {
       if dem.has_data(i, j) {
         let h = dem.elevations[i][j]
-        if h < min_val {
+        if !initialized {
           min_val = h
-        }
-        if h > max_val {
           max_val = h
+          initialized = true
+        } else {
+          if h < min_val {
+            min_val = h
+          }
+          if h > max_val {
+            max_val = h
+          }
         }
         sum = sum + h
         count = count + 1

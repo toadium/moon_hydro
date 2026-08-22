@@ -50,6 +50,9 @@ pub(all) struct XinanjiangState {
   mut rg : Double // 地下径流(mm)
   mut e : Double // 时段蒸散发量(mm)
   mut q : Double // 出口断面流量(m³/s)
+  mut qs : Double // 地表水汇流分量(m³/s) P1-1修复：保存路由状态
+  mut qi : Double // 壤中流汇流分量(m³/s)
+  mut qg : Double // 地下水汇流分量(m³/s)
 } derive(Debug, ToJson, FromJson)
 
 ///|
@@ -131,5 +134,8 @@ pub fn XinanjiangState::initial() -> XinanjiangState {
     rg: 0.0,
     e: 0.0,
     q: 0.0,
+    qs: 0.0,
+    qi: 0.0,
+    qg: 0.0,
   }
 }

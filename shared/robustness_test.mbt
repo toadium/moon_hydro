@@ -159,6 +159,7 @@ test "DDS率定-空参数容错" {
     seed: 42,
     target_metric: "nse",
     params: [],
+    max_no_improve: 100,
   }
   let forcings : Array[ForcingData] = [
     { rainfall: 10.0, evaporation: 2.0, datetime: "t0" },

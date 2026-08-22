@@ -67,7 +67,8 @@ fn view_home(model : AppModel) -> ViewNode {
 fn view_simulation(model : AppModel) -> ViewNode {
   let sim = model.sim_params
   let result = model.sim_result
-  let children : Array[ViewNode] = [
+  // P1-2修复：函数式构建子节点列表，无push副作用
+  let base_children : Array[ViewNode] = [
     VHeading(2, "新安江模型仿真"),
     VLabel("流域名称", sim.basin_name),
     VLabel("流域面积", "\{sim.area} km²"),
@@ -78,23 +79,30 @@ fn view_simulation(model : AppModel) -> ViewNode {
       VButton("参数面板", ToggleParamsPanel),
     ]),
   ]
-  // 参数面板
-  if model.ui_state.show_params_panel {
-    children.push(view_params_panel(sim.params))
+  let params_node = if model.ui_state.show_params_panel {
+    [view_params_panel(sim.params)]
+  } else {
+    []
   }
-  // 仿真结果
-  if result.has_result {
-    children.push(view_sim_result(result))
+  let result_node = if result.has_result {
+    [view_sim_result(result)]
+  } else {
+    []
   }
-  // 加载状态
-  if result.is_running {
-    children.push(VLoading("仿真运行中..."))
+  let loading_node = if result.is_running {
+    [VLoading("仿真运行中...")]
+  } else {
+    []
   }
-  // 错误
-  if model.error_message.length() > 0 {
-    children.push(VError(model.error_message))
+  let error_node = if model.error_message.length() > 0 {
+    [VError(model.error_message)]
+  } else {
+    []
   }
-  VSection("仿真", children)
+  VSection(
+    "仿真",
+    base_children + params_node + result_node + loading_node + error_node,
+  )
 }
 
 ///|
@@ -169,7 +177,7 @@ fn view_evaluation(model : AppModel) -> ViewNode {
 fn view_batch(_model : AppModel) -> ViewNode {
   VSection("批量仿真", [
     VHeading(2, "多流域批量调度"),
-    VButton("运行全部流域", RunBatchSim([])),
+    VButton("运行全部流域", RunBatchSim([])), // P3-6：占位，V1.0改为加载实际流域任务
     VText("支持多流域、多情景集合批量仿真"),
     VText("含蒙特卡洛不确定性分析"),
   ])
@@ -194,19 +202,15 @@ fn view_history(history : Array[HistoryEntry]) -> ViewNode {
     return VText("暂无历史记录")
   }
   let headers = ["时间", "操作", "流域", "状态"]
-  let rows : Array[Array[String]] = []
-  for h in history {
-    rows.push([
+  // P1-2修复：使用map函数式构建行数据，无push副作用
+  let rows = history.map(fn(h) {
+    [
       h.timestamp,
       h.action,
       h.basin_name,
-      if h.success {
-        "成功"
-      } else {
-        "失败"
-      },
-    ])
-  }
+      if h.success { "成功" } else { "失败" },
+    ]
+  })
   VTable(headers, rows)
 }
 

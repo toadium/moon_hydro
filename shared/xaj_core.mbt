@@ -208,7 +208,11 @@ fn XinanjiangModel::step_impl(
   let pe = p - state.e
   let r = self.compute_runoff(pe, state)
   self.compute_source_split(r, state)
-  ignore(self.compute_routing(state, 0.0, 0.0, 0.0))
+  // P1-1修复：使用state中保存的前一步汇流分量，而非0.0
+  let (qs, qi, qg) = self.compute_routing(state, state.qs, state.qi, state.qg)
+  state.qs = qs
+  state.qi = qi
+  state.qg = qg
   state
 }
 
@@ -248,8 +252,13 @@ fn XinanjiangModel::run_impl(
       rg: state.rg,
       e: state.e,
       q: state.q,
+      qs: state.qs,
+      qi: state.qi,
+      qg: state.qg,
     })
   }
+  // P2-1修复说明：nse/kge/pbias需要观测数据才能计算
+  // 此处返回0.0作为占位符，调用方应通过evaluation模块计算指标
   { runoff_series, state_series, nse: 0.0, kge: 0.0, pbias: 0.0 }
 }
 

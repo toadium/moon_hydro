@@ -221,6 +221,8 @@ test "update RunEvaluation/EvaluationCompleted 评价流程" {
   let model = AppModel::initial()
   let m1 = update(model, RunEvaluation([1.0, 2.0], [1.1, 2.1]))
   assert_eq(m1.sim_params.basin_name, model.sim_params.basin_name)
+  // P1-4修复验证：RunEvaluation应设置loading状态
+  assert_true(m1.ui_state.loading)
   let eval_result : @shared.EvaluationResult = {
     grade: @shared.ForecastGrade::Excellent,
     grade_nse: @shared.ForecastGrade::Excellent,
@@ -236,6 +238,11 @@ test "update RunEvaluation/EvaluationCompleted 评价流程" {
   }
   let m2 = update(m1, EvaluationCompleted(eval_result))
   assert_eq(m2.sim_params.basin_name, model.sim_params.basin_name)
+  // P1-4修复验证：EvaluationCompleted应存入评价指标并清除loading
+  assert_false(m2.ui_state.loading)
+  assert_true((m2.sim_result.nse - 0.9).abs() < 0.001)
+  assert_true((m2.sim_result.kge - 0.9).abs() < 0.001)
+  assert_true((m2.sim_result.pbias - 1.0).abs() < 0.001)
 }
 
 ///|

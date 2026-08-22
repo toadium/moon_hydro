@@ -149,6 +149,9 @@ pub fn LSTM::forward_with_state(
 ///
 /// 给定历史输入序列，预报未来n_forecast步
 /// 每步将上一步输出作为下一步输入（自回归）
+/// 注：P2-9：当output_dim < input_dim时，输入将部分用0填充；
+/// 当output_dim > input_dim时，输出截断为input_dim长度。
+/// 建议设置output_dim == input_dim以获得最佳自回归效果。
 pub fn LSTM::forecast(
   self : LSTM,
   history : Array[Array[Double]],
@@ -311,6 +314,7 @@ pub fn LSTMWeights::from_flat(
 /// 计算LSTM预报的MSE（用于SCE-UA目标函数）
 ///
 /// inputs: 输入序列, targets: 目标序列
+/// P3-3：错误情况返回999999.0哨兵值，调用方应检查此值
 pub fn LSTM::mse(
   self : LSTM,
   inputs : Array[Array[Double]],

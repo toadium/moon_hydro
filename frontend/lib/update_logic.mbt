@@ -74,8 +74,13 @@ pub fn update(model : AppModel, msg : Msg) -> AppModel {
         ui_state: { ..model.ui_state, loading: true },
         error_message: "",
       }
-    CalibrationCompleted(_result) =>
-      { ..model, ui_state: { ..model.ui_state, loading: false } }
+    // P1-5修复：率定结果存入sim_result.nse，不再丢弃
+    CalibrationCompleted(result) =>
+      {
+        ..model,
+        sim_result: { ..model.sim_result, nse: result.best_metric },
+        ui_state: { ..model.ui_state, loading: false },
+      }
     CalibrationFailed(err) =>
       {
         ..model,
@@ -83,20 +88,38 @@ pub fn update(model : AppModel, msg : Msg) -> AppModel {
         error_message: err,
       }
     // 评价
-    RunEvaluation(_obs, _sim) => model
-    EvaluationCompleted(_result) => model
+    // P1-4修复：RunEvaluation设置loading状态，不再为no-op
+    RunEvaluation(_obs, _sim) =>
+      {
+        ..model,
+        ui_state: { ..model.ui_state, loading: true },
+        error_message: "",
+      }
+    // P1-4修复：EvaluationCompleted存入评价指标，不再为no-op
+    EvaluationCompleted(result) =>
+      {
+        ..model,
+        sim_result: {
+          ..model.sim_result,
+          nse: result.nse,
+          kge: result.kge,
+          pbias: result.pbias,
+        },
+        ui_state: { ..model.ui_state, loading: false },
+      }
     // 批量仿真
     RunBatchSim(_tasks) =>
       { ..model, ui_state: { ..model.ui_state, loading: true } }
     BatchCompleted(_result) =>
       { ..model, ui_state: { ..model.ui_state, loading: false } }
     // UI控制
+    // P2-1修复：使用内置!操作符替代自定义not函数
     ToggleParamsPanel =>
       {
         ..model,
         ui_state: {
           ..model.ui_state,
-          show_params_panel: not(model.ui_state.show_params_panel),
+          show_params_panel: !model.ui_state.show_params_panel,
         },
       }
     ToggleChart =>
@@ -104,7 +127,7 @@ pub fn update(model : AppModel, msg : Msg) -> AppModel {
         ..model,
         ui_state: {
           ..model.ui_state,
-          show_chart: not(model.ui_state.show_chart),
+          show_chart: !model.ui_state.show_chart,
         },
       }
     SetChartType(ct) =>
@@ -114,23 +137,21 @@ pub fn update(model : AppModel, msg : Msg) -> AppModel {
     SetError(err) => { ..model, error_message: err }
     ClearError => { ..model, error_message: "" }
     // 历史记录
+    // P1-3修复：使用+操作符函数式追加，仅截断时用循环
     AddHistory(entry) => {
-      let new_history : Array[HistoryEntry] = []
-      for h in model.history {
-        new_history.push(h)
-      }
-      new_history.push(entry)
+      let new_history = model.history + [entry]
       // 保留最近100条
-      let start = if new_history.length() > 100 {
-        new_history.length() - 100
+      let len = new_history.length()
+      if len <= 100 {
+        { ..model, history: new_history }
       } else {
-        0
+        let start = len - 100
+        let trimmed : Array[HistoryEntry] = []
+        for i in start..<len {
+          trimmed.push(new_history[i])
+        }
+        { ..model, history: trimmed }
       }
-      let trimmed : Array[HistoryEntry] = []
-      for i in start..<new_history.length() {
-        trimmed.push(new_history[i])
-      }
-      { ..model, history: trimmed }
     }
     ClearHistory => { ..model, history: [] }
     // 重置
@@ -139,25 +160,13 @@ pub fn update(model : AppModel, msg : Msg) -> AppModel {
 }
 
 ///|
-/// 加载流域案例到模型
+/// 加载流域案例到模型（P2-2修复：复用load_basin_config消除重复逻辑）
 fn load_basin_case(model : AppModel, name : String) -> AppModel {
-  let case = match name {
-    "合成基准" => @shared.synthetic_benchmark_case()
-    "闽江竹岐" => @shared.zhuyi_basin_case()
-    "飞云江" => @shared.feiyunjiang_basin_case()
-    "青弋江" => @shared.qingyijiang_basin_case()
-    _ => @shared.synthetic_benchmark_case()
-  }
+  let config = load_basin_config(name)
   {
     ..model,
-    sim_params: {
-      basin_name: case.name,
-      area: case.area,
-      dt: case.dt,
-      params: case.params,
-      forcings: case.forcings,
-    },
-    ui_state: { ..model.ui_state, selected_basin: case.name },
+    sim_params: config,
+    ui_state: { ..model.ui_state, selected_basin: config.basin_name },
   }
 }
 
@@ -171,14 +180,4 @@ pub fn update_batch(model : AppModel, msgs : Array[Msg]) -> AppModel {
     current = update(current, msg)
   }
   current
-}
-
-///|
-/// 辅助函数：布尔取反
-fn not(b : Bool) -> Bool {
-  if b {
-    false
-  } else {
-    true
-  }
 }

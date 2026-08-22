@@ -157,6 +157,7 @@ fn cli_dds() -> CliResult {
     seed: 123,
     target_metric: "nse",
     params: @shared.default_calib_params(),
+    max_no_improve: 100,
   }
   let result = @shared.dds_calibrate(
     cfg,
@@ -506,7 +507,7 @@ fn cli_json() -> CliResult raise {
 ///|
 /// 子命令: demo - 完整功能演示
 fn cli_demo() -> Unit raise {
-  println("沐澜水文 V0.5 - 完整功能演示")
+  println("沐澜水文 V0.8 - 完整功能演示")
   println(repeat_str("=", 50))
   print_cli_result(cli_sim())
   print_cli_result(cli_calibrate())
@@ -523,10 +524,10 @@ fn cli_demo() -> Unit raise {
   print_cli_result(cli_json())
   print_cli_result(cli_bench())
   print_cli_result(cli_persistence())
-  cli_auth()
-  cli_ai_forecast()
-  cli_gis()
-  cli_flood()
+  print_cli_result(cli_auth())
+  print_cli_result(cli_ai_forecast())
+  print_cli_result(cli_gis())
+  print_cli_result(cli_flood())
   println("\n" + repeat_str("=", 50))
   println("所有子命令执行完毕")
   cli_help()
@@ -629,7 +630,7 @@ fn cli_persistence() -> CliResult raise {
 
 ///|
 /// 子命令: auth - 权限框架演示
-fn cli_auth() -> Unit raise {
+fn cli_auth() -> CliResult raise {
   println("沐澜水文 权限框架演示")
   println(repeat_str("=", 50))
   let now = @env.now()
@@ -731,11 +732,18 @@ fn cli_auth() -> Unit raise {
   println("登出: engineer1, viewer1 已登出")
   println(auth.stats())
   println("\n权限框架演示完成")
+  let r : CliResult = {
+    command: "auth",
+    success: true,
+    message: "权限框架演示完成",
+    details: "",
+  }
+  r
 }
 
 ///|
 /// 子命令: ai_forecast - AI混合预报演示
-fn cli_ai_forecast() -> Unit {
+fn cli_ai_forecast() -> CliResult {
   println("沐澜水文 AI混合预报演示")
   println(repeat_str("=", 50))
   // 生成合成降雨-径流数据
@@ -792,11 +800,18 @@ fn cli_ai_forecast() -> Unit {
     println("\{i}    \{phys}    \{corr}    \{hybrid}    \{obs}")
   }
   println("\nAI混合预报演示完成")
+  let r : CliResult = {
+    command: "ai_forecast",
+    success: true,
+    message: "AI混合预报演示完成",
+    details: "",
+  }
+  r
 }
 
 ///|
 /// 子命令: gis - GIS接口演示
-fn cli_gis() -> Unit {
+fn cli_gis() -> CliResult {
   println("沐澜水文 GIS接口演示")
   println(repeat_str("=", 50))
   // 1. 生成合成DEM
@@ -885,11 +900,18 @@ fn cli_gis() -> Unit {
   println("流域面积: \{basin.area}km²")
   println("流域形心: (\{basin.centroid.x}, \{basin.centroid.y})")
   println("\nGIS接口演示完成")
+  let r : CliResult = {
+    command: "gis",
+    success: true,
+    message: "GIS接口演示完成",
+    details: "",
+  }
+  r
 }
 
 ///|
 /// 子命令: flood - 洪水淹没推演演示
-fn cli_flood() -> Unit {
+fn cli_flood() -> CliResult {
   println("沐澜水文 洪水淹没推演演示")
   println(repeat_str("=", 50))
   // 1. 构造合成洪水场景
@@ -932,4 +954,11 @@ fn cli_flood() -> Unit {
   let damage = @flood.estimate_damage(result.max_depth, land_use)
   println(damage.to_summary())
   println("\n洪水淹没推演演示完成")
+  let r : CliResult = {
+    command: "flood",
+    success: true,
+    message: "洪水淹没推演演示完成",
+    details: "",
+  }
+  r
 }

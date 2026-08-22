@@ -5,8 +5,8 @@
 [![CI](https://github.com/toadium/moon_hydro/actions/workflows/ci.yml/badge.svg)](https://github.com/toadium/moon_hydro/actions/workflows/ci.yml)
 [![PR Check](https://github.com/toadium/moon_hydro/actions/workflows/pr-check.yml/badge.svg)](https://github.com/toadium/moon_hydro/actions/workflows/pr-check.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![MoonBit](https://img.shields.io/badge/MoonBit-0.1.20260713-blue)](https://moonbitlang.com)
-[![Tests](https://img.shields.io/badge/tests-374%20%C3%97%204%20backends-green)]()
+[![MoonBit](https://img.shields.io/badge/MoonBit-0.1.20260819-blue)](https://moonbitlang.com)
+[![Tests](https://img.shields.io/badge/tests-368%20%C3%97%204%20backends-green)]()
 [![Version](https://img.shields.io/badge/version-0.8.0-orange)]()
 
 ---
@@ -104,7 +104,7 @@ cd moon_hydro
 # 编译检查
 moon check
 
-# 运行测试（四后端 × 374 测试）
+# 运行测试（四后端 × 368 测试）
 moon test --target wasm-gc
 moon test --target native
 
@@ -257,7 +257,7 @@ moon_hydro/
 
 ## 开发路线
 
-详见 [roadmap.md](roadmap.md)。当前版本 **V0.8**，四后端 374 测试全通过。
+详见 [roadmap.md](roadmap.md)。当前版本 **V0.8**，四后端 368 测试全通过。
 
 | 版本 | 状态 | 核心内容 |
 |------|------|----------|

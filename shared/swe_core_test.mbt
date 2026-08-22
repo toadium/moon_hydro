@@ -116,10 +116,10 @@ test "SWEBoundary 固壁边界反射" {
   // 给左侧单元设置正流速
   grid.hu[1] = 1.0
   let boundary : SWEBoundary = { left: SolidWall, right: SolidWall }
-  let _ = grid.step_lf(0.01, boundary)
+  let result = grid.step_lf(0.01, boundary)
   // 固壁边界后，边界单元流速应反射
   // hu[0] = -hu[1] = -1.0
-  assert_true((grid.hu[0] - -1.0).abs() < 0.001)
+  assert_true((result.hu[0] - -1.0).abs() < 0.001)
 }
 
 ///|
@@ -128,22 +128,22 @@ test "SWEBoundary 透射边界" {
   grid.h[1] = 3.0
   grid.hu[1] = 0.5
   let boundary : SWEBoundary = { left: Transmissive, right: Transmissive }
-  let _ = grid.step_lf(0.01, boundary)
+  let result = grid.step_lf(0.01, boundary)
   // 透射边界：h[0] = h[1], hu[0] = hu[1]
-  assert_true((grid.h[0] - 3.0).abs() < 0.001)
-  assert_true((grid.hu[0] - 0.5).abs() < 0.001)
+  assert_true((result.h[0] - 3.0).abs() < 0.001)
+  assert_true((result.hu[0] - 0.5).abs() < 0.001)
 }
 
 ///|
 test "SWEBoundary Dirichlet边界" {
   let grid = SWEGrid1D::uniform(nx=5, dx=1.0, h0=2.0)
   let boundary : SWEBoundary = { left: Dirichlet(5.0), right: Dirichlet(1.0) }
-  let _ = grid.step_lf(0.01, boundary)
+  let result = grid.step_lf(0.01, boundary)
   // Dirichlet边界：固定水深值
-  assert_true((grid.h[0] - 5.0).abs() < 0.001)
-  assert_true((grid.h[4] - 1.0).abs() < 0.001)
-  assert_true(grid.hu[0].abs() < 0.001)
-  assert_true(grid.hu[4].abs() < 0.001)
+  assert_true((result.h[0] - 5.0).abs() < 0.001)
+  assert_true((result.h[4] - 1.0).abs() < 0.001)
+  assert_true(result.hu[0].abs() < 0.001)
+  assert_true(result.hu[4].abs() < 0.001)
 }
 
 ///|

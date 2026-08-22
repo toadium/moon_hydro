@@ -172,12 +172,15 @@ pub fn RiverNetwork::stats(self : RiverNetwork) -> String {
 /// 从DEM和汇流累积提取河网拓扑
 ///
 /// threshold: 汇流累积阈值
+/// 注：P2-6修复：使用D8流向（compute_flow_direction）而非汇流累积推断下游方向
 pub fn extract_network_from_dem(
   dem : DEMGrid,
   fa : FlowAccumulation,
   threshold~ : Int,
 ) -> RiverNetwork {
   let network = RiverNetwork::new()
+  // P2-6修复：计算D8流向用于确定下游连接
+  let fd = compute_flow_direction(dem)
   // 标记河道单元
   let is_channel : Array[Array[Bool]] = []
   for i in 0..<fa.ny {
@@ -219,7 +222,8 @@ pub fn extract_network_from_dem(
   for i in 0..<fa.ny {
     for j in 0..<fa.nx {
       if node_ids[i][j] >= 0 {
-        let d = compute_downstream_dir(fa, i, j)
+        // P2-6修复：使用D8流向而非汇流累积推断下游方向
+        let d = fd.dirs[i][j]
         if d > 0 {
           let (di, dj) = d8_offsets[d]
           let ni = i + di
@@ -272,21 +276,4 @@ pub fn extract_network_from_dem(
   network
 }
 
-///|
-/// 计算单元的下游方向（基于汇流累积，流向累积值更大的邻居）
-fn compute_downstream_dir(fa : FlowAccumulation, i : Int, j : Int) -> Int {
-  let mut best_dir = 0
-  let mut max_accum = fa.accum[i][j]
-  for d in 1..<9 {
-    let (di, dj) = d8_offsets[d]
-    let ni = i + di
-    let nj = j + dj
-    if ni >= 0 && ni < fa.ny && nj >= 0 && nj < fa.nx {
-      if fa.accum[ni][nj] > max_accum {
-        max_accum = fa.accum[ni][nj]
-        best_dir = d
-      }
-    }
-  }
-  best_dir
-}
+

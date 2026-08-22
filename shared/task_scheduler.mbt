@@ -102,6 +102,8 @@ pub fn TaskScheduler::completed_count(self : TaskScheduler) -> Int {
 
 ///|
 /// 执行单个任务
+/// P2-11修复说明：当前model.run()不raise异常，故无需try-catch
+/// 若未来扩展引入可能失败的操作（如文件IO），应在此添加异常捕获
 pub fn run_task(task : SimTask) -> TaskExecResult {
   let start_time = @env.now()
   let model = XinanjiangModel::new(

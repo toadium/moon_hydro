@@ -129,12 +129,13 @@ pub fn damage_ratio(depth : Double, land_type : LandUseType) -> Double {
       }
     Agricultural =>
       // 农业：水深0~2m，损失率0~100%
+      // P2-8修复：调整斜率使曲线在depth=2.0处连续（0.5+1.0*0.5=1.0）
       if depth < 0.5 {
         depth * 0.4
       } else if depth < 1.0 {
         0.2 + (depth - 0.5) * 0.6
       } else if depth < 2.0 {
-        0.5 + (depth - 1.0) * 0.4
+        0.5 + (depth - 1.0) * 0.5
       } else {
         1.0
       }

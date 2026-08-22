@@ -6,8 +6,34 @@ on:
       - "v*"
 
 jobs:
+  test:
+    name: 测试门禁
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: 缓存 MoonBit 工具链
+        uses: actions/cache@v4
+        with:
+          path: ~/.moon
+          key: moonbit-${{ runner.os }}-v1
+
+      - name: 安装 MoonBit
+        run: |
+          if ! command -v moon &> /dev/null; then
+            curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          fi
+          echo "$HOME/.moon/bin" >> $GITHUB_PATH
+
+      - name: 编译检查
+        run: moon check
+
+      - name: 运行测试 (wasm-gc)
+        run: moon test --target wasm-gc
+
   build:
     name: 构建 (${{ matrix.target }})
+    needs: test
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
@@ -16,9 +42,17 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: 缓存 MoonBit 工具链
+        uses: actions/cache@v4
+        with:
+          path: ~/.moon
+          key: moonbit-${{ runner.os }}-v1
+
       - name: 安装 MoonBit
         run: |
-          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          if ! command -v moon &> /dev/null; then
+            curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          fi
           echo "$HOME/.moon/bin" >> $GITHUB_PATH
 
       - name: 构建
@@ -27,14 +61,18 @@ jobs:
       - name: 打包构建产物
         run: |
           mkdir -p dist
-          cp -r target/${{ matrix.target }}/release/* dist/ 2>/dev/null || true
+          cp -r target/${{ matrix.target }}/release/* dist/
           tar -czf hydro-${{ github.ref_name }}-${{ matrix.target }}.tar.gz -C dist .
+          # P3-11: 生成 SHA256 校验和
+          sha256sum hydro-${{ github.ref_name }}-${{ matrix.target }}.tar.gz > hydro-${{ github.ref_name }}-${{ matrix.target }}.tar.gz.sha256
 
       - name: 上传产物
         uses: actions/upload-artifact@v4
         with:
           name: hydro-${{ matrix.target }}
-          path: hydro-*.tar.gz
+          path: |
+            hydro-*.tar.gz
+            hydro-*.sha256
 
   release:
     name: 发布 Release
@@ -56,3 +94,4 @@ jobs:
           generate_release_notes: true
           files: |
             artifacts/**/*.tar.gz
+            artifacts/**/*.sha256

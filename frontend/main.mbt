@@ -1,5 +1,5 @@
 ///|
-/// 沐澜水文 frontend 入口 - V0.4
+/// 沐澜水文 frontend 入口 - V0.8
 ///
 /// TEA架构(Model/Msg/Update/View) + wasm_slim_model轻量化试算
 /// 后续V1.0接入Rabbita+Rui时，View转换为Rui组件树

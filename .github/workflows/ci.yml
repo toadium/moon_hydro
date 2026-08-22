@@ -13,9 +13,17 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: 缓存 MoonBit 工具链
+        uses: actions/cache@v4
+        with:
+          path: ~/.moon
+          key: moonbit-${{ runner.os }}-v1
+
       - name: 安装 MoonBit
         run: |
-          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          if ! command -v moon &> /dev/null; then
+            curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          fi
           echo "$HOME/.moon/bin" >> $GITHUB_PATH
 
       - name: Moon 版本
@@ -34,13 +42,31 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: 缓存 MoonBit 工具链
+        uses: actions/cache@v4
+        with:
+          path: ~/.moon
+          key: moonbit-${{ runner.os }}-v1
+
       - name: 安装 MoonBit
         run: |
-          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          if ! command -v moon &> /dev/null; then
+            curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          fi
           echo "$HOME/.moon/bin" >> $GITHUB_PATH
 
       - name: 运行测试
         run: moon test --target ${{ matrix.target }}
+
+      - name: 上传测试产物
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.target }}
+          path: |
+            target/
+            test_hydro_*.json
+          if-no-files-found: ignore
 
   fmt:
     name: 格式检查
@@ -48,9 +74,17 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: 缓存 MoonBit 工具链
+        uses: actions/cache@v4
+        with:
+          path: ~/.moon
+          key: moonbit-${{ runner.os }}-v1
+
       - name: 安装 MoonBit
         run: |
-          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          if ! command -v moon &> /dev/null; then
+            curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          fi
           echo "$HOME/.moon/bin" >> $GITHUB_PATH
 
       - name: 格式化检查
@@ -64,9 +98,17 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: 缓存 MoonBit 工具链
+        uses: actions/cache@v4
+        with:
+          path: ~/.moon
+          key: moonbit-${{ runner.os }}-v1
+
       - name: 安装 MoonBit
         run: |
-          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          if ! command -v moon &> /dev/null; then
+            curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          fi
           echo "$HOME/.moon/bin" >> $GITHUB_PATH
 
       - name: 运行 backend

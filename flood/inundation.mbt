@@ -7,6 +7,9 @@
 /// - 洪水到达时间分析
 /// - 淹没持续时间分析
 /// - 淹没范围提取
+///
+/// 注：P2-10：本模块与 shared.SWEGrid2D 存在紧耦合（直接访问h/hu/hv/z字段）。
+/// 未来可考虑通过 trait 抽象 SWE 网格接口以降低耦合度。
 
 ///|
 /// 淹没推演配置
@@ -62,11 +65,14 @@ pub fn dem_to_swe_grid(
   let h = Array::make(n_total, h0)
   let hu = Array::make(n_total, 0.0)
   let hv = Array::make(n_total, 0.0)
-  let z : Array[Double] = []
+  // SWEGrid2D uses idx2d(x_idx, y_idx) = x_idx * ny + y_idx
+  // DEMGrid uses elevations[row][col] = elevations[y_idx][x_idx]
+  // Must fill z[x_idx * ny + y_idx] = dem.elevations[y_idx][x_idx]
+  let z = Array::make(n_total, 0.0)
   let n_arr = Array::make(n_total, manning)
-  for i in 0..<dem.ny {
-    for j in 0..<dem.nx {
-      z.push(dem.elevations[i][j])
+  for x_idx in 0..<dem.nx {
+    for y_idx in 0..<dem.ny {
+      z[x_idx * dem.ny + y_idx] = dem.elevations[y_idx][x_idx]
     }
   }
   {

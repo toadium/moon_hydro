@@ -26,6 +26,33 @@ test "dem_to_swe_grid - 基本转换" {
 }
 
 ///|
+test "dem_to_swe_grid - 非方阵索引顺序验证" {
+  // 构造 nx=3, ny=2 的非方阵DEM，每个位置高程唯一
+  let dem = @gis.DEMGrid::uniform(nx=3, ny=2, dx=10.0, dy=10.0, h0=0.0)
+  // elevations[row][col], row=0..1 (ny), col=0..2 (nx)
+  dem.set_elevation(0, 0, 10.0) // (x=0, y=0)
+  dem.set_elevation(0, 1, 20.0) // (x=1, y=0)
+  dem.set_elevation(0, 2, 30.0) // (x=2, y=0)
+  dem.set_elevation(1, 0, 40.0) // (x=0, y=1)
+  dem.set_elevation(1, 1, 50.0) // (x=1, y=1)
+  dem.set_elevation(1, 2, 60.0) // (x=2, y=1)
+  let grid = dem_to_swe_grid(dem, h0=0.0, manning=0.03)
+  // SWEGrid2D idx = x_idx * ny + y_idx
+  // z[0*2+0]=z[0] should be 10.0 (x=0,y=0)
+  assert_eq(grid.z[0], 10.0)
+  // z[0*2+1]=z[1] should be 40.0 (x=0,y=1)
+  assert_eq(grid.z[1], 40.0)
+  // z[1*2+0]=z[2] should be 20.0 (x=1,y=0)
+  assert_eq(grid.z[2], 20.0)
+  // z[1*2+1]=z[3] should be 50.0 (x=1,y=1)
+  assert_eq(grid.z[3], 50.0)
+  // z[2*2+0]=z[4] should be 30.0 (x=2,y=0)
+  assert_eq(grid.z[4], 30.0)
+  // z[2*2+1]=z[5] should be 60.0 (x=2,y=1)
+  assert_eq(grid.z[5], 60.0)
+}
+
+///|
 test "set_inflow - 设置入流" {
   let dem = @gis.DEMGrid::uniform(nx=10, ny=10, dx=10.0, dy=10.0, h0=50.0)
   let grid = dem_to_swe_grid(dem, h0=0.0)

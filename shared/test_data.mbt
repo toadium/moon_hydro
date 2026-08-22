@@ -89,12 +89,22 @@ pub fn mock_flood_rainfall(
   let peak_time = duration / 2
   for t in 0..<duration {
     // 三角形暴雨过程：线性上升到峰值后线性下降
-    let rainfall = if t <= peak_time {
-      peak_rainfall * t.to_double() / peak_time.to_double()
+    // P1-4修复：peak_time=0或duration-peak_time=0时除零保护
+    let rainfall = if duration <= 1 {
+      peak_rainfall
+    } else if t <= peak_time {
+      if peak_time > 0 {
+        peak_rainfall * t.to_double() / peak_time.to_double()
+      } else {
+        0.0
+      }
     } else {
-      peak_rainfall *
-      (duration - t).to_double() /
-      (duration - peak_time).to_double()
+      let denom = duration - peak_time
+      if denom > 0 {
+        peak_rainfall * (duration - t).to_double() / denom.to_double()
+      } else {
+        0.0
+      }
     }
     forcings.push({
       rainfall: if rainfall < 0.0 {
@@ -250,7 +260,7 @@ pub fn mock_extreme_flood_params() -> XinanjiangParams {
     c: base.c,
     sm: 15.0,
     ex: base.ex,
-    kg: 3.0,
+    kg: 0.45,
     ki: 0.4,
     cg: base.cg,
     ci: base.ci,

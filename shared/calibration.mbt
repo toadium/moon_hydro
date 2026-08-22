@@ -21,6 +21,7 @@ pub(all) struct DDSConfig {
   seed : UInt64 // 随机种子
   target_metric : String // 目标指标("nse"或"kge")
   params : Array[CalibParam] // 待率定参数
+  max_no_improve : Int // P3-2修复：最大无改进迭代次数(默认100)
 } derive(Debug, ToJson, FromJson, Default)
 
 ///|
@@ -36,7 +37,7 @@ pub(all) struct CalibResult {
 ///|
 /// 构造默认DDS配置
 pub fn DDSConfig::default() -> DDSConfig {
-  { max_iter: 1000, r: 0.2, seed: 42, target_metric: "nse", params: [] }
+  { max_iter: 1000, r: 0.2, seed: 42, target_metric: "nse", params: [], max_no_improve: 100 }
 }
 
 ///|
@@ -196,24 +197,27 @@ pub fn params_to_xaj(params : Array[CalibParam]) -> XinanjiangParams {
 }
 
 ///|
-/// 目标函数：计算给定参数下的NSE（负值，因为DDS是最小化）
+/// 目标函数：计算给定参数下的NSE或KGE（负值，因为DDS是最小化）
 ///
-/// model_factory: 根据参数创建模型
-/// forcings: 气象驱动
-/// observed: 观测径流
+/// P1-2修复：支持target_metric配置，不再只算NSE
 fn objective_nse(
   params : Array[CalibParam],
   area : Double,
   dt : Double,
   forcings : Array[ForcingData],
   observed : Array[Double],
+  target_metric : String,
 ) -> Double {
   let xaj_params = params_to_xaj(params)
   let model = XinanjiangModel::new(params=xaj_params, area~, dt~)
   let result = model.run(forcings)
-  let nse_val = nse(observed, result.runoff_series)
-  // DDS最小化，所以返回-NSE
-  -nse_val
+  let metric = if target_metric == "kge" {
+    kge(observed, result.runoff_series)
+  } else {
+    nse(observed, result.runoff_series)
+  }
+  // DDS最小化，所以返回负指标
+  -metric
 }
 
 ///|
@@ -242,7 +246,7 @@ pub fn dds_calibrate(
   }
   // 初始目标函数值
   let mut best_metric = objective_nse(
-    current_params, area, dt, forcings, observed,
+    current_params, area, dt, forcings, observed, config.target_metric,
   )
   let mut best_params : Array[CalibParam] = []
   for p in current_params {
@@ -264,7 +268,7 @@ pub fn dds_calibrate(
     let candidate = dds_perturb(current_params, dim, config.r, rng)
     // 计算新目标函数值
     let candidate_metric = objective_nse(
-      candidate, area, dt, forcings, observed,
+      candidate, area, dt, forcings, observed, config.target_metric,
     )
     // 接受准则：如果更好则更新
     if candidate_metric < best_metric {
@@ -292,8 +296,8 @@ pub fn dds_calibrate(
       no_improve_count = no_improve_count + 1
     }
     metric_history.push(-best_metric)
-    // 收敛判定：连续100次无改进
-    if no_improve_count >= 100 {
+    // 收敛判定：连续max_no_improve次无改进
+    if no_improve_count >= config.max_no_improve {
       converged = true
       break
     }

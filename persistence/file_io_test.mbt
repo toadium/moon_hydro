@@ -8,6 +8,8 @@ test "write_file/read_file 基本文件读写" {
   write_file(path, content)
   let read_back = read_file(path)
   assert_eq(read_back, content)
+  // P2-4: 测试清理
+  try delete_file(path) catch { _ => () } noraise { _ => () }
 }
 
 ///|
@@ -16,6 +18,8 @@ test "file_exists 文件存在检查" {
   write_file(path, "hello")
   assert_true(file_exists(path))
   assert_false(file_exists("nonexistent_file_xyz.json"))
+  // P2-4: 测试清理
+  try delete_file(path) catch { _ => () } noraise { _ => () }
 }
 
 ///|
@@ -90,6 +94,8 @@ test "DataStore save_to_file/load_from_file" {
   let loaded_param = loaded_store.load_param_set("file_test_param")
   guard loaded_param is Some(p) else { fail("参数集未找到") }
   assert_eq(p.name, "文件测试参数集")
+  // P2-4: 测试清理
+  try delete_file(file_path) catch { _ => () } noraise { _ => () }
 }
 
 ///|
@@ -111,6 +117,8 @@ test "SimulationScheme save_to_file/load_from_file" {
   assert_eq(loaded.id, "scheme_file_io")
   assert_eq(loaded.basin_name, "飞云江")
   assert_true((loaded.area - 1930.0).abs() < 0.001)
+  // P2-4: 测试清理
+  try delete_file(path) catch { _ => () } noraise { _ => () }
 }
 
 ///|
@@ -129,4 +137,57 @@ test "ParameterSet save_to_file/load_from_file" {
   assert_eq(loaded.id, "param_file_io")
   assert_eq(loaded.basin_name, "青弋江")
   assert_eq(loaded.description, "青弋江流域参数")
+  // P2-4: 测试清理
+  try delete_file(path) catch { _ => () } noraise { _ => () }
+}
+
+///|
+/// P3-7: 边界测试 — 空文件读写
+test "write_file/read_file 空文件读写" {
+  let path = "test_hydro_empty.json"
+  write_file(path, "")
+  // 空文件应该存在
+  assert_true(file_exists(path))
+  // 读取空文件应返回空字符串，而非抛出FileNotFound
+  let content = read_file(path)
+  assert_eq(content, "")
+  // 测试清理
+  try delete_file(path) catch { _ => () } noraise { _ => () }
+}
+
+///|
+/// P3-7: 边界测试 — file_exists 对空文件返回true
+test "file_exists 空文件返回true" {
+  let path = "test_hydro_empty_exists.json"
+  write_file(path, "")
+  assert_true(file_exists(path))
+  // 测试清理
+  try delete_file(path) catch { _ => () } noraise { _ => () }
+}
+
+///|
+/// P3-7: 边界测试 — 大内容读写
+test "write_file/read_file 大内容读写" {
+  let path = "test_hydro_large.json"
+  // 构造10KB内容
+  let buf : Array[String] = []
+  for i = 0; i < 1000; i = i + 1 {
+    buf.push("abcdefghij")
+  }
+  let content = buf.join("")
+  write_file(path, content)
+  let read_back = read_file(path)
+  assert_eq(read_back.length(), content.length())
+  // 测试清理
+  try delete_file(path) catch { _ => () } noraise { _ => () }
+}
+
+///|
+/// P3-7: 边界测试 — delete_file 删除文件
+test "delete_file 删除文件" {
+  let path = "test_hydro_delete.json"
+  write_file(path, "to be deleted")
+  assert_true(file_exists(path))
+  delete_file(path)
+  assert_false(file_exists(path))
 }

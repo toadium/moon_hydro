@@ -148,6 +148,8 @@ pub fn qingyijiang_basin_params() -> XinanjiangParams {
 /// 包含一场典型暴雨洪水过程的合成数据
 /// 降雨过程：双峰暴雨，持续24时段
 /// 观测径流：基于参数仿真生成的"伪观测"数据
+/// P2-10说明：观测数据由模型自身生成，仅用于自洽性验证
+/// 真实流域校验需接入实测水文数据
 pub fn zhuyi_basin_case() -> BasinCase {
   let area = 54500.0
   let dt = 6.0 // 6小时时段
@@ -433,6 +435,7 @@ pub fn calibrate_basin_case(
     seed: 42,
     target_metric: "nse",
     params: calib_params,
+    max_no_improve: 100,
   }
   dds_calibrate(
     config,

@@ -140,15 +140,26 @@ fn string_to_seed(s : String) -> UInt64 {
 }
 
 ///|
-/// 密码哈希（FNV-1a + splitmix二次混淆）
+/// 密码哈希（FNV-1a + splitmix多轮混淆）
+/// P1-6修复：增加多轮迭代(1000轮)增强抗彩虹表能力
+/// 注意：这是轻量级增强，生产环境仍应使用bcrypt/argon2
 pub fn hash_password(password : String) -> UInt64 {
   let seed = string_to_seed(password)
-  let rng = @splitmix.new(seed~)
-  rng.next_uint64()
+  let mut hash = seed
+  // 多轮混淆：每轮用splitmix重新散列，增加计算成本
+  for i in 0..<1000 {
+    let rng = @splitmix.new(seed=hash)
+    hash = rng.next_uint64()
+    // 混入轮次和原始种子防止碰撞
+    hash = hash ^ (seed + i.to_uint64())
+  }
+  hash
 }
 
 ///|
 /// 生成Token（splitmix伪随机）
+/// P2-12说明：当前使用splitmix伪随机数生成器，非加密安全级别
+/// 生产环境应替换为加密安全的随机源（如crypto.random）
 pub fn generate_token(seed~ : UInt64) -> String {
   let rng = @splitmix.new(seed~)
   let a = rng.next_uint64()

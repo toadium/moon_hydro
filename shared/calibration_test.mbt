@@ -90,6 +90,7 @@ test "dds_calibrate 小规模率定" {
     seed: 42,
     target_metric: "nse",
     params: calib_params,
+    max_no_improve: 100,
   }
   let result = dds_calibrate(cfg, forcings, observed, area=1000.0, dt=1.0)
   // 率定后NSE应为正值（匹配较好）
@@ -115,6 +116,7 @@ test "dds_calibrate 收敛性检查" {
     seed: 123,
     target_metric: "nse",
     params: default_calib_params(),
+    max_no_improve: 100,
   }
   let result = dds_calibrate(cfg, forcings, observed, area=500.0, dt=1.0)
   // 指标历史应非递减（DDS只接受更优解）

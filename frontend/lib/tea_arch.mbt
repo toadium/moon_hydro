@@ -165,6 +165,7 @@ pub fn AppModel::default() -> AppModel {
 
 ///|
 /// 构造初始Model
+/// P3-3：当前与default()相同，V1.0接入持久化后将从存储加载初始状态
 pub fn AppModel::initial() -> AppModel {
   AppModel::default()
 }

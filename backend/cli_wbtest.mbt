@@ -129,3 +129,32 @@ test "print_cli_result 带详情" {
   }
   print_cli_result(r)
 }
+
+///|
+/// P2-6修复验证：cli_auth/cli_ai_forecast/cli_gis/cli_flood返回CliResult
+test "cli_auth 返回CliResult" {
+  let result = cli_auth()
+  assert_eq(result.command, "auth")
+  assert_true(result.success)
+}
+
+///|
+test "cli_ai_forecast 返回CliResult" {
+  let result = cli_ai_forecast()
+  assert_eq(result.command, "ai_forecast")
+  assert_true(result.success)
+}
+
+///|
+test "cli_gis 返回CliResult" {
+  let result = cli_gis()
+  assert_eq(result.command, "gis")
+  assert_true(result.success)
+}
+
+///|
+test "cli_flood 返回CliResult" {
+  let result = cli_flood()
+  assert_eq(result.command, "flood")
+  assert_true(result.success)
+}

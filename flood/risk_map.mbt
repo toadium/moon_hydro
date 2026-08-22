@@ -91,6 +91,8 @@ pub fn classify_risk(depth : Double, velocity : Double) -> RiskLevel {
 /// 从淹没推演结果生成风险图
 ///
 /// 需要流速场（从hu/hv计算）
+/// 注：P2-7：传入的hu/hv为最终时刻值，非最大流速。
+/// 若需最大流速风险评估，应传入仿真过程中记录的max_hu/max_hv。
 pub fn generate_risk_map(
   max_depth : Array[Double],
   hu_final : Array[Double],
@@ -100,6 +102,7 @@ pub fn generate_risk_map(
 ) -> RiskMap {
   let n_total = nx * ny
   let levels : Array[RiskLevel] = Array::make(n_total, Safe)
+  // 注：此处的velocity为最终时刻流速，非最大流速
   let max_velocity = Array::make(n_total, 0.0)
   for k in 0..<n_total {
     let h = max_depth[k]
@@ -137,7 +140,11 @@ pub fn generate_risk_map_depth_only(
 
 ///|
 /// 风险统计
-pub fn risk_statistics(risk_map : RiskMap) -> RiskStatistics {
+/// P3-6：cell_area参数化，不再硬编码为1.0
+pub fn risk_statistics(
+  risk_map : RiskMap,
+  cell_area? : Double = 1.0,
+) -> RiskStatistics {
   let mut safe_count = 0
   let mut low_count = 0
   let mut moderate_count = 0
@@ -153,7 +160,6 @@ pub fn risk_statistics(risk_map : RiskMap) -> RiskStatistics {
     }
   }
   let total = risk_map.nx * risk_map.ny
-  let cell_area = 1.0 // 归一化面积
   {
     total_cells: total,
     safe_count,
@@ -185,10 +191,12 @@ pub(all) struct RiskStatistics {
 /// 生成ASCII艺术风险图
 ///
 /// 用字符表示风险等级：. o O # @
+/// P3-7：x/y方向使用独立步长，避免非方阵网格变形
 pub fn to_ascii_map(risk_map : RiskMap, max_width? : Int = 80) -> String {
   let nx = risk_map.nx
   let ny = risk_map.ny
   let step_x = if nx > max_width { (nx + max_width - 1) / max_width } else { 1 }
+  let step_y = if ny > max_width { (ny + max_width - 1) / max_width } else { 1 }
   let mut result = ""
   result = result +
     "图例: .=安全 o=低风险 O=中风险 #=高风险 @=极高风险\n"
@@ -199,7 +207,7 @@ pub fn to_ascii_map(risk_map : RiskMap, max_width? : Int = 80) -> String {
     }
     let mut row = ""
     for j in 0..<ny {
-      if j % step_x != 0 {
+      if j % step_y != 0 {
         continue
       }
       let k = i * ny + j
