@@ -8,7 +8,9 @@ import {
 }
 
 // Values
-pub fn file_exists(String) -> Bool
+pub fn delete_file(String) -> Unit raise
+
+pub fn file_exists(String) -> Bool raise
 
 pub fn generate_id(String, UInt64) -> String
 
@@ -21,6 +23,13 @@ pub(all) suberror FileError {
   FileNotFound(String)
   WriteFailed(String)
   ReadFailed(String)
+  DeleteFailed(String)
+  InvalidPath(String)
+} derive(ToJson, @debug.Debug, @json.FromJson)
+
+pub(all) suberror StoreError {
+  FileError(String)
+  JsonError(String)
 } derive(ToJson, @debug.Debug, @json.FromJson)
 
 // Types and methods

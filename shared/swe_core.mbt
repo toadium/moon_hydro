@@ -134,6 +134,10 @@ fn lax_friedrichs_flux(
 /// P1-7修复：不再就地修改输入grid，改为返回副本
 fn apply_boundary(grid : SWEGrid1D, boundary : SWEBoundary) -> SWEGrid1D {
   let nx = grid.nx
+  // P1修复：nx < 2 时无法应用边界条件，直接返回
+  if nx < 2 {
+    return grid
+  }
   // 复制数组避免修改原grid
   let h = Array::make(nx, 0.0)
   let hu = Array::make(nx, 0.0)

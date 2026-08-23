@@ -23,7 +23,11 @@ int32_t hydro_write_file(
     if (!f) return -1;
     size_t written = fwrite(content, 1, (size_t)content_len, f);
     fchmod(fileno(f), 0640);
-    fsync(fileno(f));
+    /* P2修复：检查fsync返回值，失败则中止写入 */
+    if (fsync(fileno(f)) != 0) {
+        fclose(f);
+        return -1;
+    }
     int close_err = fclose(f);
     if (close_err != 0) return -1;
     return (int32_t)(written == (size_t)content_len ? 0 : -1);
@@ -34,7 +38,11 @@ moonbit_bytes_t hydro_read_file(moonbit_bytes_t path) {
     FILE *f = fopen((const char *)path, "rb");
     if (!f) return moonbit_make_bytes(0, 0);
 
-    fseek(f, 0, SEEK_END);
+    /* P1修复：检查fseek返回值，失败则返回空 */
+    if (fseek(f, 0, SEEK_END) != 0) {
+        fclose(f);
+        return moonbit_make_bytes(0, 0);
+    }
     long size = ftell(f);
     if (size < 0) {
         fclose(f);
@@ -53,7 +61,10 @@ moonbit_bytes_t hydro_read_file(moonbit_bytes_t path) {
         return moonbit_make_bytes(0, 0);
     }
 
-    fseek(f, 0, SEEK_SET);
+    if (fseek(f, 0, SEEK_SET) != 0) {
+        fclose(f);
+        return moonbit_make_bytes(0, 0);
+    }
 
     /* P2-2: size == 0 is valid — return empty bytes (not an error) */
     if (size == 0) {

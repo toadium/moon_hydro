@@ -17,7 +17,7 @@ pub fn bench(name~ : String, n_iters~ : Int, () -> Unit) -> BenchResult
 
 pub fn bench_suite(suite_name~ : String, Array[BenchResult]) -> BenchSuiteResult
 
-pub fn calibrate_basin_case(BasinCase, _algorithm? : String) -> CalibResult
+pub fn calibrate_basin_case(BasinCase, algorithm? : String) -> CalibResult
 
 pub fn calibrate_json_endpoint(String) -> String raise
 
@@ -71,7 +71,7 @@ pub fn gumbel_estimate(Array[Double]) -> (Double, Double)
 
 pub fn gumbel_return_value(Double, Double, return_period~ : Double) -> Double
 
-pub fn hash_password(String) -> UInt64
+pub fn hash_password(String) -> String
 
 pub fn index_of_agreement(Array[Double], Array[Double]) -> Double
 
@@ -195,6 +195,8 @@ pub fn validate_all_basins() -> Array[BasinValidationResult]
 
 pub fn validate_basin_case(BasinCase) -> BasinValidationResult
 
+pub fn verify_password(String, String) -> Bool
+
 pub fn volume_relative_error(Array[Double], Array[Double]) -> Double
 
 pub fn xaj_json_endpoint(String) -> String raise
@@ -212,6 +214,7 @@ pub(all) suberror AuthError {
   TokenExpired(String)
   PermissionDenied(String)
   SchemeNotOwned(String)
+  RateLimited(String)
 } derive(ToJson, @debug.Debug, @json.FromJson)
 pub impl Show for AuthError
 
@@ -229,16 +232,19 @@ pub(all) struct AuthManager {
   usernames : Map[String, String]
   sessions : Map[String, Session]
   scheme_owners : Map[String, SchemeOwnership]
+  mut token_counter : UInt64
+  mut user_counter : UInt64
+  login_attempts : Map[String, (Int, UInt64)]
 } derive(ToJson, @debug.Debug, @json.FromJson)
 pub fn AuthManager::check_permission(Self, User, Permission) -> Unit raise
 pub fn AuthManager::check_scheme_access(Self, User, String, write? : Bool) -> Unit raise
 pub fn AuthManager::delete_user(Self, String) -> Bool
-pub fn AuthManager::grant_scheme_ownership(Self, user_id~ : String, scheme_id~ : String, is_public? : Bool) -> Unit
+pub fn AuthManager::grant_scheme_ownership(Self, user_id~ : String, scheme_id~ : String, is_public? : Bool, by? : User) -> Unit
 pub fn AuthManager::list_user_schemes(Self, String) -> Array[String]
 pub fn AuthManager::list_users(Self) -> Array[User]
 pub fn AuthManager::login(Self, username~ : String, password~ : String, timestamp~ : UInt64, ttl_seconds? : UInt64) -> String raise
 pub fn AuthManager::logout(Self, String) -> Bool
-pub fn AuthManager::make_scheme_public(Self, String) -> Bool
+pub fn AuthManager::make_scheme_public(Self, String, by? : User) -> Bool
 pub fn AuthManager::new() -> Self
 pub fn AuthManager::register(Self, username~ : String, password~ : String, role~ : Role, timestamp~ : UInt64) -> String raise
 pub fn AuthManager::stats(Self) -> String
@@ -348,6 +354,8 @@ pub(all) struct CalibrateRequest {
   dt : Double
   forcings : Array[ForcingData]
   observed : Array[Double]
+  algorithm : String
+  sceua_config : SCEUAConfig?
 } derive(ToJson, @debug.Debug, @json.FromJson)
 
 pub(all) struct CalibrateResponse {
@@ -381,7 +389,6 @@ pub(all) struct CouplingParams {
   cell_area : Double
   river_cells : Array[Int]
   base_flow_threshold : Double
-  n_river_cells : Int
 } derive(Default, ToJson, @debug.Debug, @json.FromJson)
 pub fn CouplingParams::default() -> Self
 
@@ -400,6 +407,7 @@ pub(all) struct DDSConfig {
   seed : UInt64
   target_metric : String
   params : Array[CalibParam]
+  max_no_improve : Int
 } derive(Default, ToJson, @debug.Debug, @json.FromJson)
 pub fn DDSConfig::default() -> Self
 
@@ -650,6 +658,7 @@ pub(all) struct SimTaskResult {
   nse : Double
   kge : Double
   pbias : Double
+  has_obs : Bool
   success : Bool
   error_message : String
 } derive(ToJson, @debug.Debug, @json.FromJson)
@@ -721,7 +730,7 @@ pub(all) struct TimeSeriesStats {
 pub(all) struct User {
   id : String
   username : String
-  password_hash : UInt64
+  password_hash : String
   role : Role
   created_at : UInt64
 } derive(ToJson, @debug.Debug, @json.FromJson)
@@ -742,6 +751,7 @@ pub(all) struct XajRunRequest {
   area : Double
   dt : Double
   forcings : Array[ForcingData]
+  observed : Array[Double]
 } derive(ToJson, @debug.Debug, @json.FromJson)
 
 pub(all) struct XajRunResponse {
@@ -808,7 +818,10 @@ pub(all) struct XinanjiangState {
   mut rg : Double
   mut e : Double
   mut q : Double
-} derive(ToJson, @debug.Debug, @json.FromJson)
+  mut qs : Double
+  mut qi : Double
+  mut qg : Double
+} derive(Default, ToJson, @debug.Debug, @json.FromJson)
 pub fn XinanjiangState::initial() -> Self
 
 // Type aliases

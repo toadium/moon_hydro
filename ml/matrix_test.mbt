@@ -71,7 +71,7 @@ test "mat_transpose" {
 ///|
 test "sigmoid" {
   let s0 = sigmoid(0.0)
-  assert_true(s0 - 0.5 < 0.0001)
+  assert_true((s0 - 0.5).abs() < 0.0001)
   let s_pos = sigmoid(10.0)
   assert_true(s_pos > 0.999)
   let s_neg = sigmoid(-10.0)
@@ -82,15 +82,15 @@ test "sigmoid" {
 test "vec_sigmoid" {
   let v = [0.0, 0.0]
   let r = vec_sigmoid(v)
-  assert_true(r[0] - 0.5 < 0.0001)
-  assert_true(r[1] - 0.5 < 0.0001)
+  assert_true((r[0] - 0.5).abs() < 0.0001)
+  assert_true((r[1] - 0.5).abs() < 0.0001)
 }
 
 ///|
 test "vec_tanh" {
   let v = [0.0, 1.0]
   let r = vec_tanh(v)
-  assert_true(r[0] < 0.0001)
+  assert_true(r[0].abs() < 0.0001)
   assert_true(r[1] > 0.7)
 }
 

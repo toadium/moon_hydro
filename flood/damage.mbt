@@ -175,6 +175,12 @@ pub fn estimate_damage(
   land_use : LandUseMap,
 ) -> DamageResult {
   let n_total = land_use.nx * land_use.ny
+  // P1修复：检查max_depth长度匹配，避免越界崩溃
+  let n_iter = if max_depth.length() < n_total {
+    max_depth.length()
+  } else {
+    n_total
+  }
   let mut total = 0.0
   let mut res_damage = 0.0
   let mut com_damage = 0.0
@@ -184,7 +190,7 @@ pub fn estimate_damage(
   let mut damaged = 0
   let mut max_dmg = 0.0
   let mut max_dmg_cell = -1
-  for k in 0..<n_total {
+  for k in 0..<n_iter {
     let h = max_depth[k]
     if h <= 0.0 {
       continue

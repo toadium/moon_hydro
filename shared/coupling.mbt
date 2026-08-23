@@ -229,7 +229,7 @@ pub fn couple_run(
   forcings : Array[ForcingData],
   swe_dt : Double,
 ) -> CouplingResult {
-  let xaj_state = XinanjiangState::initial()
+  let mut xaj_state = XinanjiangState::initial()
   let xaj_states : Array[XinanjiangState] = []
   let swe_h_series : Array[Array[Double]] = []
   let swe_hu_series : Array[Array[Double]] = []
@@ -275,6 +275,7 @@ pub fn couple_run(
     lateral_inflow_series.push(lateral_inflow)
     water_level_buf.push(river_level)
     current_swe = new_swe
+    xaj_state = new_xaj
   }
   {
     xaj_states,

@@ -28,7 +28,7 @@ test "polygon_area - 正方形" {
     name: "正方形",
   }
   let area = polygon_area(polygon)
-  assert_true(area - 10000.0 < 0.001)
+  assert_true((area - 10000.0).abs() < 0.001)
 }
 
 ///|
@@ -44,8 +44,8 @@ test "polygon_centroid - 正方形" {
     name: "正方形",
   }
   let c = polygon_centroid(polygon)
-  assert_true(c.x - 50.0 < 0.001)
-  assert_true(c.y - 50.0 < 0.001)
+  assert_true((c.x - 50.0).abs() < 0.001)
+  assert_true((c.y - 50.0).abs() < 0.001)
 }
 
 ///|

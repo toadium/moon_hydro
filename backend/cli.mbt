@@ -519,7 +519,7 @@ fn cli_json() -> CliResult raise {
 
 ///|
 /// 子命令: demo - 完整功能演示
-fn cli_demo() -> Unit raise {
+fn cli_demo() -> Unit {
   println("沐澜水文 V0.9 - 完整功能演示")
   println(repeat_str("=", 50))
   let commands : Array[String] = [
@@ -620,11 +620,8 @@ fn cli_persistence() -> CliResult raise {
   store.save_result(result_record)
   // JSON序列化演示
   let json_str = store.to_json_string()
-  let json_preview = if json_str.length() > 300 {
-    json_str[0:300].to_owned() + "..."
-  } else {
-    json_str
-  }
+  // P1修复：使用字符级安全截断，避免截断UTF-8多字节字符
+  let json_preview = safe_preview(json_str, 300)
   // 反序列化验证
   let store2 = @persistence.DataStore::from_json_string(json_str)
   let stats = store2.stats()

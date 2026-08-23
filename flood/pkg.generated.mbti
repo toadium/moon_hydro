@@ -25,7 +25,7 @@ pub fn generate_risk_map_depth_only(Array[Double], nx~ : Int, ny~ : Int) -> Risk
 
 pub fn inundation_stats(InundationResult) -> (Int, Double, Double, Double)
 
-pub fn risk_statistics(RiskMap) -> RiskStatistics
+pub fn risk_statistics(RiskMap, cell_area? : Double) -> RiskStatistics
 
 pub fn set_inflow(@shared.SWEGrid2D, i0~ : Int, i1~ : Int, j0~ : Int, j1~ : Int, h_value~ : Double, u_velocity? : Double, v_velocity? : Double) -> @shared.SWEGrid2D
 

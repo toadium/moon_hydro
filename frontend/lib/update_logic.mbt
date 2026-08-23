@@ -65,7 +65,7 @@ pub fn update(model : AppModel, msg : Msg) -> AppModel {
     SimulationFailed(err) =>
       {
         ..model,
-        sim_result: { ..model.sim_result, is_running: false },
+        sim_result: { ..model.sim_result, is_running: false, has_result: false }, // P2修复：失败时清除旧结果
         ui_state: { ..model.ui_state, loading: false },
         error_message: err,
       }

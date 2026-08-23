@@ -115,6 +115,9 @@ pub(all) struct SimResultState {
   pbias : Double
   has_result : Bool
   is_running : Bool
+  calib_metric : String
+  calib_value : Double
+  batch_summary : String
 } derive(Default, ToJson, @debug.Debug, @json.FromJson)
 
 pub(all) struct SlimSimRequest {
@@ -122,6 +125,7 @@ pub(all) struct SlimSimRequest {
   dt : Double
   rainfall : Array[Double]
   evaporation : Array[Double]
+  params : @shared.XinanjiangParams?
 } derive(Default, ToJson, @debug.Debug, @json.FromJson)
 
 pub(all) struct SlimSimResponse {

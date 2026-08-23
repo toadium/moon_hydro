@@ -38,7 +38,8 @@ pub fn prepare_sequences(
   let n = series.length()
   let inputs : Array[Array[Double]] = []
   let targets : Array[Array[Double]] = []
-  if n <= lookback {
+  // P1修复：lookback <= 0 时直接返回，避免负索引崩溃
+  if lookback <= 0 || n <= lookback {
     return (inputs, targets)
   }
   for i in 0..<(n - lookback) {
@@ -167,7 +168,7 @@ pub fn train_residual_lstm(
     }
     let weights = LSTMWeights::from_flat(flat, config.lstm_config)
     let lstm = LSTM::with_weights(config.lstm_config, weights)
-    let mse = lstm.mse(inputs, targets)
+    let mse = lstm.mse(adjusted_inputs, targets)
     if mse < best_mse {
       best_mse = mse
       best_flat = flat

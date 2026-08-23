@@ -41,6 +41,10 @@ extern "c" fn hydro_file_size(path : Bytes) -> Int = "hydro_file_size"
 ///|
 /// 路径遍历防护：拒绝包含 ".." 或绝对路径的路径
 fn validate_path(path : String) -> Unit raise {
+  // P1修复：拒绝包含null字节的路径，防止C FFI null字节注入
+  if path.contains("\u0000") {
+    raise FileError::InvalidPath("null byte in path: " + path)
+  }
   if path.contains("..") {
     raise FileError::InvalidPath("path traversal detected: " + path)
   }
@@ -86,6 +90,10 @@ pub fn read_file(path : String) -> String raise {
     raise FileError::FileNotFound(path)
   }
   let file_size = hydro_file_size(path_bytes)
+  // P1修复：file_size < 0 表示stat失败，不应静默返回空字符串
+  if file_size < 0 {
+    raise FileError::ReadFailed(path)
+  }
   let content_bytes = hydro_read_file(path_bytes)
   if file_size > 0 && content_bytes.length() == 0 {
     raise FileError::ReadFailed(path)

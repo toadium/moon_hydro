@@ -25,7 +25,7 @@ pub fn mat_vec_mul(Array[Array[Double]], Array[Double]) -> Array[Double]
 
 pub fn mat_zeros(Int, Int) -> Array[Array[Double]]
 
-pub fn prepare_rainfall_runoff(Array[Double], Array[Double], Int) -> (Array[Array[Double]], Array[Array[Double]])
+pub fn prepare_rainfall_runoff(Array[Double], Array[Double], Int, input_dim? : Int) -> (Array[Array[Double]], Array[Array[Double]])
 
 pub fn prepare_sequences(Array[Double], Int) -> (Array[Array[Double]], Array[Array[Double]])
 
@@ -74,7 +74,7 @@ pub(all) struct HybridConfig {
   n_forecast : Int
   train_ratio : Double
   seed : UInt64
-} derive(Default, ToJson, @debug.Debug, @json.FromJson)
+} derive(ToJson, @debug.Debug, @json.FromJson)
 
 pub(all) struct HybridResult {
   physical_forecast : Array[Double]
@@ -102,7 +102,7 @@ pub(all) struct LSTMConfig {
   input_dim : Int
   hidden_dim : Int
   output_dim : Int
-} derive(Default, ToJson, @debug.Debug, @json.FromJson)
+} derive(ToJson, @debug.Debug, @json.FromJson)
 
 pub(all) struct LSTMState {
   h : Array[Double]

@@ -8,6 +8,36 @@
 - mooncakes.io 包正式发布
 - 分布式集群仿真调度
 
+## [0.9.1] - 2026-08-24
+
+### 综述
+第二轮全面代码审查与修复。4路并行审查发现 17 P1 + 40 P2 + 50 P3 项问题，修复全部 17 项 P1（重要bug/崩溃/错误结果）及关键 P2 项。22 文件修改，+130 行，-57 行。moon check 0 错误 0 警告。
+
+### 修复 — P1 重要bug（17项）
+- **P1**: xaj_core compute_evaporation em=0 除零保护（em_safe 用极小值替代 0.0）
+- **P1**: xaj_core compute_source_split ex=-1 除零保护（加 ex_safe 守卫）
+- **P1**: swe_core apply_boundary nx=1 数组越界保护（nx<2 提前返回）
+- **P1**: coupling couple_run xaj_state 未更新修复（状态现在正确累积）
+- **P1**: calibration gaussian_perturbation Box-Muller NaN 修复（u1=1.0-next_double()）
+- **P1**: hybrid train_residual_lstm 全局搜索用错 input 数组修复（inputs→adjusted_inputs）
+- **P1**: risk_map generate_risk_map 动量当流速修复（除以水深得流速 m/s）
+- **P1**: hybrid prepare_sequences lookback<=0 崩溃保护
+- **P1**: damage estimate_damage 无长度检查修复（加 bounds check）
+- **P1**: cli_persistence UTF-8 字节截断修复（用 safe_preview）
+- **P1**: frontend main UTF-8 字节截断修复（加 char-safe preview）
+- **P1**: file_io validate_path null 字节注入防护
+- **P1**: fileio.c hydro_read_file fseek 返回值检查
+- **P1**: file_io read_file file_size<0 静默返回空修复
+- **P1**: release.yml actions/download-artifacts→download-artifact 修复
+- **P1**: 3 个编译警告清理（cli_demo/slim_json_endpoint unused raise, unused variable e）
+- **P1**: matrix_test/gis types_test 弱断言修复（用 .abs() 替代单向比较）
+
+### 修复 — P2 改进
+- **P2**: README 当前版本 V0.8→V0.9
+- **P2**: frontend SimulationFailed 清除旧 has_result
+- **P2**: frontend slim_run 使用实际加载的流域参数
+- **P2**: fileio.c fsync 返回值检查
+
 ## [0.9.0] - 2026-08-22
 
 ### 综述

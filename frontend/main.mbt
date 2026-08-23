@@ -1,10 +1,29 @@
 ///|
-/// 沐澜水文 frontend 入口 - V0.9
+/// 沐澜水文 frontend 入口 - V0.9.1
 ///
 /// TEA架构(Model/Msg/Update/View) + wasm_slim_model轻量化试算
 /// 后续V1.0接入Rabbita+Rui时，View转换为Rui组件树
-fn main raise {
-  println("===== 沐澜水文 frontend V0.9 - TEA架构演示 =====")
+
+/// P1修复：按字符截断字符串，避免截断UTF-8多字节字符
+fn safe_preview(s : String, max_bytes : Int) -> String {
+  if s.length() <= max_bytes {
+    return s
+  }
+  let buf = StringBuilder()
+  let mut byte_count = 0
+  for ch in s.iter() {
+    let ch_len = ch.to_string().length()
+    if byte_count + ch_len > max_bytes {
+      break
+    }
+    buf.write_char(ch)
+    byte_count = byte_count + ch_len
+  }
+  buf.to_string() + "..."
+}
+
+fn main {
+  println("===== 沐澜水文 frontend V0.9.1 - TEA架构演示 =====")
   // 初始化Model
   let mut model = @lib.AppModel::initial()
   println(
@@ -28,7 +47,7 @@ fn main raise {
     dt: model.sim_params.dt,
     rainfall: model.sim_params.forcings.map(fn(f) { f.rainfall }),
     evaporation: model.sim_params.forcings.map(fn(f) { f.evaporation }),
-    params: None,
+    params: Some(model.sim_params.params), // P2修复：使用实际加载的流域参数
   }
   let slim_result = @lib.slim_run(slim_request)
   println(
@@ -48,11 +67,7 @@ fn main raise {
   // 6. 生成视图并渲染为文本
   let view_node = @lib.view(model)
   let report = @lib.view_to_text(view_node)
-  let report_preview = if report.length() > 500 {
-    report[0:500].to_owned() + "..."
-  } else {
-    report
-  }
+  let report_preview = safe_preview(report, 500)
   println("\n===== 视图文本渲染 =====")
   println(report_preview)
   // 7. 轻量化试算演示
@@ -64,11 +79,7 @@ fn main raise {
   // 8. JSON端到端演示
   let json_request = slim_request.to_json().stringify()
   let json_response = @lib.slim_json_endpoint(json_request)
-  let resp_preview = if json_response.length() > 200 {
-    json_response[0:200].to_owned() + "..."
-  } else {
-    json_response
-  }
+  let resp_preview = safe_preview(json_response, 200)
   println("JSON响应: \{resp_preview}")
   // 9. 可用流域列表
   println("\n===== 可用流域 =====")

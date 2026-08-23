@@ -82,10 +82,11 @@ fn gaussian_perturbation(
   mean? : Double = 0.0,
   stddev? : Double = 1.0,
 ) -> Double {
-  let u1 = rng.next_double()
+  // P1修复：用1.0-next_double()保证u1∈(0,1]，避免ln(0)和ln(>1)的NaN
+  let u1 = 1.0 - rng.next_double()
   let u2 = rng.next_double()
   // Box-Muller变换（P2-13：仅使用cos分量，sin分量未复用，可优化为交替输出）
-  let z = @math.pow(-2.0 * @math.ln(u1 + 0.00001), 0.5) *
+  let z = @math.pow(-2.0 * @math.ln(u1), 0.5) *
     @math.cos(2.0 * @math.PI * u2)
   mean + stddev * z
 }

@@ -105,7 +105,12 @@ pub fn generate_risk_map(
     let h = max_depth[k]
     let hu = hu_final[k]
     let hv = hv_final[k]
-    let v = @math.pow(hu * hu + hv * hv, 0.5)
+    // P1修复：动量除以水深得流速(m/s)，非动量模长(m²/s)
+    let v = if h > 0.0 {
+      @math.pow(hu * hu + hv * hv, 0.5) / h
+    } else {
+      0.0
+    }
     final_velocity[k] = v
     levels[k] = classify_risk(h, v)
   }

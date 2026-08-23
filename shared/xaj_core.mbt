@@ -40,8 +40,8 @@ fn XinanjiangModel::compute_evaporation(
   let wu = state.wu
   let wl = state.wl
   let wd = state.wd
-  // P2-3修复：负蒸发能力保护，em < 0 时置零
-  let em_safe = if em < 0.0 { 0.0 } else { em }
+  // P2-3修复：负蒸发能力保护，em < 0 时用极小值避免除零
+  let em_safe = if em < 0.0000000001 { 0.0000000001 } else { em }
   let wl_over_wlm = if wlm <= 0.0 { 0.0 } else { wl / wlm }
   if p + wu >= em_safe {
     eu = em_safe
@@ -165,13 +165,15 @@ fn XinanjiangModel::compute_source_split(
       } else {
         s
       }
-      let mm_s = sm * (1.0 + ex)
-      let a_s = sm * (1.0 - @math.pow(1.0 - s_safe / sm, 1.0 / (1.0 + ex)))
+      // P1修复：ex <= -1 时除零保护，同 b_safe 模式
+      let ex_safe = if ex <= -1.0 { 0.0 } else { ex }
+      let mm_s = sm * (1.0 + ex_safe)
+      let a_s = sm * (1.0 - @math.pow(1.0 - s_safe / sm, 1.0 / (1.0 + ex_safe)))
       if r + a_s >= mm_s {
         rs = s_total - sm
       } else {
         rs = r + s_safe - sm +
-          mm_s * (1.0 - @math.pow((r + a_s) / mm_s, 1.0 / (1.0 + ex)))
+          mm_s * (1.0 - @math.pow((r + a_s) / mm_s, 1.0 / (1.0 + ex_safe)))
       }
       if rs > r {
         rs = r

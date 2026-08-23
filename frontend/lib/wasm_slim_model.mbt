@@ -95,7 +95,7 @@ pub fn slim_run(request : SlimSimRequest) -> SlimSimResponse {
 /// JSON端到端接口：JSON请求 → JSON响应
 ///
 /// 浏览器wasm-gc直接调用此函数完成试算
-pub fn slim_json_endpoint(json_str : String) -> String raise {
+pub fn slim_json_endpoint(json_str : String) -> String {
   try {
     let json = @json.parse(json_str)
     let request : SlimSimRequest = @json.from_json(json)
@@ -103,7 +103,7 @@ pub fn slim_json_endpoint(json_str : String) -> String raise {
     let resp_json = response.to_json()
     resp_json.stringify()
   } catch {
-    e => {
+    _ => {
       let err_response : SlimSimResponse = {
         runoff: [],
         peak_flow: 0.0,
