@@ -99,19 +99,13 @@ pub fn generate_risk_map(
 ) -> RiskMap {
   let n_total = nx * ny
   let levels : Array[RiskLevel] = Array::make(n_total, Safe)
-  // 注：此处的velocity为最终时刻流速，非最大流速
+  // T41修复：流速从最终时刻动量模长计算，不与max_depth（不同时刻）混用
   let final_velocity = Array::make(n_total, 0.0)
   for k in 0..<n_total {
     let h = max_depth[k]
     let hu = hu_final[k]
     let hv = hv_final[k]
-    let v = if h > 0.001 {
-      let u = hu / h
-      let vv = hv / h
-      @math.pow(u * u + vv * vv, 0.5)
-    } else {
-      0.0
-    }
+    let v = @math.pow(hu * hu + hv * hv, 0.5)
     final_velocity[k] = v
     levels[k] = classify_risk(h, v)
   }
@@ -211,13 +205,14 @@ pub fn to_ascii_map(risk_map : RiskMap, max_width? : Int = 80) -> String {
   result = result +
     "图例: .=安全 o=低风险 O=中风险 #=高风险 @=极高风险\n"
   result = result + "     (上游) N\n"
-  for i in 0..<nx {
-    if i % step_x != 0 {
+  // T42修复：外层迭代y轴(南北)，内层迭代x轴(东西)，与方向标注一致
+  for j in 0..<ny {
+    if j % step_y != 0 {
       continue
     }
     let mut row = ""
-    for j in 0..<ny {
-      if j % step_y != 0 {
+    for i in 0..<nx {
+      if i % step_x != 0 {
         continue
       }
       let k = i * ny + j

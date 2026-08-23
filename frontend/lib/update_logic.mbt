@@ -48,6 +48,7 @@ pub fn update(model : AppModel, msg : Msg) -> AppModel {
       {
         ..model,
         sim_result: {
+          ..model.sim_result,
           runoff_series: runoff,
           peak_flow,
           peak_time,
@@ -56,8 +57,6 @@ pub fn update(model : AppModel, msg : Msg) -> AppModel {
           pbias: result.pbias,
           has_result: true,
           is_running: false,
-          calib_metric: "",
-          calib_value: 0.0,
           batch_summary: "",
         },
         ui_state: { ..model.ui_state, loading: false },
@@ -85,7 +84,6 @@ pub fn update(model : AppModel, msg : Msg) -> AppModel {
           ..model.sim_result,
           calib_metric: "nse",
           calib_value: result.best_metric,
-          nse: result.best_metric,
         },
         ui_state: { ..model.ui_state, loading: false },
       }

@@ -9,9 +9,14 @@
 ///   timeseries, metrics, json, bench, persistence, auth,
 ///   ai_forecast, gis, flood, help
 fn main raise {
-  // P1-1修复：子命令分发器已就绪，当前默认运行demo
-  // 待MoonBit标准库提供argv后，改为 dispatch(argv[1])
-  dispatch("demo")
+  // T58修复：从命令行参数获取子命令，无参数时默认demo
+  let args = @env.args()
+  let cmd = if args.length() > 1 {
+    args[1]
+  } else {
+    "demo"
+  }
+  dispatch(cmd)
 }
 
 ///|

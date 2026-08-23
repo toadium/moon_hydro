@@ -90,6 +90,7 @@ pub(all) suberror AuthError {
   TokenExpired(String) // Token过期
   PermissionDenied(String) // 权限不足
   SchemeNotOwned(String) // 方案不属于该用户
+  RateLimited(String) // T37修复：登录频率限制
 } derive(Debug, ToJson, FromJson)
 
 ///|
@@ -103,6 +104,7 @@ pub impl Show for AuthError with fn to_string(self : AuthError) -> String {
     TokenExpired(t) => "Token已过期: \{t}"
     PermissionDenied(perm) => "权限不足: \{perm}"
     SchemeNotOwned(id) => "方案不属于该用户: \{id}"
+    RateLimited(name) => "登录频率受限: \{name}"
   }
 }
 
@@ -114,12 +116,14 @@ pub(all) struct AuthManager {
   sessions : Map[String, Session] // token -> Session
   scheme_owners : Map[String, SchemeOwnership] // scheme_id -> ownership
   mut token_counter : UInt64 // 单调递增计数器，防Token碰撞
+  mut user_counter : UInt64 // 单调递增计数器，防user_id碰撞
+  login_attempts : Map[String, (Int, UInt64)] // T37修复：username -> (失败次数, 最后尝试时间)
 } derive(Debug, ToJson, FromJson)
 
 ///|
 /// 构造空AuthManager
 pub fn AuthManager::new() -> AuthManager {
-  { users: {}, usernames: {}, sessions: {}, scheme_owners: {}, token_counter: 0UL }
+  { users: {}, usernames: {}, sessions: {}, scheme_owners: {}, token_counter: 0UL, user_counter: 0UL, login_attempts: {} }
 }
 
 ///|
@@ -198,7 +202,8 @@ pub fn AuthManager::register(
   if self.usernames.contains(username) {
     raise UserAlreadyExists(username)
   }
-  let user_id = "user_\{timestamp}_\{self.users.length()}"
+  self.user_counter = self.user_counter + 1UL
+  let user_id = "user_\{timestamp}_\{self.user_counter}"
   let user : User = {
     id: user_id,
     username,
@@ -222,14 +227,37 @@ pub fn AuthManager::login(
   timestamp~ : UInt64,
   ttl_seconds? : UInt64 = 86400UL,
 ) -> String raise {
+  // T37修复：登录频率限制（60秒内最多5次失败尝试）
+  let max_attempts = 5
+  let cooldown_ms = 60000UL
+  match self.login_attempts.get(username) {
+    Some((failures, last_time)) => {
+      if failures >= max_attempts && timestamp - last_time < cooldown_ms {
+        raise RateLimited(username)
+      }
+      // 冷却期过后重置计数
+      if timestamp - last_time >= cooldown_ms {
+        self.login_attempts[username] = (0, timestamp)
+      }
+    }
+    None => ()
+  }
   let user_id = match self.usernames.get(username) {
     Some(id) => id
     None => raise UserNotFound(username)
   }
   let user = self.users[user_id]
   if !verify_password(password, user.password_hash) {
+    // 记录失败尝试
+    let new_count = match self.login_attempts.get(username) {
+      Some((c, _)) => c + 1
+      None => 1
+    }
+    self.login_attempts[username] = (new_count, timestamp)
     raise InvalidPassword
   }
+  // 登录成功，清除失败计数
+  self.login_attempts[username] = (0, timestamp)
   self.token_counter = self.token_counter + 1UL
   let token = generate_token(
     seed=timestamp + string_to_seed(user.password_hash) + self.token_counter,
@@ -295,7 +323,6 @@ pub fn role_has_permission(role : Role, perm : Permission) -> Bool {
       }
     Viewer =>
       match perm {
-        SimRun => true
         SchemeRead => true
         _ => false
       }
@@ -307,10 +334,14 @@ pub fn role_has_permission(role : Role, perm : Permission) -> Bool {
 ///
 /// 成功返回Unit，失败抛出AuthError
 pub fn AuthManager::check_permission(
-  _self : AuthManager,
+  self : AuthManager,
   user : User,
   perm : Permission,
 ) -> Unit raise {
+  // T30修复：利用self校验用户确实存在于管理器中
+  if self.users.get(user.id) is None {
+    raise UserNotFound(user.id)
+  }
   if !role_has_permission(user.role, perm) {
     raise PermissionDenied(perm.to_string())
   }
@@ -323,7 +354,18 @@ pub fn AuthManager::grant_scheme_ownership(
   user_id~ : String,
   scheme_id~ : String,
   is_public? : Bool = false,
+  by? : User,
 ) -> Unit {
+  // T31修复：提供by参数时校验请求者具备SchemeWrite权限，无权限则不授予
+  match by {
+    Some(requester) =>
+      try {
+        self.check_permission(requester, SchemeWrite)
+      } catch {
+        _ => return
+      }
+    None => ()
+  }
   self.scheme_owners[scheme_id] = { scheme_id, owner_id: user_id, is_public }
 }
 
@@ -367,7 +409,18 @@ pub fn AuthManager::check_scheme_access(
 pub fn AuthManager::make_scheme_public(
   self : AuthManager,
   scheme_id : String,
+  by? : User,
 ) -> Bool {
+  // T31修复：提供by参数时校验请求者对方案有写权限，无权限则返回false
+  match by {
+    Some(requester) =>
+      try {
+        self.check_scheme_access(requester, scheme_id, write=true)
+      } catch {
+        _ => return false
+      }
+    None => ()
+  }
   match self.scheme_owners.get(scheme_id) {
     Some(ownership) => {
       self.scheme_owners[scheme_id] = { ..ownership, is_public: true }

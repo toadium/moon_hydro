@@ -14,7 +14,6 @@ pub(all) struct CouplingParams {
   cell_area : Double // 新安江单元面积(km²)
   river_cells : Array[Int] // SWE网格中河道对应单元索引
   base_flow_threshold : Double // 基流阈值(m³/s)，低于此值不反馈
-  n_river_cells : Int // 河道单元总数
 } derive(Debug, ToJson, FromJson, Default)
 
 ///|
@@ -37,7 +36,6 @@ pub fn CouplingParams::default() -> CouplingParams {
     cell_area: 100.0,
     river_cells: [],
     base_flow_threshold: 0.5,
-    n_river_cells: 0,
   }
 }
 
@@ -49,9 +47,11 @@ pub fn CouplingParams::default() -> CouplingParams {
 fn compute_lateral_inflow(
   xaj_state : XinanjiangState,
   params : CouplingParams,
+  dt : Double,
 ) -> Double {
   let total_runoff = xaj_state.rs + xaj_state.ri + xaj_state.rg
-  params.lateral_inflow_coeff * total_runoff * params.cell_area / 3.6
+  let dt_safe = if dt > 0.0 { dt } else { 1.0 }
+  params.lateral_inflow_coeff * total_runoff * params.cell_area / (3.6 * dt_safe)
 }
 
 ///|
@@ -116,21 +116,31 @@ fn inject_lateral_inflow(
 ///
 /// 调整深层张力水蓄量wd和自由水蓄量s
 fn apply_water_level_feedback(
+  xaj_model : XinanjiangModel,
   xaj_state : XinanjiangState,
   feedback : Double,
 ) -> Unit {
-  // 正反馈（河道水深大）：增加地下水储量
-  // 负反馈（河道水深小）：减少地下水储量
-  xaj_state.wd = xaj_state.wd + feedback
+  // feedback单位为m（SWE水深），wd/s单位为mm，需转换
+  let feedback_mm = feedback * 1000.0
+  let params = xaj_model.params
+  xaj_state.wd = xaj_state.wd + feedback_mm
   if xaj_state.wd < 0.0 {
     xaj_state.wd = 0.0
+  } else if xaj_state.wd > params.wdm {
+    // 钳制到深层张力水上限，防止反馈正失控
+    xaj_state.wd = params.wdm
   }
-  xaj_state.s = xaj_state.s + feedback * 0.5
+  xaj_state.s = xaj_state.s + feedback_mm * 0.5
   if xaj_state.s < 0.0 {
     xaj_state.s = 0.0
+  } else if xaj_state.s > params.sm {
+    // 钳制到自由水蓄水容量上限，防止ri/rg随s_total失控放大
+    xaj_state.s = params.sm
   }
-  // 更新总张力水蓄量
   xaj_state.w = xaj_state.wu + xaj_state.wl + xaj_state.wd
+  if xaj_state.w > params.wm {
+    xaj_state.w = params.wm
+  }
 }
 
 ///|
@@ -155,7 +165,7 @@ pub fn couple_step(
   // 1. 新安江单步仿真
   let new_xaj_state = xaj_model.step(forcing, xaj_state)
   // 2. 计算侧向入流
-  let lateral_inflow = compute_lateral_inflow(new_xaj_state, coupling_params)
+  let lateral_inflow = compute_lateral_inflow(new_xaj_state, coupling_params, xaj_model.dt)
   // 3. 复制SWE网格避免就地修改入参
   let h_copy = Array::make(swe_grid.nx, 0.0)
   let hu_copy = Array::make(swe_grid.nx, 0.0)
@@ -164,9 +174,8 @@ pub fn couple_step(
     hu_copy[i] = swe_grid.hu[i]
   }
   let swe_work = { ..swe_grid, h: h_copy, hu: hu_copy }
-  // 4. 注入侧向入流到SWE网格副本
-  inject_lateral_inflow(swe_work, lateral_inflow, coupling_params, swe_dt)
-  // 5. SWE子步循环推进（XAJ dt单位小时，SWE dt单位秒）
+  // 4-5. SWE子步循环推进（XAJ dt单位小时，SWE dt单位秒）
+  //      每个子步注入该子步对应的侧向入流量，保证时段内水量连续补给
   let n_substeps = if swe_dt <= 0.0 {
     1
   } else {
@@ -179,12 +188,13 @@ pub fn couple_step(
   }
   let mut current_swe = swe_work
   for _ in 0..<n_substeps {
+    inject_lateral_inflow(current_swe, lateral_inflow, coupling_params, swe_dt)
     current_swe = current_swe.step_lf(swe_dt, swe_boundary)
   }
   let new_swe_grid = current_swe
   // 6. 计算河道水位反馈
   let feedback = compute_water_level_feedback(new_swe_grid, coupling_params)
-  apply_water_level_feedback(new_xaj_state, feedback)
+  apply_water_level_feedback(xaj_model, new_xaj_state, feedback)
   // 返回（新安江状态, SWE网格, 侧向入流, 河道平均水位）
   let river_level = if coupling_params.river_cells.length() > 0 {
     let mut total = 0.0
@@ -264,21 +274,6 @@ pub fn couple_run(
     swe_hu_series.push(hu_copy)
     lateral_inflow_series.push(lateral_inflow)
     water_level_buf.push(river_level)
-    // 更新状态供下一步使用
-    xaj_state.w = new_xaj.w
-    xaj_state.wu = new_xaj.wu
-    xaj_state.wl = new_xaj.wl
-    xaj_state.wd = new_xaj.wd
-    xaj_state.s = new_xaj.s
-    xaj_state.r = new_xaj.r
-    xaj_state.rs = new_xaj.rs
-    xaj_state.ri = new_xaj.ri
-    xaj_state.rg = new_xaj.rg
-    xaj_state.e = new_xaj.e
-    xaj_state.q = new_xaj.q
-    xaj_state.qs = new_xaj.qs
-    xaj_state.qi = new_xaj.qi
-    xaj_state.qg = new_xaj.qg
     current_swe = new_swe
   }
   {

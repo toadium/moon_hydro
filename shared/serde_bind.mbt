@@ -53,13 +53,23 @@ pub fn parse_evaluate_request(json_str : String) -> EvaluateRequest raise {
 ///|
 /// 运行新安江仿真
 pub fn run_xaj(request : XajRunRequest) -> XajRunResponse {
+  // T33修复：输入校验
+  if request.area <= 0.0 || request.dt <= 0.0 {
+    abort("run_xaj: area和dt必须为正数")
+  }
+  if request.forcings.length() == 0 {
+    abort("run_xaj: forcings不能为空")
+  }
   let model = XinanjiangModel::new(
     params=request.params,
     area=request.area,
     dt=request.dt,
   )
   let result = model.run(request.forcings)
-  let (nse_val, kge_val, pbias_val) = if request.observed.length() > 0 {
+  // T32修复：观测长度与径流长度不匹配时不计算指标，避免静默返回错误值
+  let has_valid_obs = request.observed.length() > 0 &&
+    request.observed.length() == result.runoff_series.length()
+  let (nse_val, kge_val, pbias_val) = if has_valid_obs {
     (
       nse(request.observed, result.runoff_series),
       kge(request.observed, result.runoff_series),
@@ -80,6 +90,13 @@ pub fn run_xaj(request : XajRunRequest) -> XajRunResponse {
 ///|
 /// 运行SWE仿真
 pub fn run_swe(request : SweRunRequest) -> SweRunResponse {
+  // T33修复：输入校验
+  if request.grid.nx <= 0 || request.grid.dx <= 0.0 {
+    abort("run_swe: 网格参数nx和dx必须为正")
+  }
+  if request.config.dt <= 0.0 || request.config.n_steps < 0 {
+    abort("run_swe: 求解器参数dt和n_steps必须为正")
+  }
   let result = request.grid.run(request.config)
   let n = result.h_series.length()
   let final_h = if n > 0 { result.h_series[n - 1] } else { [] }
@@ -90,6 +107,16 @@ pub fn run_swe(request : SweRunRequest) -> SweRunResponse {
 ///|
 /// 运行耦合仿真
 pub fn run_couple(request : CoupleRunRequest) -> CoupleRunResponse {
+  // T33修复：输入校验
+  if request.area <= 0.0 || request.dt <= 0.0 {
+    abort("run_couple: area和dt必须为正数")
+  }
+  if request.forcings.length() == 0 {
+    abort("run_couple: forcings不能为空")
+  }
+  if request.swe_dt <= 0.0 {
+    abort("run_couple: swe_dt必须为正")
+  }
   let xaj_model = XinanjiangModel::new(
     params=request.params,
     area=request.area,
@@ -119,6 +146,33 @@ pub fn run_couple(request : CoupleRunRequest) -> CoupleRunResponse {
 ///|
 /// 运行参数率定
 pub fn run_calibrate(request : CalibrateRequest) -> CalibrateResponse {
+  // T33修复：输入校验
+  if request.area <= 0.0 || request.dt <= 0.0 {
+    abort("run_calibrate: area和dt必须为正数")
+  }
+  if request.forcings.length() == 0 {
+    abort("run_calibrate: forcings不能为空")
+  }
+  // T34修复：根据algorithm字段分派DDS或SCE-UA
+  if request.algorithm == "sceua" || request.algorithm == "sce-ua" {
+    let sceua_cfg = match request.sceua_config {
+      Some(c) => c
+      None => SCEUAConfig::default()
+    }
+    let result = sceua_calibrate(
+      sceua_cfg,
+      area=request.area,
+      dt=request.dt,
+      request.forcings,
+      request.observed,
+    )
+    return {
+      best_params: result.best_params,
+      best_metric: result.best_metric,
+      n_iter: result.n_iter,
+      converged: result.converged,
+    }
+  }
   let result = dds_calibrate(
     request.config,
     request.forcings,

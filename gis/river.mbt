@@ -55,10 +55,16 @@ pub fn RiverNetwork::compute_strahler_orders(self : RiverNetwork) -> Unit {
         }
       }
       // 更新下游节点的入度
-      let down_deg = in_degree[reach.to_node] - 1
-      in_degree[reach.to_node] = down_deg
-      if down_deg == 0 {
-        queue.push(reach.to_node)
+      // T46修复：悬空to_node（不在nodes中）时跳过，避免Map键不存在崩溃
+      match in_degree.get(reach.to_node) {
+        Some(deg) => {
+          let down_deg = deg - 1
+          in_degree[reach.to_node] = down_deg
+          if down_deg == 0 {
+            queue.push(reach.to_node)
+          }
+        }
+        None => ()
       }
     }
   }
@@ -86,10 +92,16 @@ pub fn RiverNetwork::topological_order(self : RiverNetwork) -> Array[Int] {
     head = head + 1
     for reach in self.downstream_reaches(node_id) {
       result.push(reach.id)
-      let down_deg = in_degree[reach.to_node] - 1
-      in_degree[reach.to_node] = down_deg
-      if down_deg == 0 {
-        queue.push(reach.to_node)
+      // T46修复：悬空to_node时跳过
+      match in_degree.get(reach.to_node) {
+        Some(deg) => {
+          let down_deg = deg - 1
+          in_degree[reach.to_node] = down_deg
+          if down_deg == 0 {
+            queue.push(reach.to_node)
+          }
+        }
+        None => ()
       }
     }
   }
@@ -271,7 +283,10 @@ pub fn extract_network_from_dem(
       network.nodes[node_id].node_type = Confluence
     } else if downstream.length() == 0 && upstream.length() > 0 {
       network.nodes[node_id].node_type = Outlet
-      network.outlet_id = node_id
+      // T47修复：多出口时保留首个出口，避免被后续出口覆盖
+      if network.outlet_id == -1 {
+        network.outlet_id = node_id
+      }
     }
   }
   // 计算Strahler河序

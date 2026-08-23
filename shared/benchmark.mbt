@@ -30,17 +30,29 @@ pub(all) struct BenchSuiteResult {
 ///
 /// 重复执行 fn n_iters 次，统计耗时
 pub fn bench(name~ : String, n_iters~ : Int, f : () -> Unit) -> BenchResult {
+  if n_iters <= 0 {
+    return {
+      name,
+      iterations: n_iters,
+      total_ms: 0.0,
+      mean_ms: 0.0,
+      min_ms: 0.0,
+      max_ms: 0.0,
+      stddev_ms: 0.0,
+      ops_per_sec: 0.0,
+    }
+  }
   let times : Array[Double] = []
   for _ in 0..<n_iters {
-    let start = @env.now().to_double()
+    let start = @env.now()
     f()
-    let elapsed = @env.now().to_double() - start
+    let elapsed = (@env.now() - start).to_double() / 1_000_000.0
     times.push(elapsed)
   }
   // 统计
   let mut sum = 0.0
-  let mut min_val = 999999999.0
-  let mut max_val = 0.0
+  let mut min_val = times[0]
+  let mut max_val = times[0]
   for t in times {
     sum = sum + t
     if t < min_val {
@@ -224,7 +236,6 @@ pub fn run_all_benchmarks() -> String {
     cell_area: 100.0,
     river_cells: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
     base_flow_threshold: 0.3,
-    n_river_cells: 10,
   }
   let swe_boundary : SWEBoundary = {
     left: SWEBoundaryType::SolidWall,

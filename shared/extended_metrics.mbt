@@ -201,7 +201,7 @@ pub fn persistence_index(
   }
   let mut sum_sq_err = 0.0
   let mut sum_sq_persist = 0.0
-  for i in 0..<n {
+  for i in 1..<n {
     let diff_err = observed[i] - simulated[i]
     sum_sq_err = sum_sq_err + diff_err * diff_err
   }

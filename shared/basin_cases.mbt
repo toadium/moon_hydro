@@ -426,9 +426,20 @@ pub fn generate_validation_report() -> ValidationReport {
 /// 对指定流域案例执行DDS率定，验证率定算法能否找到接近最优的参数
 pub fn calibrate_basin_case(
   case : BasinCase,
-  _algorithm? : String = "dds",
+  algorithm? : String = "dds",
 ) -> CalibResult {
   let calib_params = default_calib_params()
+  if algorithm == "sceua" || algorithm == "sce-ua" {
+    let result = sceua_calibrate_basin_case(case)
+    return {
+      best_params: result.best_params,
+      best_metric: result.best_metric,
+      metric_history: result.metric_history,
+      n_iter: result.n_iter,
+      converged: result.converged,
+    }
+  }
+  // 默认（及"dds"）：DDS率定
   let config : DDSConfig = {
     max_iter: 200,
     r: 0.2,

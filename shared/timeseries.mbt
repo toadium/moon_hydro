@@ -96,24 +96,23 @@ pub fn baseflow_separation(
   for v in streamflow {
     baseflow.push(v)
   }
-  // 多次前向-后向滤波
+  // 多次前向-后向滤波（每遍输入为上一遍的baseflow结果）
   for _ in 0..<passes {
-    // 前向滤波
+    // 前向滤波（输入为当前baseflow）
     let quickflow : Array[Double] = Array::make(n, 0.0)
     quickflow[0] = 0.0
     for i in 1..<n {
       let q = alpha * quickflow[i - 1] +
-        (1.0 + alpha) / 2.0 * (streamflow[i] - streamflow[i - 1])
+        (1.0 + alpha) / 2.0 * (baseflow[i] - baseflow[i - 1])
       quickflow[i] = if q > 0.0 {
         q
-      } else if q < streamflow[i] {
+      } else if q < baseflow[i] {
         q
       } else {
-        streamflow[i]
+        baseflow[i]
       }
-      // 确保quickflow不超过streamflow
-      if quickflow[i] > streamflow[i] {
-        quickflow[i] = streamflow[i]
+      if quickflow[i] > baseflow[i] {
+        quickflow[i] = baseflow[i]
       }
       if quickflow[i] < 0.0 {
         quickflow[i] = 0.0
@@ -127,18 +126,15 @@ pub fn baseflow_separation(
       let q = alpha * quickflow_b[idx + 1] +
         (1.0 + alpha) / 2.0 * (quickflow[idx] - quickflow[idx + 1])
       quickflow_b[idx] = if q > 0.0 { q } else { 0.0 }
-      if quickflow_b[idx] > streamflow[idx] {
-        quickflow_b[idx] = streamflow[idx]
+      if quickflow_b[idx] > baseflow[idx] {
+        quickflow_b[idx] = baseflow[idx]
       }
     }
-    // 基流 = 总流 - 快速流
+    // 基流 = 输入 - 快速流
     for i in 0..<n {
-      baseflow[i] = streamflow[i] - quickflow_b[i]
+      baseflow[i] = baseflow[i] - quickflow_b[i]
       if baseflow[i] < 0.0 {
         baseflow[i] = 0.0
-      }
-      if baseflow[i] > streamflow[i] {
-        baseflow[i] = streamflow[i]
       }
     }
   }
@@ -207,6 +203,9 @@ pub fn gumbel_return_value(
   beta : Double,
   return_period~ : Double,
 ) -> Double {
+  if return_period <= 1.0 {
+    return @double.not_a_number
+  }
   let p = 1.0 / return_period
   let x = mu - beta * @math.ln(-@math.ln(1.0 - p))
   x

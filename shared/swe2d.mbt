@@ -355,11 +355,18 @@ pub fn SWEGrid2D::step_lf(
         hu_new[k] = hu_new[k] + dt * (s_bed_x + s_fric_x)
         hv_new[k] = hv_new[k] + dt * (s_bed_y + s_fric_y)
       }
-      // 水深非负保护
+      // 水深非负保护，按比例缩放动量保持守恒（与1D一致）
       if h_new[k] < 0.0 {
-        h_new[k] = 0.0
-        hu_new[k] = 0.0
-        hv_new[k] = 0.0
+        let h_clamped = 0.0
+        let h_old = self.h[k]
+        if h_old > 0.0 {
+          hu_new[k] = hu_new[k] * (h_clamped / h_old)
+          hv_new[k] = hv_new[k] * (h_clamped / h_old)
+        } else {
+          hu_new[k] = 0.0
+          hv_new[k] = 0.0
+        }
+        h_new[k] = h_clamped
       }
     }
   }

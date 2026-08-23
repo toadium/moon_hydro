@@ -1,5 +1,6 @@
 import {
   "moonbitlang/core/math",
+  "moonbitlang/core/double",
   "moonbitlang/core/quickcheck/splitmix",
   "moonbitlang/core/json",
   "moonbitlang/core/env",

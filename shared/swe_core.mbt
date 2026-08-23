@@ -10,10 +10,6 @@
 /// 其中 Sf = n²u|u|/h^(4/3) 为Manning摩阻坡度
 
 ///|
-/// 重力加速度(m/s²)
-let g_gravity : Double = 9.81
-
-///|
 /// 一维浅水方程网格状态
 ///
 /// nx: 网格单元数
@@ -299,6 +295,9 @@ pub fn SWEGrid1D::run(self : SWEGrid1D, config : SWESolverConfig) -> SWEResult {
       if grid.h[i] < -0.001 || grid.h[i] > 1000000.0 {
         stable = false
       }
+    }
+    if !stable {
+      break
     }
     h_series.push(h_copy)
     hu_series.push(hu_copy)

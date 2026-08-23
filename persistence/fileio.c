@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
+#include <stdint.h>
+#include <unistd.h>
 #include <sys/stat.h>
 #include "moonbit.h"
 
@@ -21,7 +23,7 @@ int32_t hydro_write_file(
     if (!f) return -1;
     size_t written = fwrite(content, 1, (size_t)content_len, f);
     fchmod(fileno(f), 0640);
-    /* Check fclose return value (P3-1) */
+    fsync(fileno(f));
     int close_err = fclose(f);
     if (close_err != 0) return -1;
     return (int32_t)(written == (size_t)content_len ? 0 : -1);
@@ -83,4 +85,13 @@ MOONBIT_FFI_EXPORT
 int32_t hydro_delete_file(moonbit_bytes_t path) {
     int err = remove((const char *)path);
     return (int32_t)(err == 0 ? 0 : -1);
+}
+
+/* Get file size: returns size in bytes, or -1 on error */
+MOONBIT_FFI_EXPORT
+int32_t hydro_file_size(moonbit_bytes_t path) {
+    struct stat st;
+    if (stat((const char *)path, &st) != 0) return -1;
+    if (st.st_size > INT32_MAX) return -1;
+    return (int32_t)st.st_size;
 }

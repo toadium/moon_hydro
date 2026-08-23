@@ -203,7 +203,7 @@ fn cce_evolution(
   target_metric : String,
   template : Array[CalibParam],
   n_cce : Int,
-  _rng : @splitmix.RandomState,
+  rng : @splitmix.RandomState,
   n_evals : Ref[Int],
 ) -> Array[SamplePoint] {
   let n = complex.length()
@@ -235,17 +235,44 @@ fn cce_evolution(
         0
       }
     })
-    // 选取子单纯形：前 q 个点（q = dim + 1）
+    // T21修复：随机选取q个不同点构成子单纯形（标准SCE-UA CCE）
     let q = if dim + 1 < n { dim + 1 } else { n }
-    // 最差点索引 q-1
-    let worst_idx = q - 1
-    // 计算质心（排除最差点）
+    let indices : Array[Int] = []
+    for i in 0..<n {
+      indices.push(i)
+    }
+    // 部分Fisher-Yates洗牌，选取q个不重复索引
+    for i in 0..<q {
+      let j_raw = (rng.next_double() * (n - i).to_double()).to_int()
+      let j = i + (if j_raw >= n - i { n - i - 1 } else { j_raw })
+      let tmp = indices[i]
+      indices[i] = indices[j]
+      indices[j] = tmp
+    }
     let sub_points : Array[SamplePoint] = []
     for i in 0..<q {
-      sub_points.push(points[i])
+      sub_points.push(points[indices[i]])
     }
-    let centroid = compute_centroid(sub_points, worst_idx)
-    let worst = points[worst_idx]
+    // 按fitness升序对子单纯形排序（插入排序），定位最差点
+    let order : Array[Int] = []
+    for i in 0..<q {
+      order.push(i)
+    }
+    for i in 1..<q {
+      let key = order[i]
+      let key_fit = sub_points[key].fitness
+      let mut k = i - 1
+      while k >= 0 && sub_points[order[k]].fitness > key_fit {
+        order[k + 1] = order[k]
+        k = k - 1
+      }
+      order[k + 1] = key
+    }
+    let worst_local = q - 1
+    let worst_pos = indices[order[worst_local]]
+    // 计算质心（排除最差点）
+    let centroid = compute_centroid(sub_points, worst_local)
+    let worst = sub_points[worst_local]
     // 反射点：xr = centroid + alpha × (centroid - worst)
     let reflected : Array[Double] = []
     for j in 0..<dim {
@@ -259,7 +286,7 @@ fn cce_evolution(
     // 比较反射点与最好点
     let best_fitness = points[0].fitness
     let second_worst_fitness = if q >= 2 {
-      points[q - 2].fitness
+      sub_points[order[q - 2]].fitness
     } else {
       worst.fitness
     }
@@ -278,20 +305,20 @@ fn cce_evolution(
       n_evals.val = n_evals.val + 1
       if expanded_fitness < reflected_fitness {
         // 接受扩张点
-        points[worst_idx] = {
+        points[worst_pos] = {
           params: expanded_clamped,
           fitness: expanded_fitness,
         }
       } else {
         // 接受反射点
-        points[worst_idx] = {
+        points[worst_pos] = {
           params: reflected_clamped,
           fitness: reflected_fitness,
         }
       }
     } else if reflected_fitness < second_worst_fitness {
       // 反射点次优：接受
-      points[worst_idx] = {
+      points[worst_pos] = {
         params: reflected_clamped,
         fitness: reflected_fitness,
       }
@@ -313,7 +340,7 @@ fn cce_evolution(
       n_evals.val = n_evals.val + 1
       if contracted_fitness < worst.fitness {
         // 接受收缩点
-        points[worst_idx] = {
+        points[worst_pos] = {
           params: contracted_clamped,
           fitness: contracted_fitness,
         }

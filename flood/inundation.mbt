@@ -132,7 +132,7 @@ pub fn simulate_inundation(
   let n_total = nx * ny
   let max_depth = Array::make(n_total, 0.0)
   let arrival_time = Array::make(n_total, -1.0)
-  let last_wet_time = Array::make(n_total, 0.0)
+  let wet_duration = Array::make(n_total, 0.0)
   let mut current_grid = grid
   let mut stable = true
   let mut steps_done = 0
@@ -175,7 +175,8 @@ pub fn simulate_inundation(
         if arrival_time[k] < 0.0 {
           arrival_time[k] = current_time
         }
-        last_wet_time[k] = current_time
+        // T45修复：累计实际淹没时间，不包含干旱间隙
+        wet_duration[k] = wet_duration[k] + dt_eff
       }
       // 稳定性检查
       if h < -0.001 || h > 1000000.0 {
@@ -203,7 +204,7 @@ pub fn simulate_inundation(
   let mut inundated_count = 0
   for k in 0..<n_total {
     if arrival_time[k] >= 0.0 {
-      inundation_duration[k] = last_wet_time[k] - arrival_time[k]
+      inundation_duration[k] = wet_duration[k]
       if max_depth[k] > config.depth_threshold {
         inundated_count = inundated_count + 1
       }

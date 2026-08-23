@@ -288,7 +288,7 @@ fn render_text(sb : StringBuilder, node : ViewNode, indent : Int) -> Unit {
     VButton(text, _msg) => sb <+ "\{prefix}[按钮: \{text}]\n"
     VInput(label, value) => sb <+ "\{prefix}[输入: \{label}=\{value}]\n"
     VSelect(label, options, idx) => {
-      let current = if idx < options.length() { options[idx] } else { "" }
+      let current = if idx >= 0 && idx < options.length() { options[idx] } else { "" }
       sb <+ "\{prefix}[选择: \{label}=\{current}]\n"
     }
     VLoading(msg) => sb <+ "\{prefix}[加载中] \{msg}\n"

@@ -26,7 +26,6 @@ test "couple_step 无降雨无入流耦合" {
     cell_area: 100.0,
     river_cells: [5, 6, 7, 8, 9],
     base_flow_threshold: 0.5,
-    n_river_cells: 5,
   }
   let boundary : SWEBoundary = { left: Transmissive, right: Transmissive }
   let forcing : ForcingData = {
@@ -62,7 +61,6 @@ test "couple_step 有降雨产生侧向入流" {
     cell_area: 100.0,
     river_cells: [5, 6, 7, 8, 9],
     base_flow_threshold: 0.5,
-    n_river_cells: 5,
   }
   let boundary : SWEBoundary = { left: SolidWall, right: Transmissive }
   let forcing : ForcingData = {
@@ -98,7 +96,6 @@ test "couple_run 完整耦合仿真" {
     cell_area: 100.0,
     river_cells: [10, 11, 12, 13, 14],
     base_flow_threshold: 0.3,
-    n_river_cells: 5,
   }
   let boundary : SWEBoundary = { left: SolidWall, right: Transmissive }
   let forcings : Array[ForcingData] = [
@@ -137,7 +134,6 @@ test "couple_run 无河道单元时不注入" {
     cell_area: 100.0,
     river_cells: [],
     base_flow_threshold: 0.5,
-    n_river_cells: 0,
   }
   let boundary : SWEBoundary = { left: Transmissive, right: Transmissive }
   let forcings : Array[ForcingData] = [
@@ -169,7 +165,6 @@ test "couple_run 河道水位反馈新安江" {
     cell_area: 100.0,
     river_cells: [8, 9, 10, 11, 12],
     base_flow_threshold: 0.5,
-    n_river_cells: 5,
   }
   let boundary : SWEBoundary = { left: SolidWall, right: Transmissive }
   let forcings : Array[ForcingData] = [

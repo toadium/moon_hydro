@@ -133,6 +133,25 @@ pub fn train_residual_lstm(
   if inputs.length() == 0 {
     return LSTM::new(config.lstm_config, seed=config.seed)
   }
+  // P0修复：当lookback≠input_dim时，通过填充/截断使输入维度匹配
+  let input_dim = config.lstm_config.input_dim
+  let adjusted_inputs : Array[Array[Double]] = []
+  for input in inputs {
+    let adjusted : Array[Double] = []
+    if input.length() >= input_dim {
+      for k in 0..<input_dim {
+        adjusted.push(input[k])
+      }
+    } else {
+      for v in input {
+        adjusted.push(v)
+      }
+      for _ in input.length()..<input_dim {
+        adjusted.push(0.0)
+      }
+    }
+    adjusted_inputs.push(adjusted)
+  }
   // 多起点随机搜索 + 自适应步长局部微调
   let weight_count = lstm_weight_count(config.lstm_config)
   let rng = @splitmix.new(seed=config.seed)
@@ -169,7 +188,7 @@ pub fn train_residual_lstm(
         }
         let weights = LSTMWeights::from_flat(flat, config.lstm_config)
         let lstm = LSTM::with_weights(config.lstm_config, weights)
-        let mse = lstm.mse(inputs, targets)
+    let mse = lstm.mse(adjusted_inputs, targets)
         if mse < best_mse {
           best_mse = mse
           best_flat = flat

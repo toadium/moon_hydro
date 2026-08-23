@@ -57,6 +57,9 @@ fn XinanjiangModel::compute_evaporation(
     } else {
       el = wl
       ed = c * (em - eu) - el
+      if ed < 0.0 {
+        ed = 0.0
+      }
       if ed > wd {
         ed = wd
       }
@@ -113,10 +116,11 @@ fn XinanjiangModel::compute_runoff(
   if r < 0.0 {
     r = 0.0
   }
-  let r_im = im * pe
+  let pe_eff = if pe > 0.0 { pe } else { 0.0 }
+  let r_im = im * pe_eff
   let r_b = (1.0 - im) * r
   r = r_im + r_b
-  state.w = w_safe + pe - r
+  state.w = w_safe - r
   if state.w < 0.0 {
     state.w = 0.0
   }
@@ -148,17 +152,34 @@ fn XinanjiangModel::compute_source_split(
   let mut ri = 0.0
   let mut rg = 0.0
   if fr > 0.0 {
-    let s_ratio = if sm > 0.0 { s / sm } else { 0.0 }
-    let s_ratio_safe = if s_ratio < 0.0 {
-      0.0
-    } else if s_ratio > 1.0 {
-      1.0
+    let s_total = s + r
+    if sm > 0.0 {
+      let s_safe = if s < 0.0 {
+        0.0
+      } else if s > sm {
+        sm
+      } else {
+        s
+      }
+      let mm_s = sm * (1.0 + ex)
+      let a_s = sm * (1.0 - @math.pow(1.0 - s_safe / sm, 1.0 / (1.0 + ex)))
+      if r + a_s >= mm_s {
+        rs = s_total - sm
+      } else {
+        rs = r + s_safe - sm +
+          mm_s * (1.0 - @math.pow((r + a_s) / mm_s, 1.0 / (1.0 + ex)))
+      }
+      if rs > r {
+        rs = r
+      }
+      if rs < 0.0 {
+        rs = 0.0
+      }
     } else {
-      s_ratio
+      rs = if r > 0.0 { r } else { 0.0 }
     }
-    rs = r * (fr + (1.0 - fr) * @math.pow(s_ratio_safe, ex))
-    ri = ki * s * fr
-    rg = kg * s * fr
+    ri = ki * s_total * fr
+    rg = kg * s_total * fr
   } else {
     rs = r
     ri = 0.0
@@ -233,23 +254,8 @@ fn XinanjiangModel::run_impl(
   let state = XinanjiangState::initial()
   let runoff_series : Array[Double] = []
   let state_series : Array[XinanjiangState] = []
-  let mut prev_qs = 0.0
-  let mut prev_qi = 0.0
-  let mut prev_qg = 0.0
   for forcing in forcings {
-    let p = forcing.rainfall
-    let em = forcing.evaporation
-    self.compute_evaporation(p, em, state)
-    let pe = p - state.e
-    let r = self.compute_runoff(pe, state)
-    self.compute_source_split(r, state)
-    let (qs, qi, qg) = self.compute_routing(state, prev_qs, prev_qi, prev_qg)
-    prev_qs = qs
-    prev_qi = qi
-    prev_qg = qg
-    state.qs = qs
-    state.qi = qi
-    state.qg = qg
+    ignore(self.step_impl(forcing, state))
     runoff_series.push(state.q)
     state_series.push({
       w: state.w,

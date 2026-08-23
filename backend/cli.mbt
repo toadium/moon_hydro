@@ -17,11 +17,31 @@ struct CliResult {
 ///|
 /// 重复字符串n次
 fn repeat_str(s : String, n : Int) -> String {
-  let mut result = ""
+  // T62修复：使用StringBuilder避免O(n²)字符串拼接
+  let buf = StringBuilder()
   for _ in 0..<n {
-    result = result + s
+    buf.write_string(s)
   }
-  result
+  buf.to_string()
+}
+
+///|
+/// T61修复：按字符截断字符串，避免截断UTF-8多字节字符
+fn safe_preview(s : String, max_bytes : Int) -> String {
+  if s.length() <= max_bytes {
+    return s
+  }
+  let buf = StringBuilder()
+  let mut byte_count = 0
+  for ch in s.iter() {
+    let ch_len = ch.to_string().length()
+    if byte_count + ch_len > max_bytes {
+      break
+    }
+    buf.write_char(ch)
+    byte_count = byte_count + ch_len
+  }
+  buf.to_string() + "..."
 }
 
 ///|
@@ -397,7 +417,6 @@ fn cli_coupling() -> CliResult {
     cell_area: 100.0,
     river_cells: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
     base_flow_threshold: 0.3,
-    n_river_cells: 10,
   }
   let swe_boundary : @shared.SWEBoundary = {
     left: @shared.SWEBoundaryType::SolidWall,
@@ -486,16 +505,9 @@ fn cli_json() -> CliResult raise {
   }
   let request_json = @shared.to_json_string(request)
   let response_json = @shared.xaj_json_endpoint(request_json)
-  let req_preview = if request_json.length() > 100 {
-    request_json[0:100].to_owned() + "..."
-  } else {
-    request_json
-  }
-  let resp_preview = if response_json.length() > 100 {
-    response_json[0:100].to_owned() + "..."
-  } else {
-    response_json
-  }
+  // T61修复：使用字符级安全截断，避免截断UTF-8多字节字符
+  let req_preview = safe_preview(request_json, 100)
+  let resp_preview = safe_preview(response_json, 100)
   let detail = "请求JSON: \{req_preview}\n响应JSON: \{resp_preview}"
   {
     command: "json",

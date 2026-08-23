@@ -181,6 +181,8 @@ test "CalibrateRequest JSON往返" {
     dt: 1.0,
     forcings: mock_flood_rainfall(duration=5),
     observed: [1.0, 2.0, 3.0, 4.0, 5.0],
+    algorithm: "dds",
+    sceua_config: None,
   }
   let json_str = to_json_string(request)
   let parsed = parse_calibrate_request(json_str)
@@ -211,6 +213,8 @@ test "run_calibrate 率定服务" {
     dt: 1.0,
     forcings,
     observed,
+    algorithm: "dds",
+    sceua_config: None,
   }
   let response = run_calibrate(request)
   assert_true(response.best_metric > 0.0)
@@ -269,7 +273,6 @@ test "run_couple 耦合仿真服务" {
       cell_area: 100.0,
       river_cells: [10, 11, 12, 13, 14],
       base_flow_threshold: 0.3,
-      n_river_cells: 5,
     },
     swe_dt: 0.005,
     boundary: {

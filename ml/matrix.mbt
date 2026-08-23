@@ -25,12 +25,12 @@ pub fn mat_zeros(rows : Int, cols : Int) -> Array[Array[Double]] {
 }
 
 ///|
-/// 向量加法（维度安全：取较短向量长度避免越界）
+/// 向量加法
 pub fn vec_add(a : Array[Double], b : Array[Double]) -> Array[Double] {
   if a.length() != b.length() {
     abort("vec_add: dimension mismatch")
   }
-  let n = if a.length() < b.length() { a.length() } else { b.length() }
+  let n = a.length()
   let result = vec_zeros(n)
   for i in 0..<n {
     result[i] = a[i] + b[i]
@@ -39,12 +39,12 @@ pub fn vec_add(a : Array[Double], b : Array[Double]) -> Array[Double] {
 }
 
 ///|
-/// 向量逐元素乘法（维度安全：取较短向量长度避免越界）
+/// 向量逐元素乘法
 pub fn vec_mul(a : Array[Double], b : Array[Double]) -> Array[Double] {
   if a.length() != b.length() {
     abort("vec_mul: dimension mismatch")
   }
-  let n = if a.length() < b.length() { a.length() } else { b.length() }
+  let n = a.length()
   let result = vec_zeros(n)
   for i in 0..<n {
     result[i] = a[i] * b[i]
@@ -168,12 +168,12 @@ pub fn vec_tanh(v : Array[Double]) -> Array[Double] {
 }
 
 ///|
-/// 向量点积（维度安全：取较短向量长度避免越界）
+/// 向量点积
 pub fn vec_dot(a : Array[Double], b : Array[Double]) -> Double {
   if a.length() != b.length() {
     abort("vec_dot: dimension mismatch")
   }
-  let n = if a.length() < b.length() { a.length() } else { b.length() }
+  let n = a.length()
   let mut sum = 0.0
   for i in 0..<n {
     sum = sum + a[i] * b[i]
@@ -182,7 +182,7 @@ pub fn vec_dot(a : Array[Double], b : Array[Double]) -> Double {
 }
 
 ///|
-/// 向量L2范数（P3-1：使用sqrt替代pow提升精度和性能）
+/// 向量L2范数
 pub fn vec_norm(a : Array[Double]) -> Double {
   @math.pow(vec_dot(a, a), 0.5)
 }

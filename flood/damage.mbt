@@ -140,8 +140,8 @@ pub fn damage_ratio(depth : Double, land_type : LandUseType) -> Double {
         1.0
       }
     Forest =>
-      // 林地：损失较小
-      if depth < 1.0 {
+      // 林地：损失较小，0~2m线性升至0.1封顶（曲线连续）
+      if depth < 2.0 {
         depth * 0.05
       } else {
         0.1

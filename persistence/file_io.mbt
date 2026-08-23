@@ -10,6 +10,8 @@ pub(all) suberror FileError {
   FileNotFound(String)
   WriteFailed(String)
   ReadFailed(String)
+  DeleteFailed(String)
+  InvalidPath(String)
 } derive(Debug, ToJson, FromJson)
 
 ///|
@@ -32,11 +34,25 @@ extern "c" fn hydro_read_file(path : Bytes) -> Bytes = "hydro_read_file"
 extern "c" fn hydro_file_exists(path : Bytes) -> Int = "hydro_file_exists"
 
 ///|
-/// 路径遍历防护：拒绝包含 ".." 的路径
-fn validate_path(path : String) -> Unit {
+/// C FFI: 获取文件大小
+#borrow(path)
+extern "c" fn hydro_file_size(path : Bytes) -> Int = "hydro_file_size"
+
+///|
+/// 路径遍历防护：拒绝包含 ".." 或绝对路径的路径
+fn validate_path(path : String) -> Unit raise {
   if path.contains("..") {
-    abort("path traversal detected: " + path)
+    raise FileError::InvalidPath("path traversal detected: " + path)
   }
+  if path.length() > 0 && path[0] == 47 {
+    raise FileError::InvalidPath("absolute path not allowed: " + path)
+  }
+}
+
+///|
+/// T11: 将路径字符串编码为null终止的Bytes（供C FFI使用）
+fn encode_path(path : String) -> Bytes {
+  @utf8.encode(path) + Bytes::make(1, b'\x00')
 }
 
 ///|
@@ -45,7 +61,7 @@ fn validate_path(path : String) -> Unit {
 /// 成功返回Unit，失败抛出FileError
 pub fn write_file(path : String, content : String) -> Unit raise {
   validate_path(path)
-  let path_bytes = @utf8.encode(path)
+  let path_bytes = encode_path(path)
   let content_bytes = @utf8.encode(content)
   let result = hydro_write_file(
     path_bytes,
@@ -64,12 +80,15 @@ pub fn write_file(path : String, content : String) -> Unit raise {
 /// 空文件返回空字符串，文件不存在抛出FileNotFound。
 pub fn read_file(path : String) -> String raise {
   validate_path(path)
-  let path_bytes = @utf8.encode(path)
-  // P2-2: 先检查文件是否存在，区分"文件不存在"和"空文件"
+  let path_bytes = encode_path(path)
   if hydro_file_exists(path_bytes) == 0 {
     raise FileError::FileNotFound(path)
   }
+  let file_size = hydro_file_size(path_bytes)
   let content_bytes = hydro_read_file(path_bytes)
+  if file_size > 0 && content_bytes.length() == 0 {
+    raise FileError::ReadFailed(path)
+  }
   @utf8.decode(content_bytes)
 }
 
@@ -77,8 +96,9 @@ pub fn read_file(path : String) -> String raise {
 /// 检查文件是否存在
 ///
 /// P2-3: 使用专用C函数检查，空文件也返回true
-pub fn file_exists(path : String) -> Bool {
-  let path_bytes = @utf8.encode(path)
+pub fn file_exists(path : String) -> Bool raise {
+  validate_path(path)
+  let path_bytes = encode_path(path)
   hydro_file_exists(path_bytes) == 1
 }
 
@@ -93,10 +113,10 @@ extern "c" fn hydro_delete_file(path : Bytes) -> Int = "hydro_delete_file"
 /// P2-4: 用于测试清理，成功返回Unit，失败抛出FileError
 pub fn delete_file(path : String) -> Unit raise {
   validate_path(path)
-  let path_bytes = @utf8.encode(path)
+  let path_bytes = encode_path(path)
   let result = hydro_delete_file(path_bytes)
   if result != 0 {
-    raise FileError::WriteFailed(path)
+    raise FileError::DeleteFailed(path)
   }
 }
 
@@ -109,9 +129,15 @@ pub fn DataStore::save_to_file(self : DataStore, path : String) -> Unit raise {
 
 ///|
 /// 从JSON文件加载DataStore
+///
+/// T57: 错误包装为StoreError，区分文件I/O错误和JSON解析错误
 pub fn DataStore::load_from_file(path : String) -> DataStore raise {
-  let json_str = read_file(path)
-  DataStore::from_json_string(json_str)
+  let json_str = try read_file(path) catch {
+    e => raise StoreError::FileError(e.to_string())
+  }
+  try DataStore::from_json_string(json_str) catch {
+    e => raise StoreError::JsonError(e.to_string())
+  }
 }
 
 ///|

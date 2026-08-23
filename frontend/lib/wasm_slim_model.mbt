@@ -42,6 +42,16 @@ pub fn slim_run(request : SlimSimRequest) -> SlimSimResponse {
       error: "降雨蒸发序列长度不匹配",
     }
   }
+  if request.area <= 0.0 || request.dt <= 0.0 {
+    return {
+      runoff: [],
+      peak_flow: 0.0,
+      peak_time: 0,
+      total_volume: 0.0,
+      success: false,
+      error: "area和dt必须为正数",
+    }
+  }
   // 构造forcings
   let forcings : Array[@shared.ForcingData] = []
   for i in 0..<n {

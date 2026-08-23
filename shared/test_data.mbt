@@ -368,7 +368,6 @@ pub fn mock_coupling_params(
     cell_area: basin.area,
     river_cells,
     base_flow_threshold: 0.3,
-    n_river_cells: river_cells.length(),
   }
 }
 

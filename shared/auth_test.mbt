@@ -43,7 +43,7 @@ test "role_has_permission - Engineer" {
 
 ///|
 test "role_has_permission - Viewer只读" {
-  assert_true(role_has_permission(Role::Viewer, SimRun))
+  assert_false(role_has_permission(Role::Viewer, SimRun))
   assert_true(role_has_permission(Role::Viewer, SchemeRead))
   assert_false(role_has_permission(Role::Viewer, Calibrate))
   assert_false(role_has_permission(Role::Viewer, SchemeWrite))

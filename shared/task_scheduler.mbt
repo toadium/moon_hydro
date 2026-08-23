@@ -67,6 +67,9 @@ pub impl Default for TaskScheduler with fn default() {
 ///|
 /// 添加任务到队列
 pub fn TaskScheduler::add_task(self : TaskScheduler, task : SimTask) -> Unit {
+  if self.status.contains(task.task_id) {
+    return
+  }
   self.tasks.push(task)
   self.status[task.task_id] = Pending
 }
@@ -113,7 +116,7 @@ pub fn run_task(task : SimTask) -> TaskExecResult {
       success: false,
       result: None,
       error: "forcings为空",
-      duration_ms: end_time - start_time,
+      duration_ms: (end_time - start_time) / 1_000_000UL,
     }
   }
   let model = XinanjiangModel::new(
@@ -128,7 +131,7 @@ pub fn run_task(task : SimTask) -> TaskExecResult {
     success: true,
     result: Some(result),
     error: "",
-    duration_ms: end_time - start_time,
+    duration_ms: (end_time - start_time) / 1_000_000UL,
   }
 }
 
@@ -169,16 +172,17 @@ pub fn TaskScheduler::run(
   self : TaskScheduler,
   progress_callback : (ProgressInfo) -> Unit,
 ) -> Unit {
+  let mut completed = 0
   for task in self.tasks {
     self.status[task.task_id] = Running
     let result = run_task(task)
     self.results.push(result)
     if result.success {
       self.status[task.task_id] = Completed
+      completed = completed + 1
     } else {
       self.status[task.task_id] = Failed
     }
-    let completed = self.completed_count()
     let total = self.tasks.length()
     let progress : ProgressInfo = {
       completed,
@@ -208,10 +212,7 @@ pub fn TaskScheduler::get_status(
   self : TaskScheduler,
   task_id : String,
 ) -> TaskStatus? {
-  match self.status.get(task_id) {
-    Some(s) => Some(s)
-    None => None
-  }
+  self.status.get(task_id)
 }
 
 ///|

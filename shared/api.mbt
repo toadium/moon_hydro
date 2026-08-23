@@ -70,6 +70,8 @@ pub(all) struct CalibrateRequest {
   dt : Double
   forcings : Array[ForcingData]
   observed : Array[Double]
+  algorithm : String // T34修复：支持"dds"或"sceua"
+  sceua_config : Option[SCEUAConfig] // SCE-UA配置（algorithm="sceua"时使用）
 } derive(Debug, ToJson, FromJson)
 
 ///|

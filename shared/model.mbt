@@ -1,4 +1,8 @@
 ///|
+/// 重力加速度(m/s²)
+let g_gravity : Double = 9.81
+
+///|
 /// 新安江模型参数组合（17+项）
 ///
 /// 三层蓄水容量满足 wm = wum + wlm + wdm
@@ -18,7 +22,7 @@ pub(all) struct XinanjiangParams {
   cg : Double // 地下水汇流消退系数
   ci : Double // 壤中流汇流消退系数
   cs : Double // 地表水汇流消退系数
-  ke : Double // 壤中流消退系数(备用)
+  ke : Double // Muskingum K参数(槽蓄时间常数)
   x : Double // Muskingum x参数
   y : Double // Muskingum y参数
   n : Int // 单位线时段数
@@ -53,7 +57,7 @@ pub(all) struct XinanjiangState {
   mut qs : Double // 地表水汇流分量(m³/s) P1-1修复：保存路由状态
   mut qi : Double // 壤中流汇流分量(m³/s)
   mut qg : Double // 地下水汇流分量(m³/s)
-} derive(Debug, ToJson, FromJson)
+} derive(Debug, ToJson, FromJson, Default)
 
 ///|
 /// 气象驱动时序数据

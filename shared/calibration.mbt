@@ -117,7 +117,8 @@ fn dds_perturb(
   }
   // 随机选择dim个参数进行扰动
   for _ in 0..<dim {
-    let idx = rng.next_int().abs() % n
+    let raw = rng.next_int()
+    let idx = if raw == -2147483648 { 0 } else { raw.abs() % n }
     let p = new_params[idx]
     // 扰动量 = r × (upper - lower) × gaussian
     let range = p.upper - p.lower

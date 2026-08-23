@@ -46,6 +46,9 @@ pub(all) struct ParameterSet {
 
 ///|
 /// 数据存储
+///
+/// T54: 非线程安全——内部使用可变Map/Array，仅限单线程使用。
+/// 若需并发访问，请封装为带锁的SyncDataStore或改为不可变值类型+CAS替换。
 pub(all) struct DataStore {
   schemes : Map[String, SimulationScheme] // 仿真方案
   results : Array[ResultRecord] // 仿真结果记录
@@ -83,20 +86,25 @@ pub fn DataStore::load_scheme(
 }
 
 ///|
-/// 列出所有方案ID
+/// 列出所有方案ID（排序输出）
 pub fn DataStore::list_schemes(self : DataStore) -> Array[String] {
   let ids : Array[String] = []
   for id, _ in self.schemes {
     ids.push(id)
   }
+  ids.sort()
   ids
 }
 
 ///|
 /// 删除仿真方案
+///
+/// T56: 级联删除results中所有scheme_id == id的记录
 pub fn DataStore::delete_scheme(self : DataStore, id : String) -> Bool {
   if self.schemes.contains(id) {
     ignore(self.schemes.remove(id))
+    // T56: 级联删除关联结果
+    self.results.retain(fn(r) { r.scheme_id != id })
     true
   } else {
     false
@@ -105,7 +113,15 @@ pub fn DataStore::delete_scheme(self : DataStore, id : String) -> Bool {
 
 ///|
 /// 保存仿真结果
+///
+/// T55: 按id去重（upsert语义）——已存在同id记录则替换，否则追加
 pub fn DataStore::save_result(self : DataStore, result : ResultRecord) -> Unit {
+  for i in 0..<self.results.length() {
+    if self.results[i].id == result.id {
+      self.results[i] = result
+      return
+    }
+  }
   self.results.push(result)
 }
 
@@ -127,11 +143,7 @@ pub fn DataStore::list_results(
 ///|
 /// 列出所有结果
 pub fn DataStore::list_all_results(self : DataStore) -> Array[ResultRecord] {
-  let found : Array[ResultRecord] = []
-  for r in self.results {
-    found.push(r)
-  }
-  found
+  self.results.copy()
 }
 
 ///|
@@ -149,19 +161,17 @@ pub fn DataStore::load_param_set(
   self : DataStore,
   id : String,
 ) -> ParameterSet? {
-  match self.param_sets.get(id) {
-    Some(p) => Some(p)
-    None => None
-  }
+  self.param_sets.get(id)
 }
 
 ///|
-/// 列出所有参数集ID
+/// 列出所有参数集ID（排序输出）
 pub fn DataStore::list_param_sets(self : DataStore) -> Array[String] {
   let ids : Array[String] = []
   for id, _ in self.param_sets {
     ids.push(id)
   }
+  ids.sort()
   ids
 }
 
@@ -196,7 +206,17 @@ pub fn DataStore::from_json_string(json_str : String) -> DataStore raise {
 }
 
 ///|
-/// ID生成计数器，避免同prefix+timestamp碰撞
+/// T57: 存储层错误，包装FileError和JSON错误
+pub(all) suberror StoreError {
+  FileError(String)
+  JsonError(String)
+} derive(Debug, ToJson, FromJson)
+
+///|
+/// T53: ID生成计数器，避免同prefix+timestamp碰撞
+///
+/// 注意：非线程安全——全局可变Ref计数器，多协程并发调用存在竞争。
+/// 测试间存在隐式顺序耦合（计数器值取决于先前调用次数）。
 let id_counter : Ref[UInt64] = { val: 0UL }
 
 ///|

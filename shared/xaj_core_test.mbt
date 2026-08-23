@@ -113,8 +113,9 @@ test "XinanjiangModel::run 完整仿真-退水过程" {
   let result = model.run(forcings)
   // 第一时段有降雨，应有产流
   assert_true(result.runoff_series[0] >= 0.0)
-  // 后续时段无雨，径流应逐渐衰减（退水）
-  // 注：由于初始状态为0，第一时段产流可能较小，主要测试不报错
+  // 退水过程：无雨时段径流应单调递减
+  assert_true(result.runoff_series[1] >= result.runoff_series[2])
+  assert_true(result.runoff_series[2] >= result.runoff_series[3])
 }
 
 ///|

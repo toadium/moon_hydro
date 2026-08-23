@@ -71,6 +71,39 @@ pub(all) struct BatchSummaryStats {
 pub fn run_sim_task(task : SimTask) -> SimTaskResult {
   let task_id = task.task_id
   let basin_name = task.basin_name
+  // T24修复：输入校验，非法入参走失败路径而非产生无意义结果
+  if task.area <= 0.0 || task.dt <= 0.0 {
+    return {
+      task_id,
+      basin_name,
+      runoff_series: [],
+      peak_flow: 0.0,
+      peak_time: 0,
+      total_volume: 0.0,
+      nse: 0.0,
+      kge: 0.0,
+      pbias: 0.0,
+      has_obs: false,
+      success: false,
+      error_message: "invalid area or dt (must be positive)",
+    }
+  }
+  if task.forcings.length() == 0 {
+    return {
+      task_id,
+      basin_name,
+      runoff_series: [],
+      peak_flow: 0.0,
+      peak_time: 0,
+      total_volume: 0.0,
+      nse: 0.0,
+      kge: 0.0,
+      pbias: 0.0,
+      has_obs: false,
+      success: false,
+      error_message: "empty forcings",
+    }
+  }
   let model = XinanjiangModel::new(
     params=task.params,
     area=task.area,
