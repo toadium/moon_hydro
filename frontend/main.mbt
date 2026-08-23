@@ -1,10 +1,10 @@
 ///|
-/// 沐澜水文 frontend 入口 - V0.8
+/// 沐澜水文 frontend 入口 - V0.9
 ///
 /// TEA架构(Model/Msg/Update/View) + wasm_slim_model轻量化试算
 /// 后续V1.0接入Rabbita+Rui时，View转换为Rui组件树
 fn main raise {
-  println("===== 沐澜水文 frontend V0.4 - TEA架构演示 =====")
+  println("===== 沐澜水文 frontend V0.9 - TEA架构演示 =====")
   // 初始化Model
   let mut model = @lib.AppModel::initial()
   println(
@@ -26,20 +26,8 @@ fn main raise {
   let slim_request : @lib.SlimSimRequest = {
     area: model.sim_params.area,
     dt: model.sim_params.dt,
-    rainfall: [
-      model.sim_params.forcings[0].rainfall,
-      model.sim_params.forcings[1].rainfall,
-      model.sim_params.forcings[2].rainfall,
-      model.sim_params.forcings[3].rainfall,
-      model.sim_params.forcings[4].rainfall,
-    ],
-    evaporation: [
-      model.sim_params.forcings[0].evaporation,
-      model.sim_params.forcings[1].evaporation,
-      model.sim_params.forcings[2].evaporation,
-      model.sim_params.forcings[3].evaporation,
-      model.sim_params.forcings[4].evaporation,
-    ],
+    rainfall: model.sim_params.forcings.map(fn(f) { f.rainfall }),
+    evaporation: model.sim_params.forcings.map(fn(f) { f.evaporation }),
   }
   let slim_result = @lib.slim_run(slim_request)
   println(

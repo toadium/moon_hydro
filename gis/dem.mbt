@@ -187,6 +187,9 @@ pub fn delineate_watershed(
   outlet_i~ : Int,
   outlet_j~ : Int,
 ) -> Array[(Int, Int)] {
+  if outlet_i < 0 || outlet_i >= fd.ny || outlet_j < 0 || outlet_j >= fd.nx {
+    return []
+  }
   // 反向追溯：找到所有流向最终到达出口的单元
   let watershed : Array[(Int, Int)] = []
   // 标记数组

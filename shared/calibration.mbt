@@ -58,8 +58,13 @@ fn dds_dimension(iter : Int, max_iter : Int, n_params : Int) -> Int {
   if iter >= max_iter {
     return 1
   }
-  let progress = iter.to_double() / max_iter.to_double()
-  let dim_ratio = 1.0 - @math.pow(progress, 0.5)
+  let iter_d = iter.to_double()
+  let max_d = max_iter.to_double()
+  let dim_ratio = if max_d <= 1.0 {
+    0.0
+  } else {
+    1.0 - @math.ln(iter_d) / @math.ln(max_d)
+  }
   let dim = (dim_ratio * n_params.to_double()).to_int()
   if dim < 1 {
     1

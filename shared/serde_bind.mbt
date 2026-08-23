@@ -59,11 +59,20 @@ pub fn run_xaj(request : XajRunRequest) -> XajRunResponse {
     dt=request.dt,
   )
   let result = model.run(request.forcings)
+  let (nse_val, kge_val, pbias_val) = if request.observed.length() > 0 {
+    (
+      nse(request.observed, result.runoff_series),
+      kge(request.observed, result.runoff_series),
+      pbias(request.observed, result.runoff_series),
+    )
+  } else {
+    (0.0, 0.0, 0.0)
+  }
   {
     runoff_series: result.runoff_series,
-    nse: result.nse,
-    kge: result.kge,
-    pbias: result.pbias,
+    nse: nse_val,
+    kge: kge_val,
+    pbias: pbias_val,
     state_count: result.state_series.length(),
   }
 }

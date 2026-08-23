@@ -97,7 +97,7 @@ pub fn damage_ratio(depth : Double, land_type : LandUseType) -> Double {
       } else if depth < 2.0 {
         0.25 + (depth - 1.0) * 0.2
       } else if depth < 3.0 {
-        0.45 + (depth - 2.0) * 0.1
+        0.45 + (depth - 2.0) * 0.25
       } else {
         0.7
       }
@@ -110,7 +110,7 @@ pub fn damage_ratio(depth : Double, land_type : LandUseType) -> Double {
       } else if depth < 2.0 {
         0.35 + (depth - 1.0) * 0.25
       } else if depth < 3.0 {
-        0.6 + (depth - 2.0) * 0.12
+        0.6 + (depth - 2.0) * 0.25
       } else {
         0.85
       }
@@ -123,7 +123,7 @@ pub fn damage_ratio(depth : Double, land_type : LandUseType) -> Double {
       } else if depth < 2.0 {
         0.3 + (depth - 1.0) * 0.22
       } else if depth < 3.0 {
-        0.52 + (depth - 2.0) * 0.14
+        0.52 + (depth - 2.0) * 0.28
       } else {
         0.8
       }
@@ -183,7 +183,7 @@ pub fn estimate_damage(
   let mut forest_damage = 0.0
   let mut damaged = 0
   let mut max_dmg = 0.0
-  let mut max_dmg_cell = 0
+  let mut max_dmg_cell = -1
   for k in 0..<n_total {
     let h = max_depth[k]
     if h <= 0.0 {

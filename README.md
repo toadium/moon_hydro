@@ -6,8 +6,8 @@
 [![PR Check](https://github.com/toadium/moon_hydro/actions/workflows/pr-check.yml/badge.svg)](https://github.com/toadium/moon_hydro/actions/workflows/pr-check.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![MoonBit](https://img.shields.io/badge/MoonBit-0.1.20260819-blue)](https://moonbitlang.com)
-[![Tests](https://img.shields.io/badge/tests-368%20%C3%97%204%20backends-green)]()
-[![Version](https://img.shields.io/badge/version-0.8.0-orange)]()
+[![Tests](https://img.shields.io/badge/tests-373%20%C3%97%204%20backends-green)]()
+[![Version](https://img.shields.io/badge/version-0.9.0-orange)]()
 
 ---
 
@@ -112,7 +112,7 @@ moon test --target native
 moon run --target native backend
 
 # 运行性能基准测试
-moon run --target native backend benchmark
+moon run --target native backend bench
 
 # 运行AI混合预报演示
 moon run --target native backend ai_forecast
@@ -141,7 +141,7 @@ moon run --target native backend flood
 | `timeseries` | 时间序列分析 |
 | `metrics` | 扩展评价指标计算 |
 | `persistence` | 持久化存储演示（方案/结果/参数库 CRUD） |
-| `benchmark` | 性能基准测试（10 项基准） |
+| `bench` | 性能基准测试（10 项基准） |
 | `auth` | 权限框架演示（用户/鉴权/方案隔离） |
 | `ai_forecast` | AI 混合预报演示（LSTM 残差校正） |
 | `gis` | GIS 接口演示（DEM 流向/汇流累积/河网提取） |
@@ -221,7 +221,7 @@ moon_hydro/
 
 ## 性能基准
 
-`moon run --target native backend benchmark` 输出 10 项基准测试结果（native 后端，典型值）：
+`moon run --target native backend bench` 输出 10 项基准测试结果（native 后端，典型值）：
 
 | 基准测试 | 规模 | 典型吞吐 |
 |----------|------|----------|
@@ -257,7 +257,7 @@ moon_hydro/
 
 ## 开发路线
 
-详见 [roadmap.md](roadmap.md)。当前版本 **V0.8**，四后端 368 测试全通过。
+详见 [roadmap.md](roadmap.md)。当前版本 **V0.8**，四后端 373 测试全通过。
 
 | 版本 | 状态 | 核心内容 |
 |------|------|----------|

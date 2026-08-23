@@ -1,6 +1,7 @@
 # MoonBit build artifacts
 _build/
 target/
+dist/
 
 # MoonBit toolchain
 .moon/
@@ -9,7 +10,7 @@ target/
 test_hydro_*.json
 
 # IDE
-.codeartsdoer/
+.codearts/
 .vscode/
 .idea/
 

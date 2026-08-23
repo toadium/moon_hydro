@@ -220,24 +220,31 @@ pub fn SWEGrid1D::step_lf(
     // 源项：底坡 + Manning摩阻
     let dz = bounded.z[i + 1] - bounded.z[i - 1]
     let h_avg = h_new[i]
-    if h_avg > 0.001 {
+    if h_avg > 0.0 {
+      let h_fric = if h_avg < 0.001 { 0.001 } else { h_avg }
       let u_avg = hu_new[i] / h_avg
       let n_val = bounded.n_manning[i]
       // 底坡源项：-gh∂z/∂x
       let s_bed = -g_gravity * h_avg * dz / (2.0 * dx)
-      // Manning摩阻源项：-g*n²*u*|u|/h^(4/3)
+      // Manning摩阻源项：-g*n²*u*|u|/h^(4/3)，小水深钳制防发散
       let s_friction = -g_gravity *
         n_val *
         n_val *
         u_avg *
         u_avg.abs() *
-        @math.pow(h_avg, -4.0 / 3.0)
+        @math.pow(h_fric, -4.0 / 3.0)
       hu_new[i] = hu_new[i] + dt * (s_bed + s_friction)
     }
-    // 水深非负保护
+    // 水深非负保护，按比例缩放动量保持守恒
     if h_new[i] < 0.0 {
-      h_new[i] = 0.0
-      hu_new[i] = 0.0
+      let h_clamped = 0.0
+      let h_old = bounded.h[i]
+      if h_old > 0.0 {
+        hu_new[i] = hu_new[i] * (h_clamped / h_old)
+      } else {
+        hu_new[i] = 0.0
+      }
+      h_new[i] = h_clamped
     }
   }
   // 边界单元使用已应用边界条件的值

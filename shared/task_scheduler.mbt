@@ -106,6 +106,16 @@ pub fn TaskScheduler::completed_count(self : TaskScheduler) -> Int {
 /// 若未来扩展引入可能失败的操作（如文件IO），应在此添加异常捕获
 pub fn run_task(task : SimTask) -> TaskExecResult {
   let start_time = @env.now()
+  if task.forcings.length() == 0 {
+    let end_time = @env.now()
+    return {
+      task_id: task.task_id,
+      success: false,
+      result: None,
+      error: "forcings为空",
+      duration_ms: end_time - start_time,
+    }
+  }
   let model = XinanjiangModel::new(
     params=task.params,
     area=task.area,

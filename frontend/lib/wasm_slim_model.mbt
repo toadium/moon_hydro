@@ -48,8 +48,7 @@ pub fn slim_run(request : SlimSimRequest) -> SlimSimResponse {
     forcings.push({
       rainfall: request.rainfall[i],
       evaporation: request.evaporation[i],
-      // P2-9修复：使用ISO格式时间戳，与backend保持一致
-      datetime: "2026-09-01T\{if i < 10 { "0" } else { "" }}\{i}:00",
+      datetime: "t\{i}",
     })
   }
   // 使用默认参数运行仿真
@@ -82,11 +81,25 @@ pub fn slim_run(request : SlimSimRequest) -> SlimSimResponse {
 ///
 /// 浏览器wasm-gc直接调用此函数完成试算
 pub fn slim_json_endpoint(json_str : String) -> String raise {
-  let json = @json.parse(json_str)
-  let request : SlimSimRequest = @json.from_json(json)
-  let response = slim_run(request)
-  let resp_json = response.to_json()
-  resp_json.stringify()
+  try {
+    let json = @json.parse(json_str)
+    let request : SlimSimRequest = @json.from_json(json)
+    let response = slim_run(request)
+    let resp_json = response.to_json()
+    resp_json.stringify()
+  } catch {
+    e => {
+      let err_response : SlimSimResponse = {
+        runoff: [],
+        peak_flow: 0.0,
+        peak_time: 0,
+        total_volume: 0.0,
+        success: false,
+        error: e.to_string(),
+      }
+      err_response.to_json().stringify()
+    }
+  }
 }
 
 ///|

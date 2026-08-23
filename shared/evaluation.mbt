@@ -137,8 +137,11 @@ pub fn peak_relative_error(
   observed : Array[Double],
   simulated : Array[Double],
 ) -> Double {
-  let mut obs_peak = 0.0
-  let mut sim_peak = 0.0
+  if observed.length() == 0 || simulated.length() == 0 {
+    return 0.0
+  }
+  let mut obs_peak = observed[0]
+  let mut sim_peak = simulated[0]
   for v in observed {
     if v > obs_peak {
       obs_peak = v
@@ -190,13 +193,17 @@ pub fn volume_relative_error(
   observed : Array[Double],
   simulated : Array[Double],
 ) -> Double {
+  let n_obs = observed.length()
+  let n_sim = simulated.length()
+  if n_obs == 0 || n_sim == 0 {
+    return 0.0
+  }
+  let n = if n_obs < n_sim { n_obs } else { n_sim }
   let mut sum_obs = 0.0
   let mut sum_sim = 0.0
-  for i in 0..<observed.length() {
+  for i in 0..<n {
     sum_obs = sum_obs + observed[i]
-    if i < simulated.length() {
-      sum_sim = sum_sim + simulated[i]
-    }
+    sum_sim = sum_sim + simulated[i]
   }
   if sum_obs == 0.0 {
     return 0.0

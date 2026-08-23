@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
+#include <sys/stat.h>
 #include "moonbit.h"
 
 /* Maximum file size: 1GB to prevent OOM on large files */
@@ -19,6 +20,7 @@ int32_t hydro_write_file(
     FILE *f = fopen((const char *)path, "wb");
     if (!f) return -1;
     size_t written = fwrite(content, 1, (size_t)content_len, f);
+    fchmod(fileno(f), 0640);
     /* Check fclose return value (P3-1) */
     int close_err = fclose(f);
     if (close_err != 0) return -1;

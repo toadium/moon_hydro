@@ -18,7 +18,6 @@ pub(all) struct InundationConfig {
   n_steps : Int // 总时间步数
   cfl : Double // CFL安全系数
   depth_threshold : Double // 淹没水深阈值(m)，超过则视为淹没
-  output_interval : Int // 输出间隔（每N步记录一次最大水深）
 } derive(Debug, ToJson, FromJson)
 
 ///|
@@ -29,7 +28,6 @@ pub fn InundationConfig::default() -> InundationConfig {
     n_steps: 500,
     cfl: 0.5,
     depth_threshold: 0.05,
-    output_interval: 10,
   }
 }
 
@@ -139,13 +137,14 @@ pub fn simulate_inundation(
   let mut stable = true
   let mut steps_done = 0
   let mut current_time = 0.0
+  let g = 9.81
   for step in 0..<config.n_steps {
     // CFL自适应时间步长
     let mut max_speed = 0.0
     for k in 0..<n_total {
       let h = current_grid.h[k]
       if h > 0.0 {
-        let c = @math.pow(9.81 * h, 0.5)
+        let c = @math.pow(g * h, 0.5)
         let u = current_grid.hu[k] / h
         let v = current_grid.hv[k] / h
         let speed = @math.pow(u * u + v * v, 0.5) + c
@@ -299,7 +298,6 @@ pub fn synthetic_flood_scenario(
     n_steps: 300,
     cfl: 0.4,
     depth_threshold: 0.05,
-    output_interval: 10,
   }
   (inflow_grid, config)
 }

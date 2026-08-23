@@ -37,7 +37,7 @@ fn print_cli_result(result : CliResult) -> Unit {
 ///|
 /// 子命令: help - 显示帮助信息
 fn cli_help() -> Unit {
-  println("沐澜水文 V0.5 - 命令行子命令")
+  println("沐澜水文 V0.9 - 命令行子命令")
   println(repeat_str("=", 50))
   println("可用子命令:")
   println("  demo        完整功能演示(默认)")
@@ -362,7 +362,7 @@ fn cli_swe() -> CliResult {
   }
   let result2d = grid2d.run(config2d)
   let mut max_h = 0.0
-  for k in 0..<400 {
+  for k in 0..<result2d.max_depth.length() {
     if result2d.max_depth[k] > max_h {
       max_h = result2d.max_depth[k]
     }
@@ -482,6 +482,7 @@ fn cli_json() -> CliResult raise {
       { rainfall: 10.0, evaporation: 2.0, datetime: "t0" },
       { rainfall: 20.0, evaporation: 1.0, datetime: "t1" },
     ],
+    observed: [],
   }
   let request_json = @shared.to_json_string(request)
   let response_json = @shared.xaj_json_endpoint(request_json)
@@ -507,27 +508,22 @@ fn cli_json() -> CliResult raise {
 ///|
 /// 子命令: demo - 完整功能演示
 fn cli_demo() -> Unit raise {
-  println("沐澜水文 V0.8 - 完整功能演示")
+  println("沐澜水文 V0.9 - 完整功能演示")
   println(repeat_str("=", 50))
-  print_cli_result(cli_sim())
-  print_cli_result(cli_calibrate())
-  print_cli_result(cli_dds())
-  print_cli_result(cli_validate())
-  print_cli_result(cli_batch())
-  print_cli_result(cli_ensemble())
-  print_cli_result(cli_uncertainty())
-  print_cli_result(cli_sensitivity())
-  print_cli_result(cli_swe())
-  print_cli_result(cli_coupling())
-  print_cli_result(cli_timeseries())
-  print_cli_result(cli_metrics())
-  print_cli_result(cli_json())
-  print_cli_result(cli_bench())
-  print_cli_result(cli_persistence())
-  print_cli_result(cli_auth())
-  print_cli_result(cli_ai_forecast())
-  print_cli_result(cli_gis())
-  print_cli_result(cli_flood())
+  let commands : Array[String] = [
+    "sim", "calibrate", "dds", "validate", "batch", "ensemble", "uncertainty",
+    "sensitivity", "swe", "coupling", "timeseries", "metrics", "json", "bench",
+    "persistence", "auth", "ai_forecast", "gis", "flood",
+  ]
+  for cmd in commands {
+    try {
+      dispatch(cmd)
+    } catch {
+      e => {
+        println("[FAIL] [\{cmd}] 子命令异常: \{e}")
+      }
+    }
+  }
   println("\n" + repeat_str("=", 50))
   println("所有子命令执行完毕")
   cli_help()
@@ -727,8 +723,13 @@ fn cli_auth() -> CliResult raise {
     "Token验证: admin -> \{verified.username}(\{verified.role.to_string()})",
   )
   // 登出
-  assert_true(auth.logout(eng_token))
-  assert_true(auth.logout(viewer_token))
+  let mut logout_details = ""
+  if !auth.logout(eng_token) {
+    logout_details = logout_details + "engineer1登出失败; "
+  }
+  if !auth.logout(viewer_token) {
+    logout_details = logout_details + "viewer1登出失败; "
+  }
   println("登出: engineer1, viewer1 已登出")
   println(auth.stats())
   println("\n权限框架演示完成")
@@ -736,7 +737,7 @@ fn cli_auth() -> CliResult raise {
     command: "auth",
     success: true,
     message: "权限框架演示完成",
-    details: "",
+    details: logout_details,
   }
   r
 }

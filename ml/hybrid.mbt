@@ -13,7 +13,7 @@ pub(all) struct HybridConfig {
   n_forecast : Int // 预报步数
   train_ratio : Double // 训练集比例(0-1)
   seed : UInt64 // 随机种子
-} derive(Debug, ToJson, FromJson, Default)
+} derive(Debug, ToJson, FromJson)
 
 ///|
 /// 混合预报结果
@@ -63,7 +63,12 @@ pub fn prepare_rainfall_runoff(
   rainfall : Array[Double],
   runoff : Array[Double],
   lookback : Int,
+  input_dim? : Int = 0,
 ) -> (Array[Array[Double]], Array[Array[Double]]) {
+  // P1修复：运行时校验维度约定 input_dim == 2*lookback
+  if input_dim > 0 && input_dim != 2 * lookback {
+    abort("prepare_rainfall_runoff: input_dim must equal 2*lookback")
+  }
   let n = runoff.length()
   let inputs : Array[Array[Double]] = []
   let targets : Array[Array[Double]] = []
@@ -113,8 +118,18 @@ pub fn train_residual_lstm(
     }
     residual.push(observed[i] - phys)
   }
+  // P0修复：与hybrid_forecast使用相同划分点(基于physical_forecast.length())，
+  // 只用训练段残差准备序列，避免LSTM见过测试段数据（数据泄露）
+  let split_n = physical_forecast.length()
+  let split = (split_n.to_double() * config.train_ratio).to_int()
+  let test_start = if split < split_n { split } else { 0 }
+  let train_len = if test_start < n { test_start } else { n }
+  let train_residual : Array[Double] = []
+  for i in 0..<train_len {
+    train_residual.push(residual[i])
+  }
   // 准备训练数据
-  let (inputs, targets) = prepare_sequences(residual, config.lookback)
+  let (inputs, targets) = prepare_sequences(train_residual, config.lookback)
   if inputs.length() == 0 {
     return LSTM::new(config.lstm_config, seed=config.seed)
   }
@@ -128,7 +143,7 @@ pub fn train_residual_lstm(
   for _ in 0..<n_global {
     let flat : Array[Double] = []
     for _ in 0..<weight_count {
-      flat.push((rng.next_double() * 2.0 - 1.0) * 0.5)
+      flat.push((rng.next_double() * 2.0 - 1.0) * 0.1)
     }
     let weights = LSTMWeights::from_flat(flat, config.lstm_config)
     let lstm = LSTM::with_weights(config.lstm_config, weights)

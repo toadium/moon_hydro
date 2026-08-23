@@ -40,18 +40,19 @@ fn XinanjiangModel::compute_evaporation(
   let wu = state.wu
   let wl = state.wl
   let wd = state.wd
+  let wl_over_wlm = if wlm <= 0.0 { 0.0 } else { wl / wlm }
   if p + wu >= em {
     eu = em
     el = 0.0
     ed = 0.0
   } else if c * (p + wu) >= em {
     eu = p + wu
-    el = (em - eu) * wl / wlm
+    el = (em - eu) * wl_over_wlm
     ed = 0.0
   } else {
     eu = p + wu
-    if wl / wlm >= c * (p + wu) / em {
-      el = c * (em - eu) * wl / wlm
+    if wl_over_wlm >= c * (p + wu) / em {
+      el = c * (em - eu) * wl_over_wlm
       ed = 0.0
     } else {
       el = wl
@@ -92,15 +93,22 @@ fn XinanjiangModel::compute_runoff(
   let b = params.b
   let im = params.im
   let w = state.w
+  if wm <= 0.0 {
+    let r0 = if pe > 0.0 { pe } else { 0.0 }
+    state.w = 0.0
+    state.r = r0
+    return r0
+  }
+  let w_safe = if w < 0.0 { 0.0 } else if w > wm { wm } else { w }
   let mm = wm * (1.0 + b)
-  let a = wm * (1.0 - @math.pow(1.0 - w / wm, 1.0 / (1.0 + b)))
+  let a = wm * (1.0 - @math.pow(1.0 - w_safe / wm, 1.0 / (1.0 + b)))
   let mut r = 0.0
   if pe <= 0.0 {
     r = 0.0
   } else if pe + a < mm {
-    r = pe + w - wm + mm * (1.0 - @math.pow((pe + a) / mm, 1.0 / (1.0 + b)))
+    r = pe + w_safe - wm + mm * (1.0 - @math.pow((pe + a) / mm, 1.0 / (1.0 + b)))
   } else {
-    r = pe + w - wm
+    r = pe + w_safe - wm
   }
   if r < 0.0 {
     r = 0.0
@@ -108,7 +116,7 @@ fn XinanjiangModel::compute_runoff(
   let r_im = im * pe
   let r_b = (1.0 - im) * r
   r = r_im + r_b
-  state.w = w + pe - r
+  state.w = w_safe + pe - r
   if state.w < 0.0 {
     state.w = 0.0
   }
@@ -187,7 +195,7 @@ fn XinanjiangModel::compute_routing(
   let rs = state.rs
   let ri = state.ri
   let rg = state.rg
-  let u = self.area / (3.6 * self.dt)
+  let u = if self.dt <= 0.0 { 0.0 } else { self.area / (3.6 * self.dt) }
   let qs = cs * prev_qs + (1.0 - cs) * rs * u
   let qi = ci * prev_qi + (1.0 - ci) * ri * u
   let qg = cg * prev_qg + (1.0 - cg) * rg * u
@@ -239,6 +247,9 @@ fn XinanjiangModel::run_impl(
     prev_qs = qs
     prev_qi = qi
     prev_qg = qg
+    state.qs = qs
+    state.qi = qi
+    state.qg = qg
     runoff_series.push(state.q)
     state_series.push({
       w: state.w,

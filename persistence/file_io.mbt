@@ -32,10 +32,19 @@ extern "c" fn hydro_read_file(path : Bytes) -> Bytes = "hydro_read_file"
 extern "c" fn hydro_file_exists(path : Bytes) -> Int = "hydro_file_exists"
 
 ///|
+/// 路径遍历防护：拒绝包含 ".." 的路径
+fn validate_path(path : String) -> Unit {
+  if path.contains("..") {
+    abort("path traversal detected: " + path)
+  }
+}
+
+///|
 /// 将字符串写入文件
 ///
 /// 成功返回Unit，失败抛出FileError
 pub fn write_file(path : String, content : String) -> Unit raise {
+  validate_path(path)
   let path_bytes = @utf8.encode(path)
   let content_bytes = @utf8.encode(content)
   let result = hydro_write_file(
@@ -54,6 +63,7 @@ pub fn write_file(path : String, content : String) -> Unit raise {
 /// 成功返回文件内容，失败抛出FileError。
 /// 空文件返回空字符串，文件不存在抛出FileNotFound。
 pub fn read_file(path : String) -> String raise {
+  validate_path(path)
   let path_bytes = @utf8.encode(path)
   // P2-2: 先检查文件是否存在，区分"文件不存在"和"空文件"
   if hydro_file_exists(path_bytes) == 0 {
@@ -82,6 +92,7 @@ extern "c" fn hydro_delete_file(path : Bytes) -> Int = "hydro_delete_file"
 ///
 /// P2-4: 用于测试清理，成功返回Unit，失败抛出FileError
 pub fn delete_file(path : String) -> Unit raise {
+  validate_path(path)
   let path_bytes = @utf8.encode(path)
   let result = hydro_delete_file(path_bytes)
   if result != 0 {

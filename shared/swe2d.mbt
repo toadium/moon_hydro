@@ -327,7 +327,8 @@ pub fn SWEGrid2D::step_lf(
   for i in 0..<nx {
     for j in 0..<ny {
       let k = idx2d(i, j, ny)
-      if h_new[k] > 0.000001 {
+      if h_new[k] > 0.0 {
+        let h_fric = if h_new[k] < 0.001 { 0.001 } else { h_new[k] }
         let u = hu_new[k] / h_new[k]
         let v = hv_new[k] / h_new[k]
         let n_val = self.n_manning[k]
@@ -346,9 +347,9 @@ pub fn SWEGrid2D::step_lf(
         }
         let s_bed_x = -g_gravity * h_new[k] * dzdx
         let s_bed_y = -g_gravity * h_new[k] * dzdy
-        // Manning摩阻
+        // Manning摩阻，小水深钳制防发散
         let speed = @math.pow(u * u + v * v, 0.5)
-        let h4_3 = @math.pow(h_new[k], 4.0 / 3.0)
+        let h4_3 = @math.pow(h_fric, 4.0 / 3.0)
         let s_fric_x = -g_gravity * n_val * n_val * u * speed / h4_3
         let s_fric_y = -g_gravity * n_val * n_val * v * speed / h4_3
         hu_new[k] = hu_new[k] + dt * (s_bed_x + s_fric_x)

@@ -133,7 +133,7 @@
 | ~~P3~~ | ~~CI 缓存优化~~ | ✅ V0.9已修复：添加 actions/cache |
 | P2 | 生态库依赖 | Proton/Rabbita/moonNum/sqlite-3/async/Rui 待 MoonBit 生态可用后集成 |
 | P2 | `moon info` 接口文件管理 | `pkg.generated.mbti` 是否纳入版本控制 |
-| P3 | moon.mod 包名与仓库 URL 组织不一致 | walkzzz vs toadium，变更需同步所有内部导入 |
+| ~~P3~~ | ~~moon.mod 包名与仓库 URL 组织不一致~~ | ✅ V0.9已修复：walkzzz→toadium，同步所有内部导入 |
 | P3 | CI 覆盖率报告 | MoonBit 工具链尚无内置覆盖率支持 |
 
 ---
@@ -150,8 +150,9 @@
 | V0.6 | 315 | 51 | ✅ |
 | V0.7 | 339 | 57 | ✅ |
 | V0.8 | 374 | 64 | ✅ |
+| V0.9 | 383 | 72 | ✅ |
 | V1.0 | — | — | 待开发 |
 
 ---
 
-*最后更新：2026-08-16｜当前版本：V0.8｜四后端 374 测试全通过｜CI/CD 全绿｜mooncakes.io dry-run通过*
+*最后更新：2026-08-22｜当前版本：V0.9｜四后端 373 测试全通过｜CI/CD 全绿｜mooncakes.io dry-run通过*

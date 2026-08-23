@@ -277,6 +277,7 @@ pub fn run_all_benchmarks() -> String {
     area: 100.0,
     dt: 1.0,
     forcings: xaj_forcings,
+    observed: [],
   }
   let json_bench = bench(name="JSON序列化(100步请求)", n_iters=100, fn() {
     ignore(to_json_string(xaj_req))

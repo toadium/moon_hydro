@@ -92,7 +92,6 @@ test "simulate_inundation - 基本仿真" {
     n_steps: 50,
     cfl: 0.4,
     depth_threshold: 0.05,
-    output_interval: 10,
   }
   let result = simulate_inundation(grid2, config)
   assert_eq(result.nx, 15)
@@ -122,7 +121,6 @@ test "simulate_inundation - 到达时间" {
     n_steps: 100,
     cfl: 0.3,
     depth_threshold: 0.05,
-    output_interval: 5,
   }
   let result = simulate_inundation(grid2, config)
   // 入流区域的到达时间应为0
@@ -142,7 +140,6 @@ test "extract_inundation_extent - 提取淹没范围" {
     n_steps: 30,
     cfl: 0.4,
     depth_threshold: 0.05,
-    output_interval: 10,
   }
   let result = simulate_inundation(grid2, config)
   let extent = extract_inundation_extent(result, threshold=0.05)
@@ -160,7 +157,6 @@ test "inundation_stats - 淹没统计" {
     n_steps: 80,
     cfl: 0.4,
     depth_threshold: 0.05,
-    output_interval: 10,
   }
   let result = simulate_inundation(grid2, config)
   let (count, area, max_h, mean_h) = inundation_stats(result)

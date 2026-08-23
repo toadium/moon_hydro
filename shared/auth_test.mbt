@@ -53,10 +53,10 @@ test "role_has_permission - Viewer只读" {
 }
 
 ///|
-test "hash_password - 相同密码相同哈希" {
-  let h1 = hash_password("secret123")
-  let h2 = hash_password("secret123")
-  assert_eq(h1, h2)
+test "hash_password - 相同密码可通过verify_password验证" {
+  let h = hash_password("secret123")
+  assert_true(verify_password("secret123", h))
+  assert_false(verify_password("wrong", h))
 }
 
 ///|

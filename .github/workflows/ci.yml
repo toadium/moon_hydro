@@ -6,10 +6,18 @@ on:
   pull_request:
     branches: [main, master]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   check:
     name: 编译检查
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
 
@@ -17,7 +25,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.moon
-          key: moonbit-${{ runner.os }}-v1
+          key: moonbit-${{ runner.os }}-0.1.20260819-v1
 
       - name: 安装 MoonBit
         run: |
@@ -35,6 +43,7 @@ jobs:
   test:
     name: 测试 (${{ matrix.target }})
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -46,7 +55,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.moon
-          key: moonbit-${{ runner.os }}-v1
+          key: moonbit-${{ runner.os }}-0.1.20260819-v1
 
       - name: 安装 MoonBit
         run: |
@@ -71,6 +80,7 @@ jobs:
   fmt:
     name: 格式检查
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
 
@@ -78,7 +88,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.moon
-          key: moonbit-${{ runner.os }}-v1
+          key: moonbit-${{ runner.os }}-0.1.20260819-v1
 
       - name: 安装 MoonBit
         run: |
@@ -95,6 +105,7 @@ jobs:
   run-backend:
     name: 后端可执行验证
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
 
@@ -102,7 +113,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.moon
-          key: moonbit-${{ runner.os }}-v1
+          key: moonbit-${{ runner.os }}-0.1.20260819-v1
 
       - name: 安装 MoonBit
         run: |

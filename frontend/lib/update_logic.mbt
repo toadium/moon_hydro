@@ -56,6 +56,9 @@ pub fn update(model : AppModel, msg : Msg) -> AppModel {
           pbias: result.pbias,
           has_result: true,
           is_running: false,
+          calib_metric: "",
+          calib_value: 0.0,
+          batch_summary: "",
         },
         ui_state: { ..model.ui_state, loading: false },
       }
@@ -74,11 +77,16 @@ pub fn update(model : AppModel, msg : Msg) -> AppModel {
         ui_state: { ..model.ui_state, loading: true },
         error_message: "",
       }
-    // P1-5修复：率定结果存入sim_result.nse，不再丢弃
+    // P1-5修复：率定结果存入专用字段calib_metric/calib_value，避免语义错乱
     CalibrationCompleted(result) =>
       {
         ..model,
-        sim_result: { ..model.sim_result, nse: result.best_metric },
+        sim_result: {
+          ..model.sim_result,
+          calib_metric: "nse",
+          calib_value: result.best_metric,
+          nse: result.best_metric,
+        },
         ui_state: { ..model.ui_state, loading: false },
       }
     CalibrationFailed(err) =>
@@ -110,8 +118,15 @@ pub fn update(model : AppModel, msg : Msg) -> AppModel {
     // 批量仿真
     RunBatchSim(_tasks) =>
       { ..model, ui_state: { ..model.ui_state, loading: true } }
-    BatchCompleted(_result) =>
-      { ..model, ui_state: { ..model.ui_state, loading: false } }
+    BatchCompleted(result) =>
+      {
+        ..model,
+        sim_result: {
+          ..model.sim_result,
+          batch_summary: "任务=\{result.total_tasks}, 成功=\{result.success_count}, 失败=\{result.failure_count}, 平均NSE=\{result.summary_stats.mean_nse}, 平均KGE=\{result.summary_stats.mean_kge}",
+        },
+        ui_state: { ..model.ui_state, loading: false },
+      }
     // UI控制
     // P2-1修复：使用内置!操作符替代自定义not函数
     ToggleParamsPanel =>

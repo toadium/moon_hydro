@@ -47,7 +47,7 @@ pub(all) struct RiskMap {
   ny : Int
   levels : Array[RiskLevel] // 风险等级数组[nx*ny]
   max_depth : Array[Double] // 最大水深(m)
-  max_velocity : Array[Double] // 最大流速(m/s)
+  final_velocity : Array[Double] // 最终流速(m/s)
 } derive(Debug, ToJson, FromJson)
 
 ///|
@@ -81,9 +81,6 @@ pub fn classify_risk(depth : Double, velocity : Double) -> RiskLevel {
   if danger > 0.3 {
     return ModerateRisk
   }
-  if danger > 0.15 {
-    return LowRisk
-  }
   LowRisk
 }
 
@@ -103,7 +100,7 @@ pub fn generate_risk_map(
   let n_total = nx * ny
   let levels : Array[RiskLevel] = Array::make(n_total, Safe)
   // 注：此处的velocity为最终时刻流速，非最大流速
-  let max_velocity = Array::make(n_total, 0.0)
+  let final_velocity = Array::make(n_total, 0.0)
   for k in 0..<n_total {
     let h = max_depth[k]
     let hu = hu_final[k]
@@ -115,10 +112,10 @@ pub fn generate_risk_map(
     } else {
       0.0
     }
-    max_velocity[k] = v
+    final_velocity[k] = v
     levels[k] = classify_risk(h, v)
   }
-  { nx, ny, levels, max_depth, max_velocity }
+  { nx, ny, levels, max_depth, final_velocity }
 }
 
 ///|
@@ -130,12 +127,12 @@ pub fn generate_risk_map_depth_only(
 ) -> RiskMap {
   let n_total = nx * ny
   let levels : Array[RiskLevel] = Array::make(n_total, Safe)
-  let max_velocity = Array::make(n_total, 0.0)
+  let final_velocity = Array::make(n_total, 0.0)
 
   for k in 0..<n_total {
     levels[k] = classify_risk(max_depth[k], 0.0)
   }
-  { nx, ny, levels, max_depth, max_velocity }
+  { nx, ny, levels, max_depth, final_velocity }
 }
 
 ///|
@@ -160,6 +157,19 @@ pub fn risk_statistics(
     }
   }
   let total = risk_map.nx * risk_map.ny
+  if total == 0 {
+    return {
+      total_cells: 0,
+      safe_count: 0,
+      low_risk_count: 0,
+      moderate_risk_count: 0,
+      high_risk_count: 0,
+      extreme_risk_count: 0,
+      safe_ratio: 0.0,
+      inundated_ratio: 0.0,
+      total_area: 0.0,
+    }
+  }
   {
     total_cells: total,
     safe_count,

@@ -22,6 +22,7 @@ test "XajRunRequest JSON往返" {
       { rainfall: 10.0, evaporation: 2.0, datetime: "t0" },
       { rainfall: 20.0, evaporation: 1.0, datetime: "t1" },
     ],
+    observed: [],
   }
   let json_str = to_json_string(request)
   let parsed = parse_xaj_request(json_str)
@@ -39,6 +40,7 @@ test "run_xaj 新安江仿真服务" {
     area: 100.0,
     dt: 1.0,
     forcings: mock_flood_rainfall(duration=5),
+    observed: [],
   }
   let response = run_xaj(request)
   assert_true(response.runoff_series.length() > 0)
@@ -55,6 +57,7 @@ test "xaj_json_endpoint 端到端JSON" {
       { rainfall: 15.0, evaporation: 2.0, datetime: "t0" },
       { rainfall: 25.0, evaporation: 1.0, datetime: "t1" },
     ],
+    observed: [],
   }
   let request_json = to_json_string(request)
   let response_json = xaj_json_endpoint(request_json)

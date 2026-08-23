@@ -266,7 +266,7 @@ pub fn DEMGrid::set_elevation(
 ///|
 /// 判断DEM某点是否有数据
 pub fn DEMGrid::has_data(self : DEMGrid, i : Int, j : Int) -> Bool {
-  self.get_elevation(i, j) != self.nodata
+  (self.get_elevation(i, j) - self.nodata).abs() > 0.00001
 }
 
 ///|

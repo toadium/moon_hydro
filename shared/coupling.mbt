@@ -156,11 +156,33 @@ pub fn couple_step(
   let new_xaj_state = xaj_model.step(forcing, xaj_state)
   // 2. 计算侧向入流
   let lateral_inflow = compute_lateral_inflow(new_xaj_state, coupling_params)
-  // 3. 注入侧向入流到SWE网格
-  inject_lateral_inflow(swe_grid, lateral_inflow, coupling_params, swe_dt)
-  // 4. SWE单步推进
-  let new_swe_grid = swe_grid.step_lf(swe_dt, swe_boundary)
-  // 5. 计算河道水位反馈
+  // 3. 复制SWE网格避免就地修改入参
+  let h_copy = Array::make(swe_grid.nx, 0.0)
+  let hu_copy = Array::make(swe_grid.nx, 0.0)
+  for i in 0..<swe_grid.nx {
+    h_copy[i] = swe_grid.h[i]
+    hu_copy[i] = swe_grid.hu[i]
+  }
+  let swe_work = { ..swe_grid, h: h_copy, hu: hu_copy }
+  // 4. 注入侧向入流到SWE网格副本
+  inject_lateral_inflow(swe_work, lateral_inflow, coupling_params, swe_dt)
+  // 5. SWE子步循环推进（XAJ dt单位小时，SWE dt单位秒）
+  let n_substeps = if swe_dt <= 0.0 {
+    1
+  } else {
+    let n = (xaj_model.dt * 3600.0 / swe_dt).to_int()
+    if n < 1 {
+      1
+    } else {
+      n
+    }
+  }
+  let mut current_swe = swe_work
+  for _ in 0..<n_substeps {
+    current_swe = current_swe.step_lf(swe_dt, swe_boundary)
+  }
+  let new_swe_grid = current_swe
+  // 6. 计算河道水位反馈
   let feedback = compute_water_level_feedback(new_swe_grid, coupling_params)
   apply_water_level_feedback(new_xaj_state, feedback)
   // 返回（新安江状态, SWE网格, 侧向入流, 河道平均水位）

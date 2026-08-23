@@ -196,7 +196,12 @@ pub fn DataStore::from_json_string(json_str : String) -> DataStore raise {
 }
 
 ///|
+/// ID生成计数器，避免同prefix+timestamp碰撞
+let id_counter : Ref[UInt64] = { val: 0UL }
+
+///|
 /// 生成方案ID
 pub fn generate_id(prefix : String, timestamp : UInt64) -> String {
-  "\{prefix}_\{timestamp}"
+  id_counter.val = id_counter.val + 1UL
+  "\{prefix}_\{timestamp}_\{id_counter.val}"
 }

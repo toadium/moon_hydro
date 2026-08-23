@@ -1,11 +1,11 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "walkzzz/moon_hydro/flood"
+package "toadium/moon_hydro/flood"
 
 import {
   "moonbitlang/core/debug",
   "moonbitlang/core/json",
-  "walkzzz/moon_hydro/gis",
-  "walkzzz/moon_hydro/shared",
+  "toadium/moon_hydro/gis",
+  "toadium/moon_hydro/shared",
 }
 
 // Values
@@ -58,7 +58,6 @@ pub(all) struct InundationConfig {
   n_steps : Int
   cfl : Double
   depth_threshold : Double
-  output_interval : Int
 } derive(ToJson, @debug.Debug, @json.FromJson)
 pub fn InundationConfig::default() -> Self
 
@@ -112,7 +111,7 @@ pub(all) struct RiskMap {
   ny : Int
   levels : Array[RiskLevel]
   max_depth : Array[Double]
-  max_velocity : Array[Double]
+  final_velocity : Array[Double]
 } derive(ToJson, @debug.Debug, @json.FromJson)
 
 pub(all) struct RiskStatistics {

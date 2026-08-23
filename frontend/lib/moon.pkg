@@ -1,4 +1,4 @@
 import {
-  "walkzzz/moon_hydro/shared",
+  "toadium/moon_hydro/shared",
   "moonbitlang/core/json",
 }

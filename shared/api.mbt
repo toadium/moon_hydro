@@ -11,6 +11,7 @@ pub(all) struct XajRunRequest {
   area : Double
   dt : Double
   forcings : Array[ForcingData]
+  observed : Array[Double]
 } derive(Debug, ToJson, FromJson)
 
 ///|

@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "walkzzz/moon_hydro/shared"
+package "toadium/moon_hydro/shared"
 
 import {
   "moonbitlang/core/debug",

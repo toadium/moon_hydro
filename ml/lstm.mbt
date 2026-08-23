@@ -11,7 +11,7 @@ pub(all) struct LSTMConfig {
   input_dim : Int // 输入维度
   hidden_dim : Int // 隐藏层维度
   output_dim : Int // 输出维度
-} derive(Debug, ToJson, FromJson, Default)
+} derive(Debug, ToJson, FromJson)
 
 ///|
 /// LSTM权重
@@ -245,6 +245,11 @@ pub fn LSTMWeights::from_flat(
   flat : Array[Double],
   config : LSTMConfig,
 ) -> LSTMWeights {
+  // P0修复：校验flat长度，避免越界访问产生错误权重
+  let expected = lstm_weight_count(config)
+  if flat.length() < expected {
+    abort("from_flat: expected \{expected} weights, got \{flat.length()}")
+  }
   let combined = config.input_dim + config.hidden_dim
   let mut idx = 0
   let w_i = mat_zeros(config.hidden_dim, combined)

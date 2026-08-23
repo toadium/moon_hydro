@@ -43,6 +43,9 @@ pub(all) struct SimResultState {
   pbias : Double // PBIAS
   has_result : Bool // 是否有结果
   is_running : Bool // 是否正在运行
+  calib_metric : String // 率定目标指标类型("nse"/"kge"等)
+  calib_value : Double // 率定最优指标值
+  batch_summary : String // 批量仿真结果摘要
 } derive(Debug, ToJson, FromJson, Default)
 
 ///|
@@ -149,6 +152,9 @@ pub fn AppModel::default() -> AppModel {
       pbias: 0.0,
       has_result: false,
       is_running: false,
+      calib_metric: "",
+      calib_value: 0.0,
+      batch_summary: "",
     },
     ui_state: {
       current_page: HomePage,

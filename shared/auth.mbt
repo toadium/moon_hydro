@@ -58,7 +58,7 @@ pub impl Show for Permission with fn to_string(self : Permission) -> String {
 pub(all) struct User {
   id : String // 用户ID
   username : String // 用户名
-  password_hash : UInt64 // 密码哈希
+  password_hash : String // 密码哈希（含salt，格式"salt:hash"）
   role : Role // 角色
   created_at : UInt64 // 创建时间戳
 } derive(Debug, ToJson, FromJson)
@@ -113,12 +113,13 @@ pub(all) struct AuthManager {
   usernames : Map[String, String] // username -> user_id
   sessions : Map[String, Session] // token -> Session
   scheme_owners : Map[String, SchemeOwnership] // scheme_id -> ownership
+  mut token_counter : UInt64 // 单调递增计数器，防Token碰撞
 } derive(Debug, ToJson, FromJson)
 
 ///|
 /// 构造空AuthManager
 pub fn AuthManager::new() -> AuthManager {
-  { users: {}, usernames: {}, sessions: {}, scheme_owners: {} }
+  { users: {}, usernames: {}, sessions: {}, scheme_owners: {}, token_counter: 0UL }
 }
 
 ///|
@@ -140,20 +141,36 @@ fn string_to_seed(s : String) -> UInt64 {
 }
 
 ///|
-/// 密码哈希（FNV-1a + splitmix多轮混淆）
-/// P1-6修复：增加多轮迭代(1000轮)增强抗彩虹表能力
-/// 注意：这是轻量级增强，生产环境仍应使用bcrypt/argon2
-pub fn hash_password(password : String) -> UInt64 {
-  let seed = string_to_seed(password)
+/// 密码哈希内部函数：给定密码与salt字符串，计算"salt:hash"格式
+fn hash_with_salt(password : String, salt_str : String) -> String {
+  let salted = password + salt_str
+  let seed = string_to_seed(salted)
   let mut hash = seed
-  // 多轮混淆：每轮用splitmix重新散列，增加计算成本
   for i in 0..<1000 {
     let rng = @splitmix.new(seed=hash)
     hash = rng.next_uint64()
-    // 混入轮次和原始种子防止碰撞
     hash = hash ^ (seed + i.to_uint64())
   }
-  hash
+  "\{salt_str}:\{hash}"
+}
+
+///|
+/// 密码哈希（FNV-1a + splitmix多轮混淆 + 随机salt）
+/// 返回格式 "salt:hash"，salt来自@env.now()纳秒时间戳
+/// 注意：这是轻量级增强，生产环境仍应使用bcrypt/argon2
+pub fn hash_password(password : String) -> String {
+  let salt_str = @env.now().to_string()
+  hash_with_salt(password, salt_str)
+}
+
+///|
+/// 验证密码：解析存储的"salt:hash"格式，用同一salt重新计算并比较
+pub fn verify_password(password : String, stored : String) -> Bool {
+  let parts = stored.split(":").to_array()
+  if parts.length() != 2 {
+    return false
+  }
+  hash_with_salt(password, parts[0].to_owned()) == stored
 }
 
 ///|
@@ -210,10 +227,13 @@ pub fn AuthManager::login(
     None => raise UserNotFound(username)
   }
   let user = self.users[user_id]
-  if user.password_hash != hash_password(password) {
+  if !verify_password(password, user.password_hash) {
     raise InvalidPassword
   }
-  let token = generate_token(seed=timestamp + user.password_hash)
+  self.token_counter = self.token_counter + 1UL
+  let token = generate_token(
+    seed=timestamp + string_to_seed(user.password_hash) + self.token_counter,
+  )
   let session : Session = {
     token,
     user_id,

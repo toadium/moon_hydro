@@ -227,7 +227,7 @@ pub fn annual_maxima(
   let result : Array[Double] = []
   let n_years = n / year_length
   for y in 0..<n_years {
-    let mut max_val = 0.0
+    let mut max_val = series[y * year_length]
     for t in 0..<year_length {
       let idx = y * year_length + t
       if idx < n && series[idx] > max_val {
@@ -239,7 +239,7 @@ pub fn annual_maxima(
   // 处理剩余部分
   let remainder = n % year_length
   if remainder > 0 {
-    let mut max_val = 0.0
+    let mut max_val = series[n_years * year_length]
     for t in 0..<remainder {
       let idx = n_years * year_length + t
       if series[idx] > max_val {

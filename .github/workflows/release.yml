@@ -7,8 +7,13 @@ on:
 
 jobs:
   test:
-    name: 测试门禁
+    name: 测试门禁 (${{ matrix.target }})
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [wasm-gc, wasm, js, native]
     steps:
       - uses: actions/checkout@v5
 
@@ -28,13 +33,14 @@ jobs:
       - name: 编译检查
         run: moon check
 
-      - name: 运行测试 (wasm-gc)
-        run: moon test --target wasm-gc
+      - name: 运行测试 (${{ matrix.target }})
+        run: moon test --target ${{ matrix.target }}
 
   build:
     name: 构建 (${{ matrix.target }})
     needs: test
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -78,6 +84,7 @@ jobs:
     name: 发布 Release
     needs: build
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     permissions:
       contents: write
     steps:

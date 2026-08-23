@@ -27,6 +27,9 @@ pub fn mat_zeros(rows : Int, cols : Int) -> Array[Array[Double]] {
 ///|
 /// 向量加法（维度安全：取较短向量长度避免越界）
 pub fn vec_add(a : Array[Double], b : Array[Double]) -> Array[Double] {
+  if a.length() != b.length() {
+    abort("vec_add: dimension mismatch")
+  }
   let n = if a.length() < b.length() { a.length() } else { b.length() }
   let result = vec_zeros(n)
   for i in 0..<n {
@@ -38,6 +41,9 @@ pub fn vec_add(a : Array[Double], b : Array[Double]) -> Array[Double] {
 ///|
 /// 向量逐元素乘法（维度安全：取较短向量长度避免越界）
 pub fn vec_mul(a : Array[Double], b : Array[Double]) -> Array[Double] {
+  if a.length() != b.length() {
+    abort("vec_mul: dimension mismatch")
+  }
   let n = if a.length() < b.length() { a.length() } else { b.length() }
   let result = vec_zeros(n)
   for i in 0..<n {
@@ -82,6 +88,9 @@ pub fn mat_vec_mul(
   for i in 0..<rows {
     let mut sum = 0.0
     let row = m[i]
+    if row.length() != v_len {
+      abort("mat_vec_mul: row length != vector length")
+    }
     let cols = if row.length() < v_len { row.length() } else { v_len }
     for j in 0..<cols {
       sum = sum + row[j] * v[j]
@@ -161,6 +170,9 @@ pub fn vec_tanh(v : Array[Double]) -> Array[Double] {
 ///|
 /// 向量点积（维度安全：取较短向量长度避免越界）
 pub fn vec_dot(a : Array[Double], b : Array[Double]) -> Double {
+  if a.length() != b.length() {
+    abort("vec_dot: dimension mismatch")
+  }
   let n = if a.length() < b.length() { a.length() } else { b.length() }
   let mut sum = 0.0
   for i in 0..<n {

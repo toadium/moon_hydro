@@ -178,6 +178,9 @@ pub fn extract_network_from_dem(
   fa : FlowAccumulation,
   threshold~ : Int,
 ) -> RiverNetwork {
+  if fa.nx != dem.nx || fa.ny != dem.ny {
+    abort("extract_network_from_dem: fa and dem dimensions mismatch")
+  }
   let network = RiverNetwork::new()
   // P2-6修复：计算D8流向用于确定下游连接
   let fd = compute_flow_direction(dem)
