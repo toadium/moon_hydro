@@ -8,6 +8,7 @@ test "slim_run 基本试算" {
     dt: 1.0,
     rainfall: [10.0, 20.0, 5.0, 0.0, 30.0],
     evaporation: [2.0, 1.0, 3.0, 1.0, 2.0],
+    params: None,
   }
   let response = slim_run(request)
   assert_true(response.success)
@@ -23,6 +24,7 @@ test "slim_run 长度不匹配" {
     dt: 1.0,
     rainfall: [10.0, 20.0],
     evaporation: [2.0],
+    params: None,
   }
   let response = slim_run(request)
   assert_false(response.success)
@@ -36,6 +38,7 @@ test "slim_run 空序列" {
     dt: 1.0,
     rainfall: [],
     evaporation: [],
+    params: None,
   }
   let response = slim_run(request)
   assert_false(response.success)
@@ -76,6 +79,7 @@ test "slim_json_endpoint JSON端到端" {
     dt: 1.0,
     rainfall: [10.0, 20.0],
     evaporation: [2.0, 1.0],
+    params: None,
   }
   let json = request.to_json().stringify()
   let response = slim_json_endpoint(json)
@@ -110,6 +114,7 @@ test "slim_run 与shared结果一致" {
     dt: 1.0,
     rainfall: [10.0, 20.0, 5.0, 0.0, 30.0],
     evaporation: [2.0, 1.0, 3.0, 1.0, 2.0],
+    params: None,
   }
   let slim_result = slim_run(request)
   // shared层仿真

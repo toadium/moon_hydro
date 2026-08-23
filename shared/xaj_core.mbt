@@ -40,23 +40,25 @@ fn XinanjiangModel::compute_evaporation(
   let wu = state.wu
   let wl = state.wl
   let wd = state.wd
+  // P2-3修复：负蒸发能力保护，em < 0 时置零
+  let em_safe = if em < 0.0 { 0.0 } else { em }
   let wl_over_wlm = if wlm <= 0.0 { 0.0 } else { wl / wlm }
-  if p + wu >= em {
-    eu = em
+  if p + wu >= em_safe {
+    eu = em_safe
     el = 0.0
     ed = 0.0
-  } else if c * (p + wu) >= em {
+  } else if c * (p + wu) >= em_safe {
     eu = p + wu
-    el = (em - eu) * wl_over_wlm
+    el = (em_safe - eu) * wl_over_wlm
     ed = 0.0
   } else {
     eu = p + wu
-    if wl_over_wlm >= c * (p + wu) / em {
-      el = c * (em - eu) * wl_over_wlm
+    if wl_over_wlm >= c * (p + wu) / em_safe {
+      el = c * (em_safe - eu) * wl_over_wlm
       ed = 0.0
     } else {
       el = wl
-      ed = c * (em - eu) - el
+      ed = c * (em_safe - eu) - el
       if ed < 0.0 {
         ed = 0.0
       }
@@ -103,13 +105,15 @@ fn XinanjiangModel::compute_runoff(
     return r0
   }
   let w_safe = if w < 0.0 { 0.0 } else if w > wm { wm } else { w }
-  let mm = wm * (1.0 + b)
-  let a = wm * (1.0 - @math.pow(1.0 - w_safe / wm, 1.0 / (1.0 + b)))
+  // P2-4修复：b <= -1 时除零保护
+  let b_safe = if b <= -1.0 { 0.0 } else { b }
+  let mm = wm * (1.0 + b_safe)
+  let a = wm * (1.0 - @math.pow(1.0 - w_safe / wm, 1.0 / (1.0 + b_safe)))
   let mut r = 0.0
   if pe <= 0.0 {
     r = 0.0
   } else if pe + a < mm {
-    r = pe + w_safe - wm + mm * (1.0 - @math.pow((pe + a) / mm, 1.0 / (1.0 + b)))
+    r = pe + w_safe - wm + mm * (1.0 - @math.pow((pe + a) / mm, 1.0 / (1.0 + b_safe)))
   } else {
     r = pe + w_safe - wm
   }

@@ -12,6 +12,7 @@ pub(all) struct SlimSimRequest {
   dt : Double
   rainfall : Array[Double] // 简化：仅降雨序列
   evaporation : Array[Double] // 蒸发序列
+  params : Option[@shared.XinanjiangParams] // P2-51修复：可选自定义参数，None时用默认
 } derive(Debug, ToJson, FromJson, Default)
 
 ///|
@@ -61,9 +62,13 @@ pub fn slim_run(request : SlimSimRequest) -> SlimSimResponse {
       datetime: "t\{i}",
     })
   }
-  // 使用默认参数运行仿真
+  // P2-51修复：使用自定义参数（若提供），否则用默认参数
+  let params = match request.params {
+    Some(p) => p
+    None => @shared.XinanjiangParams::default()
+  }
   let model = @shared.XinanjiangModel::new(
-    params=@shared.XinanjiangParams::default(),
+    params=params,
     area=request.area,
     dt=request.dt,
   )
@@ -105,7 +110,7 @@ pub fn slim_json_endpoint(json_str : String) -> String raise {
         peak_time: 0,
         total_volume: 0.0,
         success: false,
-        error: e.to_string(),
+        error: "请求处理失败，请检查输入参数", // P2-52修复：不泄露内部错误细节
       }
       err_response.to_json().stringify()
     }
@@ -124,7 +129,7 @@ pub fn quick_run(
   for _ in rainfall {
     evaporation.push(evap)
   }
-  let request : SlimSimRequest = { area, dt, rainfall, evaporation }
+  let request : SlimSimRequest = { area, dt, rainfall, evaporation, params: None }
   slim_run(request)
 }
 

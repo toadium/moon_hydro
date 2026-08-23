@@ -81,6 +81,7 @@ pub fn write_file(path : String, content : String) -> Unit raise {
 pub fn read_file(path : String) -> String raise {
   validate_path(path)
   let path_bytes = encode_path(path)
+  // P2-40：此处存在TOCTOU竞态（file_exists与read_file之间文件可能被删除），单线程环境下无实际风险
   if hydro_file_exists(path_bytes) == 0 {
     raise FileError::FileNotFound(path)
   }

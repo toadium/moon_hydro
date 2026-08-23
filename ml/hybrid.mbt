@@ -65,8 +65,9 @@ pub fn prepare_rainfall_runoff(
   lookback : Int,
   input_dim? : Int = 0,
 ) -> (Array[Array[Double]], Array[Array[Double]]) {
-  // P1修复：运行时校验维度约定 input_dim == 2*lookback
-  if input_dim > 0 && input_dim != 2 * lookback {
+  // P2-35修复：input_dim=0时自动设为2*lookback，不再绕过维度校验
+  let actual_input_dim = if input_dim <= 0 { 2 * lookback } else { input_dim }
+  if actual_input_dim != 2 * lookback {
     abort("prepare_rainfall_runoff: input_dim must equal 2*lookback")
   }
   let n = runoff.length()

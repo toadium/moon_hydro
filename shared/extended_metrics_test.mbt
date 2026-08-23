@@ -17,13 +17,14 @@ test "log_nse 对数NSE" {
 }
 
 ///|
-test "log_nse 含非正值返回0" {
+test "log_nse 含非正值返回NaN" {
   let observed = [0.0, 2.0, 3.0]
   let simulated = [1.0, 2.0, 3.0]
-  assert_true((log_nse(observed, simulated) - 0.0).abs() < 0.001)
+  // P2-19修复：非正值返回NaN而非0.0
+  assert_true(log_nse(observed, simulated) != log_nse(observed, simulated))
   let observed2 = [1.0, 2.0, 3.0]
   let simulated2 = [1.0, 0.0, 3.0]
-  assert_true((log_nse(observed2, simulated2) - 0.0).abs() < 0.001)
+  assert_true(log_nse(observed2, simulated2) != log_nse(observed2, simulated2))
 }
 
 ///|

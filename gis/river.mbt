@@ -154,6 +154,7 @@ pub fn RiverNetwork::trace_to_outlet(
     if downstream.length() == 0 {
       return path
     }
+    // P2-34：汇流节点仅跟踪第一条下游河段，多出口时应选最大Strahler序
     current = downstream[0].to_node
   }
   path
@@ -253,11 +254,13 @@ pub fn extract_network_from_dem(
             let from_node = network.nodes[from_id]
             let to_node = network.nodes[to_id]
             let length = xy_distance(from_node.point, to_node.point)
-            let slope = if length > 0.0 {
+            let slope_raw = if length > 0.0 {
               (from_node.elevation - to_node.elevation) / length
             } else {
               0.0
             }
+            // P2-32修复：slope限制非负（下游不应高于上游）
+            let slope = if slope_raw < 0.0 { 0.0 } else { slope_raw }
             let reach : RiverReach = {
               id: reach_id,
               from_node: from_id,

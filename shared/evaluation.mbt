@@ -198,7 +198,11 @@ pub fn volume_relative_error(
   if n_obs == 0 || n_sim == 0 {
     return 0.0
   }
-  let n = if n_obs < n_sim { n_obs } else { n_sim }
+  // P2-20修复：长度不匹配时显式返回0.0，而非静默截断
+  if n_obs != n_sim {
+    return 0.0
+  }
+  let n = n_obs
   let mut sum_obs = 0.0
   let mut sum_sim = 0.0
   for i in 0..<n {

@@ -309,6 +309,10 @@ pub fn SWEGrid1D::run(self : SWEGrid1D, config : SWESolverConfig) -> SWEResult {
     if grid.h[i] > max_depth[i] {
       max_depth[i] = grid.h[i]
     }
+    // P2-12修复：检查最终时刻稳定性（循环内检查在推进前，最后一步未覆盖）
+    if grid.h[i] < -0.001 || grid.h[i] > 1000000.0 {
+      stable = false
+    }
   }
   { h_series, hu_series, max_depth, stable }
 }

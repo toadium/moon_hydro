@@ -257,15 +257,21 @@ fn render_text(sb : StringBuilder, node : ViewNode, indent : Int) -> Unit {
       }
     VText(text) => sb <+ "\{prefix}\{text}\n"
     VHeading(level, text) => {
-      let hashes = String::make(level, '#')
+      // P2-50修复：level <= 0 时钳制为1，避免无"#"前缀的异常输出
+      let safe_level = if level < 1 { 1 } else { level }
+      let hashes = String::make(safe_level, '#')
       sb <+ "\{prefix}\{hashes} \{text}\n"
     }
     VLabel(label, value) => sb <+ "\{prefix}- \{label}: \{value}\n"
     VTable(headers, rows) => {
+      // P2-49修复：转义单元格中的"|"避免破坏Markdown表格
+      let escape_cell = fn(s : String) -> String {
+        s.replace(old="|", new="/")
+      }
       // 表头
       sb <+ "\{prefix}| "
       for h in headers {
-        sb <+ "\{h} | "
+        sb <+ "\{escape_cell(h)} | "
       }
       sb <+ "\n"
       // 分隔行
@@ -278,7 +284,7 @@ fn render_text(sb : StringBuilder, node : ViewNode, indent : Int) -> Unit {
       for row in rows {
         sb <+ "\{prefix}| "
         for cell in row {
-          sb <+ "\{cell} | "
+          sb <+ "\{escape_cell(cell)} | "
         }
         sb <+ "\n"
       }

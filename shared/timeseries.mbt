@@ -63,6 +63,10 @@ pub fn detect_peaks(
   if n < 3 {
     return peaks
   }
+  // P2-15修复：检查首点是否为洪峰
+  if series[0] > series[1] && series[0] > threshold {
+    peaks.push(0)
+  }
   for i in 1..<(n - 1) {
     if series[i] > series[i - 1] &&
       series[i] >= series[i + 1] &&
@@ -188,7 +192,7 @@ pub fn gumbel_estimate(series : Array[Double]) -> (Double, Double) {
   }
   let variance = if n > 1 { var_sum / (n - 1).to_double() } else { 0.0 }
   let stddev = @math.pow(variance, 0.5)
-  let beta = stddev * @math.pow(6.0, 0.5) / 3.14159265358979
+  let beta = stddev * @math.pow(6.0, 0.5) / @math.PI
   let mu = mean - 0.5772156649 * beta
   (mu, beta)
 }

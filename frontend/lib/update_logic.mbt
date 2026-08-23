@@ -55,7 +55,7 @@ pub fn update(model : AppModel, msg : Msg) -> AppModel {
           nse: result.nse,
           kge: result.kge,
           pbias: result.pbias,
-          has_result: true,
+          has_result: runoff.length() > 0, // P2-46修复：空序列时has_result为false
           is_running: false,
           batch_summary: "",
         },

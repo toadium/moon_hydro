@@ -111,10 +111,10 @@ test "vec_mean" {
 test "vec_normalize 和 denormalize" {
   let v = [1.0, 2.0, 3.0, 4.0, 5.0]
   let (normalized, mean, std) = vec_normalize(v)
-  assert_true(vec_mean(normalized) - 0.0 < 0.0001)
+  assert_true((vec_mean(normalized) - 0.0).abs() < 0.0001)
   let restored = vec_denormalize(normalized, mean, std)
   for i in 0..<5 {
-    assert_true(restored[i] - v[i] < 0.0001)
+    assert_true((restored[i] - v[i]).abs() < 0.0001)
   }
 }
 

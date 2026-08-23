@@ -28,6 +28,7 @@ fn main raise {
     dt: model.sim_params.dt,
     rainfall: model.sim_params.forcings.map(fn(f) { f.rainfall }),
     evaporation: model.sim_params.forcings.map(fn(f) { f.evaporation }),
+    params: None,
   }
   let slim_result = @lib.slim_run(slim_request)
   println(

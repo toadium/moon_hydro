@@ -257,7 +257,7 @@ pub fn inundation_stats(
   let mut sum_h = 0.0
   let mut count = 0
   for k in 0..<result.max_depth.length() {
-    if result.max_depth[k] > 0.0 {
+    if result.max_depth[k] > 0.0 { // P2-31：阈值0.0，与其他模块的depth_threshold可能不一致
       sum_h = sum_h + result.max_depth[k]
       if result.max_depth[k] > max_h {
         max_h = result.max_depth[k]

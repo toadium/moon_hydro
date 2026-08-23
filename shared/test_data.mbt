@@ -188,7 +188,7 @@ pub fn mock_long_term_forcings(
   for day in 0..<n_days {
     // 季节性降雨模式：夏季多雨，冬季少雨
     let seasonal_factor = 0.5 +
-      0.5 * @math.cos(2.0 * 3.14159265358979 * day.to_double() / 365.0)
+      0.5 * @math.cos(2.0 * @math.PI * day.to_double() / 365.0)
     let base_rainfall = 20.0 * seasonal_factor
     // 随机扰动
     let noise = rng.next_double() * 10.0
@@ -338,7 +338,7 @@ pub fn mock_tidal_wave_grid(
 ) -> SWEGrid1D {
   let grid = SWEGrid1D::uniform(nx~, dx~, h0=h_mean)
   for i in 0..<nx {
-    let phase = 2.0 * 3.14159265358979 * i.to_double() / wavelength
+    let phase = 2.0 * @math.PI * i.to_double() / wavelength
     grid.h[i] = h_mean + amplitude * @math.sin(phase)
   }
   grid

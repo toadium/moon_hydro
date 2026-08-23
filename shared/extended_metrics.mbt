@@ -21,12 +21,12 @@
 pub fn log_nse(observed : Array[Double], simulated : Array[Double]) -> Double {
   let n = observed.length()
   if n == 0 || n != simulated.length() {
-    return 0.0
+    return @double.not_a_number // P2-19修复：用NaN替代0.0作无效哨兵，避免与"无技巧"NSE=0混淆
   }
   // 检查正值
   for i in 0..<n {
     if observed[i] <= 0.0 || simulated[i] <= 0.0 {
-      return 0.0
+      return @double.not_a_number
     }
   }
   let log_obs : Array[Double] = []

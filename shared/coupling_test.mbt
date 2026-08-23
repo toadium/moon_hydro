@@ -6,10 +6,10 @@
 ///|
 test "CouplingParams::default 构造默认耦合参数" {
   let params = CouplingParams::default()
-  debug_inspect(params.lateral_inflow_coeff, content="0.8")
-  debug_inspect(params.feedback_coeff, content="0.01")
-  debug_inspect(params.cell_area, content="100")
-  debug_inspect(params.base_flow_threshold, content="0.5")
+  inspect(params.lateral_inflow_coeff, content="0.8")
+  inspect(params.feedback_coeff, content="0.01")
+  inspect(params.cell_area, content="100")
+  inspect(params.base_flow_threshold, content="0.5")
 }
 
 ///|
@@ -38,7 +38,7 @@ test "couple_step 无降雨无入流耦合" {
     xaj_model, swe_grid, coupling_params, boundary, forcing, xaj_state, 0.01,
   )
   // 无降雨应无侧向入流
-  debug_inspect(lateral_inflow, content="0")
+  inspect(lateral_inflow, content="0")
   // 新安江状态应无产流
   assert_true(new_xaj.r >= 0.0)
   // SWE网格应保持稳定
@@ -109,9 +109,9 @@ test "couple_run 完整耦合仿真" {
     xaj_model, swe_grid, coupling_params, boundary, forcings, 0.005,
   )
   // 结果序列长度应等于输入长度
-  debug_inspect(result.xaj_states.length(), content="5")
-  debug_inspect(result.swe_h_series.length(), content="5")
-  debug_inspect(result.lateral_inflow_series.length(), content="5")
+  inspect(result.xaj_states.length(), content="5")
+  inspect(result.swe_h_series.length(), content="5")
+  inspect(result.lateral_inflow_series.length(), content="5")
   // 耦合应保持稳定
   assert_true(result.stable)
   // 降雨时段应有侧向入流
@@ -145,9 +145,9 @@ test "couple_run 无河道单元时不注入" {
   )
   // 无河道单元时，侧向入流仍计算但不注入SWE
   // SWE水深应保持不变（无注入、静止水面）
-  debug_inspect(result.stable, content="true")
+  inspect(result.stable, content="true")
   // 河道水位过程应为0（无河道单元）
-  debug_inspect(result.water_level_series[0], content="0")
+  inspect(result.water_level_series[0], content="0")
 }
 
 ///|

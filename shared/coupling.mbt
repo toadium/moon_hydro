@@ -99,7 +99,7 @@ fn inject_lateral_inflow(
   let n_cells = params.river_cells.length().to_double()
   let inflow_per_cell = lateral_inflow / n_cells
   // 转换为水深增量：dh = Q * dt / (cell_width * cell_length)
-  // 简化：dh = inflow_per_cell * dt / (dx * 1.0) （假设单元宽度1m）
+  // 简化：dh = inflow_per_cell * dt / (dx * 1.0) （P2-6：假设单元宽度1m，实际应用需传入cell_width）
   let dh = inflow_per_cell * dt / swe_grid.dx
   for cell_idx in params.river_cells {
     if cell_idx >= 0 && cell_idx < swe_grid.nx {

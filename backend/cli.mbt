@@ -557,7 +557,7 @@ fn cli_bench() -> CliResult {
 /// 子命令: persistence - 持久化存储演示
 fn cli_persistence() -> CliResult raise {
   let store = @persistence.DataStore::new()
-  let now = @env.now()
+  let now = @env.now() // P2-54：@env.now()引入非确定性，测试时应注入固定时间戳
   // 保存仿真方案
   let scheme : @persistence.SimulationScheme = {
     id: @persistence.generate_id("scheme", now),
@@ -641,7 +641,7 @@ fn cli_persistence() -> CliResult raise {
 fn cli_auth() -> CliResult raise {
   println("沐澜水文 权限框架演示")
   println(repeat_str("=", 50))
-  let now = @env.now()
+  let now = @env.now() // P2-54：@env.now()引入非确定性，测试时应注入固定时间戳
   let auth = @shared.AuthManager::new()
   // 注册用户
   let admin_id = auth.register(

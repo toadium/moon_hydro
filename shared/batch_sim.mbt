@@ -189,6 +189,7 @@ fn compute_batch_summary(results : Array[SimTaskResult]) -> BatchSummaryStats {
   let mut best_nse = -1000000000.0
   let mut worst_nse = 1000000000.0
   let mut valid_count = 0
+  let mut success_count = 0
   for r in results {
     // P2-9修复：使用has_obs标志替代nse!=0.0过滤
     if r.success && r.has_obs {
@@ -206,6 +207,7 @@ fn compute_batch_summary(results : Array[SimTaskResult]) -> BatchSummaryStats {
     if r.success {
       peak_flow_sum = peak_flow_sum + r.peak_flow
       total_volume = total_volume + r.total_volume
+      success_count = success_count + 1
     }
   }
   let n = valid_count.to_double()
@@ -226,7 +228,7 @@ fn compute_batch_summary(results : Array[SimTaskResult]) -> BatchSummaryStats {
     mean_pbias: pbias_sum / n,
     best_nse,
     worst_nse,
-    mean_peak_flow: peak_flow_sum / results.length().to_double(),
+    mean_peak_flow: if success_count > 0 { peak_flow_sum / success_count.to_double() } else { 0.0 },
     total_volume,
   }
 }
@@ -463,7 +465,16 @@ fn array_stats(values : Array[Double]) -> (Double, Double, Double, Double) {
     sorted.push(v)
   }
   sorted.sort_by(fn(a, b) { if a < b { -1 } else if a > b { 1 } else { 0 } })
-  let p5 = sorted[(n * 5 / 100).clamp(min=0, max=n - 1)]
-  let p95 = sorted[(n * 95 / 100).clamp(min=0, max=n - 1)]
+  // P2-18修复：线性插值替代整数截断，提升小样本分位数精度
+  let interp = fn(p : Double) -> Double {
+    let idx = (n - 1).to_double() * p
+    let lo = idx.floor().to_int()
+    let lo_c = if lo < 0 { 0 } else if lo > n - 1 { n - 1 } else { lo }
+    let hi_c = if lo_c + 1 > n - 1 { n - 1 } else { lo_c + 1 }
+    let frac = idx - idx.floor()
+    sorted[lo_c] * (1.0 - frac) + sorted[hi_c] * frac
+  }
+  let p5 = interp(0.05)
+  let p95 = interp(0.95)
   (mean, stddev, p5, p95)
 }
