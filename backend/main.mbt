@@ -11,11 +11,7 @@
 fn main raise {
   // T58修复：从命令行参数获取子命令，无参数时默认demo
   let args = @env.args()
-  let cmd = if args.length() > 1 {
-    args[1]
-  } else {
-    "demo"
-  }
+  let cmd = if args.length() > 1 { args[1] } else { "demo" }
   dispatch(cmd)
 }
 

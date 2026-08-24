@@ -20,7 +20,7 @@ pub(all) struct AppModel {
   history : Array[HistoryEntry]
   // 错误信息
   error_message : String
-} derive(Debug, ToJson, FromJson, Default)
+} derive(Debug, ToJson, FromJson)
 
 ///|
 /// 仿真配置
@@ -38,14 +38,18 @@ pub(all) struct SimResultState {
   runoff_series : Array[Double] // 径流过程
   peak_flow : Double // 洪峰
   peak_time : Int // 洪峰时段
-  nse : Double // NSE
-  kge : Double // KGE
-  pbias : Double // PBIAS
+  nse : Double // NSE（仿真）
+  kge : Double // KGE（仿真）
+  pbias : Double // PBIAS（仿真）
   has_result : Bool // 是否有结果
   is_running : Bool // 是否正在运行
   calib_metric : String // 率定目标指标类型("nse"/"kge"等)
   calib_value : Double // 率定最优指标值
   batch_summary : String // 批量仿真结果摘要
+  // P3修复：评价结果专用字段，避免与仿真结果混淆
+  eval_nse : Double // 评价NSE
+  eval_kge : Double // 评价KGE
+  eval_pbias : Double // 评价PBIAS
 } derive(Debug, ToJson, FromJson, Default)
 
 ///|
@@ -155,6 +159,9 @@ pub fn AppModel::default() -> AppModel {
       calib_metric: "",
       calib_value: 0.0,
       batch_summary: "",
+      eval_nse: 0.0,
+      eval_kge: 0.0,
+      eval_pbias: 0.0,
     },
     ui_state: {
       current_page: HomePage,

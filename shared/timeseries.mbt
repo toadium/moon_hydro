@@ -12,6 +12,7 @@
 /// 滑动平均
 ///
 /// window: 窗口大小（时段数）
+/// 注意：偶数窗口非对称（中心偏移），建议使用奇数窗口
 pub fn moving_average(series : Array[Double], window~ : Int) -> Array[Double] {
   let n = series.length()
   if n == 0 || window <= 0 {
@@ -63,8 +64,8 @@ pub fn detect_peaks(
   if n < 3 {
     return peaks
   }
-  // P2-15修复：检查首点是否为洪峰
-  if series[0] > series[1] && series[0] > threshold {
+  // P2-15修复：检查首点是否为洪峰（修复：>=与中间点后非严格一致）
+  if series[0] >= series[1] && series[0] > threshold {
     peaks.push(0)
   }
   for i in 1..<(n - 1) {

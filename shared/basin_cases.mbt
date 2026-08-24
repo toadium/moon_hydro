@@ -400,6 +400,9 @@ pub fn generate_validation_report() -> ValidationReport {
     valid_count = valid_count + 1
   }
   let n = valid_count.to_double()
+  // 修复：空结果时min_nse/max_nse置为0.0，避免返回哨兵极值
+  let min_nse_final = if valid_count == 0 { 0.0 } else { min_nse }
+  let max_nse_final = if valid_count == 0 { 0.0 } else { max_nse }
   {
     total_cases: results.length(),
     passed_count,
@@ -414,8 +417,8 @@ pub fn generate_validation_report() -> ValidationReport {
     } else {
       0.0
     },
-    min_nse,
-    max_nse,
+    min_nse: min_nse_final,
+    max_nse: max_nse_final,
     results,
   }
 }

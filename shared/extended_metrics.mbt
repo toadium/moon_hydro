@@ -121,14 +121,22 @@ pub fn rsr(observed : Array[Double], simulated : Array[Double]) -> Double {
   if n == 0 || n != simulated.length() {
     return 1.0
   }
-  let rmse_val = rmse(observed, simulated)
+  // 修复：RMSE与stddev均使用样本标准差(n-1)以保持比值自洽（RSR=1对应均值预报），
+  // 同时对齐ts_stats/gumbel_estimate的样本标准差定义；n<=1时用n避免除零
+  let denom = if n > 1 { (n - 1).to_double() } else { n.to_double() }
+  let mut sq_err = 0.0
+  for i in 0..<n {
+    let diff = observed[i] - simulated[i]
+    sq_err = sq_err + diff * diff
+  }
+  let rmse_val = @math.pow(sq_err / denom, 0.5)
   let obs_mean = observed.fold(init=0.0, (acc, v) => acc + v) / n.to_double()
   let mut var_sum = 0.0
   for v in observed {
     let diff = v - obs_mean
     var_sum = var_sum + diff * diff
   }
-  let obs_std = @math.pow(var_sum / n.to_double(), 0.5)
+  let obs_std = @math.pow(var_sum / denom, 0.5)
   if obs_std == 0.0 {
     return 1.0
   }
@@ -230,15 +238,21 @@ pub fn percent_forecast_correct(
     return 0.0
   }
   let mut correct_count = 0
+  let mut valid_count = 0
   for i in 0..<n {
     if observed[i].abs() > 0.000001 {
+      valid_count = valid_count + 1
       let rel_error = (simulated[i] - observed[i]).abs() / observed[i].abs()
       if rel_error < threshold {
         correct_count = correct_count + 1
       }
     }
   }
-  correct_count.to_double() / n.to_double() * 100.0
+  // 修复：分母改为有效点数，近零观测点不再计入分母
+  if valid_count == 0 {
+    return 0.0
+  }
+  correct_count.to_double() / valid_count.to_double() * 100.0
 }
 
 ///|
@@ -263,6 +277,12 @@ pub fn evaluate_extended(
   simulated : Array[Double],
 ) -> ExtendedEvaluationResult {
   let log_nse_val = log_nse(observed, simulated)
+  // 修复：NaN转为哨兵值-999.0，避免to_json_string产出非法JSON（JSON规范不支持NaN）
+  let log_nse_safe = if log_nse_val != log_nse_val {
+    -999.0
+  } else {
+    log_nse_val
+  }
   let (r_val, alpha_val, beta_val) = kge_decomposition(observed, simulated)
   let mae_val = mae(observed, simulated)
   let mse_val = mse(observed, simulated)
@@ -271,7 +291,7 @@ pub fn evaluate_extended(
   let pi_val = persistence_index(observed, simulated)
   let pfc_val = percent_forecast_correct(observed, simulated)
   {
-    log_nse: log_nse_val,
+    log_nse: log_nse_safe,
     r: r_val,
     alpha: alpha_val,
     beta: beta_val,

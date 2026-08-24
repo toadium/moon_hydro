@@ -40,8 +40,8 @@ test "mock_multi_peak_rainfall 多峰洪水生成" {
     peak_interval=3,
     peak_duration=4,
   )
-  // 3场暴雨 × (4时段暴雨 + 3时段间歇) = 21
-  debug_inspect(forcings.length(), content="21")
+  // 3场暴雨 × (5时段暴雨含闭合零点 + 3时段间歇) = 24
+  debug_inspect(forcings.length(), content="24")
   // 应有多个降雨峰值
   let mut peak_count = 0
   for i in 1..<(forcings.length() - 1) {

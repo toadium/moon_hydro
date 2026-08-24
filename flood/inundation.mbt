@@ -23,12 +23,7 @@ pub(all) struct InundationConfig {
 ///|
 /// 默认配置
 pub fn InundationConfig::default() -> InundationConfig {
-  {
-    dt: 0.1,
-    n_steps: 500,
-    cfl: 0.5,
-    depth_threshold: 0.05,
-  }
+  { dt: 0.1, n_steps: 500, cfl: 0.5, depth_threshold: 0.05 }
 }
 
 ///|
@@ -198,6 +193,10 @@ pub fn simulate_inundation(
     if h > max_depth[k] {
       max_depth[k] = h
     }
+    // 终态到达时间记录：若末步推演后首次超过阈值，补记arrival_time
+    if h > config.depth_threshold && arrival_time[k] < 0.0 {
+      arrival_time[k] = current_time
+    }
   }
   // 计算淹没持续时间和淹没单元数
   let inundation_duration = Array::make(n_total, 0.0)
@@ -252,12 +251,13 @@ pub fn extract_inundation_extent(
 /// 计算淹没统计信息
 pub fn inundation_stats(
   result : InundationResult,
+  threshold? : Double = 0.05,
 ) -> (Int, Double, Double, Double) {
   let mut max_h = 0.0
   let mut sum_h = 0.0
   let mut count = 0
   for k in 0..<result.max_depth.length() {
-    if result.max_depth[k] > 0.0 { // P2-31：阈值0.0，与其他模块的depth_threshold可能不一致
+    if result.max_depth[k] > threshold {
       sum_h = sum_h + result.max_depth[k]
       if result.max_depth[k] > max_h {
         max_h = result.max_depth[k]

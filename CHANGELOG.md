@@ -8,6 +8,53 @@
 - mooncakes.io 包正式发布
 - 分布式集群仿真调度
 
+## [0.9.2] - 2026-08-24
+
+### 综述
+第三轮深度代码审查与修复。4路并行审查发现 10 严重 + 34 一般 + 20 轻微共 64 项问题，全部修复。43 文件修改，+528 行，-230 行。moon check 0 错误 0 警告，415 测试通过。
+
+### 修复 — 严重问题（10项）
+- **xaj_core 蒸散发分支条件错误**：深层蒸散发ED恒为0，干旱期蒸散发低估~83%，破坏水量平衡（C取倒数+下层sufficiency判据错误）
+- **xaj_core 产流公式PE重复计入**：compute_evaporation已将PE加入state.w，compute_runoff又显式加PE，等价于W+2PE计算产流，产流偏大~52%
+- **xaj_core 不透水产流注入自由水**：R_im应直接成为地表径流，不应经过自由水蓄量三水源划分
+- **lstm forecast首步输入重复**：forward_with_state后首步又用history末位x_T，违反自回归语义
+- **hybrid prepare_rainfall_runoff缺lookback<=0校验**：负lookback导致负索引崩溃
+- **hybrid_forecast测试段数据泄露**：推理阶段用未来观测残差作LSTM输入，NSE偏乐观
+- **auth grant_scheme_ownership鉴权绕过**：任意Engineer可夺取方案所有权（角色级→方案级校验）
+- **serde_bind JSON端点abort崩溃**：非法输入abort终止服务进程，改用raise+try-catch返回错误响应
+- **test_data 季节性降雨相位反转**：北半球流域冬季多雨夏季少雨，修正为夏季峰值
+- **batch_sim 蒙特卡洛分位数整数截断**：未同步P2-18线性插值修复，小样本不确定性带系统性高估
+
+### 修复 — 一般问题（34项）
+- swe2d最终时刻稳定性检查缺失/不稳定步仍推进（与1D对齐）
+- calibration params_to_xaj率定wm时同步缩放wum/wlm/wdm
+- coupling couple_step深拷贝入参避免就地修改/couple_run不稳定提前终止
+- dem D8流向nodata判定统一容差/汇流累积环路单元补加自身贡献
+- inundation终态arrival_time记录/inundation_stats阈值参数化
+- risk_map classify_risk阈值改>=/generate_risk_map用终态水深算流速
+- river trace_to_outlet多下游选最大Strahler序
+- evaluation FloodVolume Qualified阈值/peak_time_error初始化&校验/peak_relative_error长度校验
+- extended_metrics log_nse NaN转哨兵/PFC分母用有效点数/RSR样本标准差
+- task_scheduler run_task校验area/dt/add_task返回Bool
+- auth delete_user清理login_attempts
+- batch_sim set_xaj_param未知参数fail-fast
+- api CalibrateRequest.config改Option[DDSConfig]
+- basin_cases空结果min/max置0
+- test_data mock_multi_peak_rainfall半正弦波形闭合
+- persistence read_file UTF-8异常包装/load_from_file统一StoreError/StoreError保留子类型/from_json_string包装/list_all_results深拷贝
+- frontend 缺BatchFailed/EvaluationFailed消息/RunBatchSim清error/RunSimulation清has_result/view_calibration显示结果/加载案例按钮/评价专用字段
+- cli版本号更新
+
+### 修复 — 轻微问题（20项）
+- coupling注释修正/sceua标注简化变体/swe2d标注一阶精度
+- matrix死代码清理/lstm mse长度不等返回NaN
+- types polygon_centroid容差判定
+- timeseries moving_average注释/detect_peaks首点判定
+- benchmark含偏差评价基准/model CalibConfig移除derive(Default)
+- file_io validate_path精确遍历检查/空路径检查/fileio.c fchmod检查
+- tea_arch AppModel移除derive(Default)/update_logic清除策略统一/view_batch显示summary
+- wasm_slim_model错误消息区分/未知流域注释
+
 ## [0.9.1] - 2026-08-24
 
 ### 综述

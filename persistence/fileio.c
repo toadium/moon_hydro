@@ -22,7 +22,10 @@ int32_t hydro_write_file(
     FILE *f = fopen((const char *)path, "wb");
     if (!f) return -1;
     size_t written = fwrite(content, 1, (size_t)content_len, f);
-    fchmod(fileno(f), 0640);
+    /* P3修复：检查fchmod返回值，失败时记录警告但不中止写入 */
+    if (fchmod(fileno(f), 0640) != 0) {
+        fprintf(stderr, "[hydro] warning: fchmod failed for %s, file may have default permissions\n", (const char *)path);
+    }
     /* P2修复：检查fsync返回值，失败则中止写入 */
     if (fsync(fileno(f)) != 0) {
         fclose(f);

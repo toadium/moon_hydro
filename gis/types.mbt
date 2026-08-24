@@ -195,7 +195,7 @@ pub fn polygon_centroid(polygon : Polygon) -> XYPoint {
     cy = cy + (pts[i].y + pts[j].y) * cross
   }
   area = area / 2.0
-  if area == 0.0 {
+  if area.abs() < 0.000000000001 {
     let mut sx = 0.0
     let mut sy = 0.0
     for p in pts {

@@ -85,7 +85,7 @@ pub fn forecast_grade_pbias(
   }
   let threshold_qualified : Double = match forecast_type {
     FloodPeak => 20.0
-    FloodVolume => 10.0
+    FloodVolume => 20.0 // 修复：原10.0与threshold_good相同致Qualified不可达，改为20.0
     FloodProcess => 20.0
     WaterLevel => 15.0
     RunoffDepth => 20.0
@@ -140,6 +140,10 @@ pub fn peak_relative_error(
   if observed.length() == 0 || simulated.length() == 0 {
     return 0.0
   }
+  // 修复：增加长度不匹配校验，与volume_relative_error一致
+  if observed.length() != simulated.length() {
+    return 0.0
+  }
   let mut obs_peak = observed[0]
   let mut sim_peak = simulated[0]
   for v in observed {
@@ -166,10 +170,17 @@ pub fn peak_time_error(
   observed : Array[Double],
   simulated : Array[Double],
 ) -> Int {
+  // 修复：增加空数组与长度不匹配校验，与peak_relative_error一致
+  if observed.length() == 0 || simulated.length() == 0 {
+    return 0
+  }
+  if observed.length() != simulated.length() {
+    return 0
+  }
   let mut obs_peak_time = 0
-  let mut obs_peak = 0.0
+  let mut obs_peak = observed[0]
   let mut sim_peak_time = 0
-  let mut sim_peak = 0.0
+  let mut sim_peak = simulated[0]
   for i in 0..<observed.length() {
     if observed[i] > obs_peak {
       obs_peak = observed[i]

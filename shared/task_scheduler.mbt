@@ -66,12 +66,14 @@ pub impl Default for TaskScheduler with fn default() {
 
 ///|
 /// 添加任务到队列
-pub fn TaskScheduler::add_task(self : TaskScheduler, task : SimTask) -> Unit {
+/// 返回Bool指示是否接受（重复task_id返回false）
+pub fn TaskScheduler::add_task(self : TaskScheduler, task : SimTask) -> Bool {
   if self.status.contains(task.task_id) {
-    return
+    return false
   }
   self.tasks.push(task)
   self.status[task.task_id] = Pending
+  true
 }
 
 ///|
@@ -81,7 +83,7 @@ pub fn TaskScheduler::add_tasks(
   tasks : Array[SimTask],
 ) -> Unit {
   for task in tasks {
-    self.add_task(task)
+    ignore(self.add_task(task))
   }
 }
 
@@ -116,6 +118,17 @@ pub fn run_task(task : SimTask) -> TaskExecResult {
       success: false,
       result: None,
       error: "forcings为空",
+      duration_ms: (end_time - start_time) / 1_000_000UL,
+    }
+  }
+  // 修复：校验area/dt为正，与batch_sim.run_sim_task对齐
+  if task.area <= 0.0 || task.dt <= 0.0 {
+    let end_time = @env.now()
+    return {
+      task_id: task.task_id,
+      success: false,
+      result: None,
+      error: "invalid area or dt",
       duration_ms: (end_time - start_time) / 1_000_000UL,
     }
   }

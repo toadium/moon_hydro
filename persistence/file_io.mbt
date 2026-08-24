@@ -40,15 +40,20 @@ extern "c" fn hydro_file_size(path : Bytes) -> Int = "hydro_file_size"
 
 ///|
 /// 路径遍历防护：拒绝包含 ".." 或绝对路径的路径
-fn validate_path(path : String) -> Unit raise {
+fn validate_path(path : String) -> Unit raise FileError {
+  // 空路径检查
+  if path.length() == 0 {
+    raise FileError::InvalidPath("empty path")
+  }
   // P1修复：拒绝包含null字节的路径，防止C FFI null字节注入
   if path.contains("\u0000") {
     raise FileError::InvalidPath("null byte in path: " + path)
   }
-  if path.contains("..") {
+  // 按路径分隔符拆分检查各分量是否恰好为".."，避免误拒含连续点的合法文件名
+  if path.split("/").any(fn(s) { s.equal_to_string("..") }) {
     raise FileError::InvalidPath("path traversal detected: " + path)
   }
-  if path.length() > 0 && path[0] == 47 {
+  if path[0] == 47 {
     raise FileError::InvalidPath("absolute path not allowed: " + path)
   }
 }
@@ -63,7 +68,7 @@ fn encode_path(path : String) -> Bytes {
 /// 将字符串写入文件
 ///
 /// 成功返回Unit，失败抛出FileError
-pub fn write_file(path : String, content : String) -> Unit raise {
+pub fn write_file(path : String, content : String) -> Unit raise FileError {
   validate_path(path)
   let path_bytes = encode_path(path)
   let content_bytes = @utf8.encode(content)
@@ -82,7 +87,7 @@ pub fn write_file(path : String, content : String) -> Unit raise {
 ///
 /// 成功返回文件内容，失败抛出FileError。
 /// 空文件返回空字符串，文件不存在抛出FileNotFound。
-pub fn read_file(path : String) -> String raise {
+pub fn read_file(path : String) -> String raise FileError {
   validate_path(path)
   let path_bytes = encode_path(path)
   // P2-40：此处存在TOCTOU竞态（file_exists与read_file之间文件可能被删除），单线程环境下无实际风险
@@ -98,14 +103,17 @@ pub fn read_file(path : String) -> String raise {
   if file_size > 0 && content_bytes.length() == 0 {
     raise FileError::ReadFailed(path)
   }
-  @utf8.decode(content_bytes)
+  // P3修复：包装UTF-8解码异常为FileError，保持错误处理契约一致
+  @utf8.decode(content_bytes) catch {
+    _ => raise FileError::ReadFailed(path)
+  }
 }
 
 ///|
 /// 检查文件是否存在
 ///
 /// P2-3: 使用专用C函数检查，空文件也返回true
-pub fn file_exists(path : String) -> Bool raise {
+pub fn file_exists(path : String) -> Bool raise FileError {
   validate_path(path)
   let path_bytes = encode_path(path)
   hydro_file_exists(path_bytes) == 1
@@ -120,7 +128,7 @@ extern "c" fn hydro_delete_file(path : Bytes) -> Int = "hydro_delete_file"
 /// 删除文件
 ///
 /// P2-4: 用于测试清理，成功返回Unit，失败抛出FileError
-pub fn delete_file(path : String) -> Unit raise {
+pub fn delete_file(path : String) -> Unit raise FileError {
   validate_path(path)
   let path_bytes = encode_path(path)
   let result = hydro_delete_file(path_bytes)
@@ -141,10 +149,8 @@ pub fn DataStore::save_to_file(self : DataStore, path : String) -> Unit raise {
 ///
 /// T57: 错误包装为StoreError，区分文件I/O错误和JSON解析错误
 pub fn DataStore::load_from_file(path : String) -> DataStore raise {
-  let json_str = try read_file(path) catch {
-    e => raise StoreError::FileError(e.to_string())
-  }
-  try DataStore::from_json_string(json_str) catch {
+  let json_str = read_file(path) catch { e => raise StoreError::FileError(e) }
+  DataStore::from_json_string(json_str) catch {
     e => raise StoreError::JsonError(e.to_string())
   }
 }
@@ -161,12 +167,18 @@ pub fn SimulationScheme::save_to_file(
 
 ///|
 /// 从JSON文件加载仿真方案
+///
+/// P3修复：错误包装为StoreError，与DataStore::load_from_file策略一致
 pub fn SimulationScheme::load_from_file(
   path : String,
 ) -> SimulationScheme raise {
-  let json_str = read_file(path)
-  let json = @json.parse(json_str)
-  @json.from_json(json)
+  let json_str = read_file(path) catch { e => raise StoreError::FileError(e) }
+  try {
+    let json = @json.parse(json_str)
+    @json.from_json(json)
+  } catch {
+    e => raise StoreError::JsonError(e.to_string())
+  }
 }
 
 ///|
@@ -181,8 +193,14 @@ pub fn ParameterSet::save_to_file(
 
 ///|
 /// 从JSON文件加载参数集
+///
+/// P3修复：错误包装为StoreError，与DataStore::load_from_file策略一致
 pub fn ParameterSet::load_from_file(path : String) -> ParameterSet raise {
-  let json_str = read_file(path)
-  let json = @json.parse(json_str)
-  @json.from_json(json)
+  let json_str = read_file(path) catch { e => raise StoreError::FileError(e) }
+  try {
+    let json = @json.parse(json_str)
+    @json.from_json(json)
+  } catch {
+    e => raise StoreError::JsonError(e.to_string())
+  }
 }

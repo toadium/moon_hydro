@@ -63,15 +63,21 @@ pub(all) struct CoupleRunResponse {
 } derive(Debug, ToJson, FromJson)
 
 ///|
+/// 仿真输入错误（S8修复：替代abort，可在JSON端点捕获返回错误响应）
+pub(all) suberror SimError {
+  InvalidInput(String) // 非法输入参数
+} derive(Debug, ToJson, FromJson)
+
+///|
 /// 率定请求
 pub(all) struct CalibrateRequest {
-  config : DDSConfig
+  config : DDSConfig? // S修复：DDSConfig改为可选，algorithm="sceua"时不需要
   area : Double
   dt : Double
   forcings : Array[ForcingData]
   observed : Array[Double]
   algorithm : String // T34修复：支持"dds"或"sceua"
-  sceua_config : Option[SCEUAConfig] // SCE-UA配置（algorithm="sceua"时使用）
+  sceua_config : SCEUAConfig? // SCE-UA配置（algorithm="sceua"时使用）
 } derive(Debug, ToJson, FromJson)
 
 ///|

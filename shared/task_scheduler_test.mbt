@@ -20,7 +20,7 @@ test "TaskScheduler::add_task 添加任务" {
     dt: 1.0,
     observed: [],
   }
-  scheduler.add_task(task)
+  ignore(scheduler.add_task(task))
   assert_eq(scheduler.task_count(), 1)
   let status = scheduler.get_status("task_001")
   guard status is Some(s) else { fail("任务状态未找到") }
@@ -146,7 +146,7 @@ test "TaskScheduler::progress_report 进度报告" {
     dt: 1.0,
     observed: [],
   }
-  scheduler.add_task(task)
+  ignore(scheduler.add_task(task))
   scheduler.run(_ => ())
   let report = scheduler.progress_report()
   assert_true(report.contains("总数=1"))

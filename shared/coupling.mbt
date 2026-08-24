@@ -42,7 +42,7 @@ pub fn CouplingParams::default() -> CouplingParams {
 ///|
 /// 计算新安江产流量到河道侧向入流的转换
 ///
-/// Q_lateral = coeff * (rs + ri + rg) * cell_area / 3.6
+/// Q_lateral = coeff * (rs + ri + rg) * cell_area / (3.6 * dt)
 /// 单位：mm * km² / 3.6 = m³/s
 fn compute_lateral_inflow(
   xaj_state : XinanjiangState,
@@ -51,7 +51,10 @@ fn compute_lateral_inflow(
 ) -> Double {
   let total_runoff = xaj_state.rs + xaj_state.ri + xaj_state.rg
   let dt_safe = if dt > 0.0 { dt } else { 1.0 }
-  params.lateral_inflow_coeff * total_runoff * params.cell_area / (3.6 * dt_safe)
+  params.lateral_inflow_coeff *
+  total_runoff *
+  params.cell_area /
+  (3.6 * dt_safe)
 }
 
 ///|
@@ -162,10 +165,31 @@ pub fn couple_step(
   xaj_state : XinanjiangState,
   swe_dt : Double,
 ) -> (XinanjiangState, SWEGrid1D, Double, Double) {
+  // 深拷贝入参状态，避免step_impl就地修改入参（step_impl会就地修改state并返回同一对象）
+  let xaj_state_copy : XinanjiangState = {
+    w: xaj_state.w,
+    wu: xaj_state.wu,
+    wl: xaj_state.wl,
+    wd: xaj_state.wd,
+    s: xaj_state.s,
+    r: xaj_state.r,
+    rs: xaj_state.rs,
+    ri: xaj_state.ri,
+    rg: xaj_state.rg,
+    e: xaj_state.e,
+    q: xaj_state.q,
+    qs: xaj_state.qs,
+    qi: xaj_state.qi,
+    qg: xaj_state.qg,
+  }
   // 1. 新安江单步仿真
-  let new_xaj_state = xaj_model.step(forcing, xaj_state)
+  let new_xaj_state = xaj_model.step(forcing, xaj_state_copy)
   // 2. 计算侧向入流
-  let lateral_inflow = compute_lateral_inflow(new_xaj_state, coupling_params, xaj_model.dt)
+  let lateral_inflow = compute_lateral_inflow(
+    new_xaj_state,
+    coupling_params,
+    xaj_model.dt,
+  )
   // 3. 复制SWE网格避免就地修改入参
   let h_copy = Array::make(swe_grid.nx, 0.0)
   let hu_copy = Array::make(swe_grid.nx, 0.0)
@@ -276,6 +300,10 @@ pub fn couple_run(
     water_level_buf.push(river_level)
     current_swe = new_swe
     xaj_state = new_xaj
+    // 检测到SWE不稳定后提前终止，避免后续NaN污染（与1D/2D SWE对齐）
+    if !stable {
+      break
+    }
   }
   {
     xaj_states,

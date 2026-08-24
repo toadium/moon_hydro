@@ -255,8 +255,8 @@ pub fn run_all_benchmarks() -> String {
   })
   report = report + format_bench_result(coup_bench) + "\n\n"
 
-  // 8. 评价指标
-  let sim = obs
+  // 8. 评价指标（修复：含合理偏差而非平凡完美匹配，使评价函数执行全部计算分支）
+  let sim = obs.map(fn(v) { v * 1.1 + 0.5 })
   let eval_bench = bench(name="扩展评价指标(100点)", n_iters=100, fn() {
     ignore(evaluate_extended(obs, sim))
   })

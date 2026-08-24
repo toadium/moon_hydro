@@ -239,10 +239,11 @@ test "update RunEvaluation/EvaluationCompleted 评价流程" {
   let m2 = update(m1, EvaluationCompleted(eval_result))
   assert_eq(m2.sim_params.basin_name, model.sim_params.basin_name)
   // P1-4修复验证：EvaluationCompleted应存入评价指标并清除loading
+  // P3修复验证：评价结果存入专用字段eval_nse/eval_kge/eval_pbias
   assert_false(m2.ui_state.loading)
-  assert_true((m2.sim_result.nse - 0.9).abs() < 0.001)
-  assert_true((m2.sim_result.kge - 0.9).abs() < 0.001)
-  assert_true((m2.sim_result.pbias - 1.0).abs() < 0.001)
+  assert_true((m2.sim_result.eval_nse - 0.9).abs() < 0.001)
+  assert_true((m2.sim_result.eval_kge - 0.9).abs() < 0.001)
+  assert_true((m2.sim_result.eval_pbias - 1.0).abs() < 0.001)
 }
 
 ///|

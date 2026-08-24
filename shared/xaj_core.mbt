@@ -47,13 +47,13 @@ fn XinanjiangModel::compute_evaporation(
     eu = em_safe
     el = 0.0
     ed = 0.0
-  } else if c * (p + wu) >= em_safe {
+  } else if p + wu >= c * em_safe {
     eu = p + wu
     el = (em_safe - eu) * wl_over_wlm
     ed = 0.0
   } else {
     eu = p + wu
-    if wl_over_wlm >= c * (p + wu) / em_safe {
+    if wl >= c * (em_safe - eu) {
       el = c * (em_safe - eu) * wl_over_wlm
       ed = 0.0
     } else {
@@ -92,35 +92,47 @@ fn XinanjiangModel::compute_runoff(
   self : XinanjiangModel,
   pe : Double,
   state : XinanjiangState,
-) -> Double {
+) -> (Double, Double) {
   let params = self.params
   let wm = params.wm
   let b = params.b
   let im = params.im
   let w = state.w
+  let pe_eff = if pe > 0.0 { pe } else { 0.0 }
   if wm <= 0.0 {
-    let r0 = if pe > 0.0 { pe } else { 0.0 }
+    let r0 = pe_eff
     state.w = 0.0
     state.r = r0
-    return r0
+    return (r0, im * pe_eff)
   }
   let w_safe = if w < 0.0 { 0.0 } else if w > wm { wm } else { w }
+  // S2修复：compute_evaporation已将PE加入state.w，需还原产流前张力水参与公式
+  let w_init_raw = w_safe - pe_eff
+  let w_init = if w_init_raw < 0.0 {
+    0.0
+  } else if w_init_raw > wm {
+    wm
+  } else {
+    w_init_raw
+  }
   // P2-4修复：b <= -1 时除零保护
   let b_safe = if b <= -1.0 { 0.0 } else { b }
   let mm = wm * (1.0 + b_safe)
-  let a = wm * (1.0 - @math.pow(1.0 - w_safe / wm, 1.0 / (1.0 + b_safe)))
+  let a = wm * (1.0 - @math.pow(1.0 - w_init / wm, 1.0 / (1.0 + b_safe)))
   let mut r = 0.0
   if pe <= 0.0 {
     r = 0.0
   } else if pe + a < mm {
-    r = pe + w_safe - wm + mm * (1.0 - @math.pow((pe + a) / mm, 1.0 / (1.0 + b_safe)))
+    r = pe +
+      w_init -
+      wm +
+      mm * (1.0 - @math.pow((pe + a) / mm, 1.0 / (1.0 + b_safe)))
   } else {
-    r = pe + w_safe - wm
+    r = pe + w_init - wm
   }
   if r < 0.0 {
     r = 0.0
   }
-  let pe_eff = if pe > 0.0 { pe } else { 0.0 }
   let r_im = im * pe_eff
   let r_b = (1.0 - im) * r
   r = r_im + r_b
@@ -132,7 +144,7 @@ fn XinanjiangModel::compute_runoff(
     state.w = wm
   }
   state.r = r
-  r
+  (r, r_im)
 }
 
 ///|
@@ -158,13 +170,7 @@ fn XinanjiangModel::compute_source_split(
   if fr > 0.0 {
     let s_total = s + r
     if sm > 0.0 {
-      let s_safe = if s < 0.0 {
-        0.0
-      } else if s > sm {
-        sm
-      } else {
-        s
-      }
+      let s_safe = if s < 0.0 { 0.0 } else if s > sm { sm } else { s }
       // P1修复：ex <= -1 时除零保护，同 b_safe 模式
       let ex_safe = if ex <= -1.0 { 0.0 } else { ex }
       let mm_s = sm * (1.0 + ex_safe)
@@ -172,7 +178,9 @@ fn XinanjiangModel::compute_source_split(
       if r + a_s >= mm_s {
         rs = s_total - sm
       } else {
-        rs = r + s_safe - sm +
+        rs = r +
+          s_safe -
+          sm +
           mm_s * (1.0 - @math.pow((r + a_s) / mm_s, 1.0 / (1.0 + ex_safe)))
       }
       if rs > r {
@@ -241,8 +249,10 @@ fn XinanjiangModel::step_impl(
   let em = forcing.evaporation
   self.compute_evaporation(p, em, state)
   let pe = p - state.e
-  let r = self.compute_runoff(pe, state)
-  self.compute_source_split(r, state)
+  // S3修复：不透水产流r_im直接进入地表径流，不经过自由水蓄量
+  let (r, r_im) = self.compute_runoff(pe, state)
+  self.compute_source_split(r - r_im, state)
+  state.rs = state.rs + r_im
   // P1-1修复：使用state中保存的前一步汇流分量，而非0.0
   let (qs, qi, qg) = self.compute_routing(state, state.qs, state.qi, state.qg)
   state.qs = qs

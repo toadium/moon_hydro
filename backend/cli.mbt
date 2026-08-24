@@ -57,7 +57,7 @@ fn print_cli_result(result : CliResult) -> Unit {
 ///|
 /// 子命令: help - 显示帮助信息
 fn cli_help() -> Unit {
-  println("沐澜水文 V0.9 - 命令行子命令")
+  println("沐澜水文 V0.9.2 - 命令行子命令")
   println(repeat_str("=", 50))
   println("可用子命令:")
   println("  demo        完整功能演示(默认)")
@@ -520,20 +520,16 @@ fn cli_json() -> CliResult raise {
 ///|
 /// 子命令: demo - 完整功能演示
 fn cli_demo() -> Unit {
-  println("沐澜水文 V0.9 - 完整功能演示")
+  println("沐澜水文 V0.9.2 - 完整功能演示")
   println(repeat_str("=", 50))
   let commands : Array[String] = [
-    "sim", "calibrate", "dds", "validate", "batch", "ensemble", "uncertainty",
-    "sensitivity", "swe", "coupling", "timeseries", "metrics", "json", "bench",
-    "persistence", "auth", "ai_forecast", "gis", "flood",
+    "sim", "calibrate", "dds", "validate", "batch", "ensemble", "uncertainty", "sensitivity",
+    "swe", "coupling", "timeseries", "metrics", "json", "bench", "persistence", "auth",
+    "ai_forecast", "gis", "flood",
   ]
   for cmd in commands {
-    try {
-      dispatch(cmd)
-    } catch {
-      e => {
-        println("[FAIL] [\{cmd}] 子命令异常: \{e}")
-      }
+    dispatch(cmd) catch {
+      e => println("[FAIL] [\{cmd}] 子命令异常: \{e}")
     }
   }
   println("\n" + repeat_str("=", 50))
@@ -951,6 +947,7 @@ fn cli_flood() -> CliResult {
     result.hv_final,
     nx=result.nx,
     ny=result.ny,
+    final_depth=result.final_depth,
   )
   let risk_stats = @flood.risk_statistics(risk_map)
   println(risk_stats.to_summary())

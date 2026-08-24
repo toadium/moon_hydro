@@ -229,14 +229,6 @@ test "JSON端点-无效JSON容错" {
 }
 
 ///|
-test "参数设置-未知参数名容错" {
-  let base = XinanjiangParams::default()
-  let p = set_xaj_param(base, "nonexistent", 999.0)
-  assert_true((p.wm - base.wm).abs() < 0.001)
-  assert_true((p.b - base.b).abs() < 0.001)
-}
-
-///|
 test "长期仿真稳定性-100时段" {
   let model = XinanjiangModel::new(
     params=XinanjiangParams::default(),

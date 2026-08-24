@@ -228,7 +228,11 @@ fn compute_batch_summary(results : Array[SimTaskResult]) -> BatchSummaryStats {
     mean_pbias: pbias_sum / n,
     best_nse,
     worst_nse,
-    mean_peak_flow: if success_count > 0 { peak_flow_sum / success_count.to_double() } else { 0.0 },
+    mean_peak_flow: if success_count > 0 {
+      peak_flow_sum / success_count.to_double()
+    } else {
+      0.0
+    },
     total_volume,
   }
 }
@@ -334,7 +338,7 @@ pub fn set_xaj_param(
     "ki1" => { ..base, ki1: value }
     "kg2" => { ..base, kg2: value }
     "ki2" => { ..base, ki2: value }
-    _ => base
+    _ => abort("set_xaj_param: unknown param " + name) // fail-fast：未知参数名暴露配置错误
   }
 }
 
@@ -403,9 +407,18 @@ pub fn monte_carlo_uncertainty(
     values.sort_by(fn(a, b) { if a < b { -1 } else if a > b { 1 } else { 0 } })
     let n = values.length()
     if n > 0 {
-      p5[t] = values[(n * 5 / 100).clamp(min=0, max=n - 1)]
-      p50[t] = values[(n * 50 / 100).clamp(min=0, max=n - 1)]
-      p95[t] = values[(n * 95 / 100).clamp(min=0, max=n - 1)]
+      // S10修复：线性插值分位数，与array_stats的interp逻辑一致
+      let interp = fn(p : Double) -> Double {
+        let idx = (n - 1).to_double() * p
+        let lo = idx.floor().to_int()
+        let lo_c = if lo < 0 { 0 } else if lo > n - 1 { n - 1 } else { lo }
+        let hi_c = if lo_c + 1 > n - 1 { n - 1 } else { lo_c + 1 }
+        let frac = idx - idx.floor()
+        values[lo_c] * (1.0 - frac) + values[hi_c] * frac
+      }
+      p5[t] = interp(0.05)
+      p50[t] = interp(0.5)
+      p95[t] = interp(0.95)
     }
   }
   {

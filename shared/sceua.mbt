@@ -242,6 +242,7 @@ fn cce_evolution(
       indices.push(i)
     }
     // 部分Fisher-Yates洗牌，选取q个不重复索引
+    // 注意：采用均匀选取简化变体，非标准SCE-UA三角概率分布
     for i in 0..<q {
       let j_raw = (rng.next_double() * (n - i).to_double()).to_int()
       let j = i + (if j_raw >= n - i { n - i - 1 } else { j_raw })

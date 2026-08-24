@@ -271,6 +271,7 @@ pub fn SWEGrid2D::step_lf(
   let hu_new = Array::make(n_total, 0.0)
   let hv_new = Array::make(n_total, 0.0)
   // 维度分裂：先x方向，再y方向
+  // 注意：采用一阶算子分裂，时间精度一阶（未用Strang对称分裂）
   // x方向通量更新
   for i in 0..<nx {
     for j in 0..<ny {
@@ -430,17 +431,21 @@ pub fn SWEGrid2D::run(
         stable = false
       }
     }
-    // 推进
-    grid = grid.step_lf(dt_eff, config.boundary)
-    steps_done = step + 1
+    // 检测到不稳定立即终止，不执行该步推进（与1D对齐）
     if !stable {
       break
     }
+    // 推进
+    grid = grid.step_lf(dt_eff, config.boundary)
+    steps_done = step + 1
   }
-  // 最终最大水深
+  // 最终最大水深与稳定性检查（与1D对齐：循环内检查在推进前，最后一步未覆盖）
   for k in 0..<n_total {
     if grid.h[k] > max_depth[k] {
       max_depth[k] = grid.h[k]
+    }
+    if grid.h[k] < -0.001 || grid.h[k] > 1000000.0 {
+      stable = false
     }
   }
   {

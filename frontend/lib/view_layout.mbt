@@ -75,7 +75,7 @@ fn view_simulation(model : AppModel) -> ViewNode {
     VLabel("计算时段", "\{sim.dt} h"),
     VRow([
       VButton("运行仿真", RunSimulation),
-      VButton("加载案例", NavigateTo(SimPage)),
+      VButton("加载案例", LoadBasinCase(model.ui_state.selected_basin)),
       VButton("参数面板", ToggleParamsPanel),
     ]),
   ]
@@ -145,26 +145,43 @@ fn view_sim_result(result : SimResultState) -> ViewNode {
 ///|
 /// 率定页视图
 fn view_calibration(model : AppModel) -> ViewNode {
-  VSection("参数率定", [
-    VHeading(2, "全局优化算法"),
-    VRow([
-      VButton("DDS率定", StartCalibration("dds")),
-      VButton("SCE-UA率定", StartCalibration("sceua")),
-    ]),
-    VLabel("当前流域", model.sim_params.basin_name),
-    VText("DDS: 动态维度搜索，适合高维参数空间"),
-    VText("SCE-UA: 洗牌复形进化，全局收敛性好"),
-  ])
+  let result = model.sim_result
+  // P3修复：率定完成后显示结果，参照view_evaluation模式
+  let calib_result_node = if result.calib_metric.length() > 0 {
+    [
+      VHeading(3, "率定结果"),
+      VLabel("率定指标", result.calib_metric),
+      VLabel("最优值", "\{result.calib_value}"),
+    ]
+  } else {
+    []
+  }
+  VSection(
+    "参数率定",
+    [
+      VHeading(2, "全局优化算法"),
+      VRow([
+        VButton("DDS率定", StartCalibration("dds")),
+        VButton("SCE-UA率定", StartCalibration("sceua")),
+      ]),
+      VLabel("当前流域", model.sim_params.basin_name),
+      VText("DDS: 动态维度搜索，适合高维参数空间"),
+      VText("SCE-UA: 洗牌复形进化，全局收敛性好"),
+    ] +
+    calib_result_node,
+  )
 }
 
 ///|
 /// 评价页视图
 fn view_evaluation(model : AppModel) -> ViewNode {
+  // P3修复：读取评价专用字段eval_nse/eval_kge/eval_pbias
+  let r = model.sim_result
   VSection("评价指标", [
     VHeading(2, "GB/T 22482预报等级判定"),
-    VLabel("NSE", "\{model.sim_result.nse}"),
-    VLabel("KGE", "\{model.sim_result.kge}"),
-    VLabel("PBIAS", "\{model.sim_result.pbias}%"),
+    VLabel("NSE", "\{r.eval_nse}"),
+    VLabel("KGE", "\{r.eval_kge}"),
+    VLabel("PBIAS", "\{r.eval_pbias}%"),
     VText("等级标准："),
     VText("  甲等: NSE≥0.9, |PBIAS|≤5%"),
     VText("  乙等: NSE≥0.7, |PBIAS|≤10%"),
@@ -174,13 +191,23 @@ fn view_evaluation(model : AppModel) -> ViewNode {
 
 ///|
 /// 批量页视图
-fn view_batch(_model : AppModel) -> ViewNode {
-  VSection("批量仿真", [
-    VHeading(2, "多流域批量调度"),
-    VButton("运行全部流域", RunBatchSim([])), // P3-6：占位，V1.0改为加载实际流域任务
-    VText("支持多流域、多情景集合批量仿真"),
-    VText("含蒙特卡洛不确定性分析"),
-  ])
+fn view_batch(model : AppModel) -> ViewNode {
+  // P3修复：显示batch_summary（当非空时）
+  let batch_result_node = if model.sim_result.batch_summary.length() > 0 {
+    [VHeading(3, "批量结果"), VText(model.sim_result.batch_summary)]
+  } else {
+    []
+  }
+  VSection(
+    "批量仿真",
+    [
+      VHeading(2, "多流域批量调度"),
+      VButton("运行全部流域", RunBatchSim([])), // P3-6：占位，V1.0改为加载实际流域任务
+      VText("支持多流域、多情景集合批量仿真"),
+      VText("含蒙特卡洛不确定性分析"),
+    ] +
+    batch_result_node,
+  )
 }
 
 ///|
@@ -265,9 +292,7 @@ fn render_text(sb : StringBuilder, node : ViewNode, indent : Int) -> Unit {
     VLabel(label, value) => sb <+ "\{prefix}- \{label}: \{value}\n"
     VTable(headers, rows) => {
       // P2-49修复：转义单元格中的"|"避免破坏Markdown表格
-      let escape_cell = fn(s : String) -> String {
-        s.replace(old="|", new="/")
-      }
+      let escape_cell = fn(s : String) -> String { s.replace(old="|", new="/") }
       // 表头
       sb <+ "\{prefix}| "
       for h in headers {
@@ -294,7 +319,11 @@ fn render_text(sb : StringBuilder, node : ViewNode, indent : Int) -> Unit {
     VButton(text, _msg) => sb <+ "\{prefix}[按钮: \{text}]\n"
     VInput(label, value) => sb <+ "\{prefix}[输入: \{label}=\{value}]\n"
     VSelect(label, options, idx) => {
-      let current = if idx >= 0 && idx < options.length() { options[idx] } else { "" }
+      let current = if idx >= 0 && idx < options.length() {
+        options[idx]
+      } else {
+        ""
+      }
       sb <+ "\{prefix}[选择: \{label}=\{current}]\n"
     }
     VLoading(msg) => sb <+ "\{prefix}[加载中] \{msg}\n"

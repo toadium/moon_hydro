@@ -4,6 +4,7 @@
 /// TEA架构(Model/Msg/Update/View) + wasm_slim_model轻量化试算
 /// 后续V1.0接入Rabbita+Rui时，View转换为Rui组件树
 
+///|
 /// P1修复：按字符截断字符串，避免截断UTF-8多字节字符
 fn safe_preview(s : String, max_bytes : Int) -> String {
   if s.length() <= max_bytes {
@@ -22,6 +23,7 @@ fn safe_preview(s : String, max_bytes : Int) -> String {
   buf.to_string() + "..."
 }
 
+///|
 fn main {
   println("===== 沐澜水文 frontend V0.9.1 - TEA架构演示 =====")
   // 初始化Model

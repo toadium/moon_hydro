@@ -84,7 +84,7 @@ pub(all) struct CalibConfig {
   params_range : Array[(String, Double, Double)] // 参数范围(名称,下限,上限)
   max_iter : Int // 最大迭代次数
   target_metric : String // 目标指标("nse"或"kge")
-} derive(Debug, ToJson, FromJson, Default) // P2-9：derive(Default)生成零值，实际应使用XinanjiangParams::default()
+} derive(Debug, ToJson, FromJson) // 修复：移除Default，外部应使用显式构造，勿用Default（零值非法）
 
 ///|
 /// 构造默认新安江参数（三水源新安江模型典型值）

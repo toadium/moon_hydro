@@ -77,7 +77,7 @@ pub fn vec_concat(a : Array[Double], b : Array[Double]) -> Array[Double] {
 }
 
 ///|
-/// 矩阵乘向量: M * v（维度安全：取min(row_len, v_len)避免越界）
+/// 矩阵乘向量: M * v（维度不匹配时abort）
 pub fn mat_vec_mul(
   m : Array[Array[Double]],
   v : Array[Double],
@@ -91,8 +91,7 @@ pub fn mat_vec_mul(
     if row.length() != v_len {
       abort("mat_vec_mul: row length != vector length")
     }
-    let cols = if row.length() < v_len { row.length() } else { v_len }
-    for j in 0..<cols {
+    for j in 0..<v_len {
       sum = sum + row[j] * v[j]
     }
     result[i] = sum

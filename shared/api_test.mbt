@@ -169,14 +169,14 @@ test "evaluate_json_endpoint 端到端JSON" {
 ///|
 test "CalibrateRequest JSON往返" {
   let request : CalibrateRequest = {
-    config: {
+    config: Some({
       max_iter: 10,
       r: 0.3,
       seed: 42,
       target_metric: "nse",
       params: default_calib_params(),
       max_no_improve: 100,
-    },
+    }),
     area: 100.0,
     dt: 1.0,
     forcings: mock_flood_rainfall(duration=5),
@@ -186,7 +186,8 @@ test "CalibrateRequest JSON往返" {
   }
   let json_str = to_json_string(request)
   let parsed = parse_calibrate_request(json_str)
-  assert_eq(parsed.config.max_iter, 10)
+  guard parsed.config is Some(c) else { fail("config is None") }
+  assert_eq(c.max_iter, 10)
   assert_true((parsed.area - 100.0).abs() < 0.001)
   assert_eq(parsed.observed.length(), 5)
 }
@@ -198,7 +199,7 @@ test "run_calibrate 率定服务" {
   let model = XinanjiangModel::new(params=true_params, area=100.0, dt=1.0)
   let observed = model.run(forcings).runoff_series
   let request : CalibrateRequest = {
-    config: {
+    config: Some({
       max_iter: 20,
       r: 0.3,
       seed: 42,
@@ -208,7 +209,7 @@ test "run_calibrate 率定服务" {
         { name: "b", lower: 0.2, upper: 0.6, value: 0.25 },
       ],
       max_no_improve: 100,
-    },
+    }),
     area: 100.0,
     dt: 1.0,
     forcings,

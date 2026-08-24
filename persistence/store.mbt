@@ -127,6 +127,8 @@ pub fn DataStore::save_result(self : DataStore, result : ResultRecord) -> Unit {
 
 ///|
 /// 查询方案的仿真结果
+///
+/// P3修复：深拷贝runoff_series数组，防止外部修改破坏内部状态
 pub fn DataStore::list_results(
   self : DataStore,
   scheme_id : String,
@@ -134,7 +136,7 @@ pub fn DataStore::list_results(
   let found : Array[ResultRecord] = []
   for r in self.results {
     if r.scheme_id == scheme_id {
-      found.push(r)
+      found.push({ ..r, runoff_series: r.runoff_series.copy() })
     }
   }
   found
@@ -142,8 +144,14 @@ pub fn DataStore::list_results(
 
 ///|
 /// 列出所有结果
+///
+/// P3修复：深拷贝runoff_series数组，防止外部修改破坏内部状态
 pub fn DataStore::list_all_results(self : DataStore) -> Array[ResultRecord] {
-  self.results.copy()
+  let copied : Array[ResultRecord] = []
+  for r in self.results {
+    copied.push({ ..r, runoff_series: r.runoff_series.copy() })
+  }
+  copied
 }
 
 ///|
@@ -200,15 +208,23 @@ pub fn DataStore::to_json_string(self : DataStore) -> String {
 
 ///|
 /// 从JSON字符串反序列化
+///
+/// P3修复：包装JSON异常为StoreError::JsonError，与load_from_file策略一致
 pub fn DataStore::from_json_string(json_str : String) -> DataStore raise {
-  let json = @json.parse(json_str)
-  @json.from_json(json)
+  try {
+    let json = @json.parse(json_str)
+    @json.from_json(json)
+  } catch {
+    e => raise StoreError::JsonError(e.to_string())
+  }
 }
 
 ///|
 /// T57: 存储层错误，包装FileError和JSON错误
+///
+/// P3修复：FileError载荷保留原始子类型，JsonError载荷为字符串（JSON错误无统一子类型）
 pub(all) suberror StoreError {
-  FileError(String)
+  FileError(FileError)
   JsonError(String)
 } derive(Debug, ToJson, FromJson)
 

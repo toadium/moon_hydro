@@ -134,9 +134,6 @@ test "set_xaj_param 参数设置" {
   assert_true((p2.b - 0.5).abs() < 0.001)
   let p3 = set_xaj_param(base, "kg", 0.4)
   assert_true((p3.kg - 0.4).abs() < 0.001)
-  // 未知参数名应返回原参数
-  let p4 = set_xaj_param(base, "unknown", 1.0)
-  assert_true((p4.wm - base.wm).abs() < 0.001)
 }
 
 ///|

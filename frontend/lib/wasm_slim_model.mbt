@@ -12,7 +12,7 @@ pub(all) struct SlimSimRequest {
   dt : Double
   rainfall : Array[Double] // 简化：仅降雨序列
   evaporation : Array[Double] // 蒸发序列
-  params : Option[@shared.XinanjiangParams] // P2-51修复：可选自定义参数，None时用默认
+  params : @shared.XinanjiangParams? // P2-51修复：可选自定义参数，None时用默认
 } derive(Debug, ToJson, FromJson, Default)
 
 ///|
@@ -68,7 +68,7 @@ pub fn slim_run(request : SlimSimRequest) -> SlimSimResponse {
     None => @shared.XinanjiangParams::default()
   }
   let model = @shared.XinanjiangModel::new(
-    params=params,
+    params~,
     area=request.area,
     dt=request.dt,
   )
@@ -96,8 +96,21 @@ pub fn slim_run(request : SlimSimRequest) -> SlimSimResponse {
 ///
 /// 浏览器wasm-gc直接调用此函数完成试算
 pub fn slim_json_endpoint(json_str : String) -> String {
+  // P3修复：区分JSON格式错误与其他错误，返回不同消息
+  let json = @json.parse(json_str) catch {
+    _ => {
+      let err_response : SlimSimResponse = {
+        runoff: [],
+        peak_flow: 0.0,
+        peak_time: 0,
+        total_volume: 0.0,
+        success: false,
+        error: "请求格式无效",
+      }
+      return err_response.to_json().stringify()
+    }
+  }
   try {
-    let json = @json.parse(json_str)
     let request : SlimSimRequest = @json.from_json(json)
     let response = slim_run(request)
     let resp_json = response.to_json()
@@ -110,7 +123,7 @@ pub fn slim_json_endpoint(json_str : String) -> String {
         peak_time: 0,
         total_volume: 0.0,
         success: false,
-        error: "请求处理失败，请检查输入参数", // P2-52修复：不泄露内部错误细节
+        error: "服务内部错误",
       }
       err_response.to_json().stringify()
     }
@@ -129,7 +142,13 @@ pub fn quick_run(
   for _ in rainfall {
     evaporation.push(evap)
   }
-  let request : SlimSimRequest = { area, dt, rainfall, evaporation, params: None }
+  let request : SlimSimRequest = {
+    area,
+    dt,
+    rainfall,
+    evaporation,
+    params: None,
+  }
   slim_run(request)
 }
 
@@ -161,6 +180,7 @@ pub fn load_basin_config(name : String) -> SimConfig {
     "闽江竹岐" => @shared.zhuyi_basin_case()
     "飞云江" => @shared.feiyunjiang_basin_case()
     "青弋江" => @shared.qingyijiang_basin_case()
+    // 未知流域名回退到合成基准案例
     _ => @shared.synthetic_benchmark_case()
   }
   {

@@ -157,12 +157,21 @@ pub fn LSTM::forecast(
   history : Array[Array[Double]],
   n_forecast : Int,
 ) -> Array[Array[Double]] {
-  let (_, state_init) = self.forward_with_state(history)
+  let (outputs, state_init) = self.forward_with_state(history)
   let mut state = state_init
   let forecasts : Array[Array[Double]] = []
-  // 用最后一个输入作为预报起点
-  let mut last_input = if history.length() > 0 {
-    history[history.length() - 1]
+  // 自回归首步：用forward的最后输出y_T作为输入（y_{T+1} ≈ LSTM(y_T, s_T)），
+  // 而非history末位x_T（已在forward阶段处理过，避免重复处理）。
+  // 按input_dim截断/填充零。
+  let mut last_input = if outputs.length() > 0 {
+    let y_last = outputs[outputs.length() - 1]
+    let next_input = vec_zeros(self.config.input_dim)
+    for i in 0..<self.config.input_dim {
+      if i < y_last.length() {
+        next_input[i] = y_last[i]
+      }
+    }
+    next_input
   } else {
     vec_zeros(self.config.input_dim)
   }
@@ -319,7 +328,8 @@ pub fn LSTMWeights::from_flat(
 /// 计算LSTM预报的MSE（用于SCE-UA目标函数）
 ///
 /// inputs: 输入序列, targets: 目标序列
-/// P3-3：错误情况返回999999.0哨兵值，调用方应检查此值
+/// P3-3：序列数不等或空时返回999999.0哨兵值；
+/// 单步分量维度不等时返回NaN哨兵值，让调用方感知维度配置错误。
 pub fn LSTM::mse(
   self : LSTM,
   inputs : Array[Array[Double]],
@@ -336,12 +346,14 @@ pub fn LSTM::mse(
     let y = outputs[t]
     let target = targets[t]
     let m = y.length()
+    // 维度不等时返回NaN哨兵，避免静默截断掩盖配置错误
+    if m != target.length() {
+      return @double.not_a_number
+    }
     for i in 0..<m {
-      if i < target.length() {
-        let diff = y[i] - target[i]
-        sum_sq = sum_sq + diff * diff
-        count = count + 1
-      }
+      let diff = y[i] - target[i]
+      sum_sq = sum_sq + diff * diff
+      count = count + 1
     }
   }
   if count == 0 {

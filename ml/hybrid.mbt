@@ -75,7 +75,9 @@ pub fn prepare_rainfall_runoff(
   let inputs : Array[Array[Double]] = []
   let targets : Array[Array[Double]] = []
   let rain_len = rainfall.length()
-  if n <= lookback {
+  // P1修复：与prepare_sequences一致，lookback <= 0 时直接返回，
+  // 避免负索引崩溃（lookback<0）或空输入语义错误（lookback=0）
+  if lookback <= 0 || n <= lookback {
     return (inputs, targets)
   }
   for i in 0..<(n - lookback) {
@@ -190,7 +192,7 @@ pub fn train_residual_lstm(
         }
         let weights = LSTMWeights::from_flat(flat, config.lstm_config)
         let lstm = LSTM::with_weights(config.lstm_config, weights)
-    let mse = lstm.mse(adjusted_inputs, targets)
+        let mse = lstm.mse(adjusted_inputs, targets)
         if mse < best_mse {
           best_mse = mse
           best_flat = flat
@@ -247,8 +249,15 @@ pub fn hybrid_forecast(
     let input : Array[Double] = []
     for j in 0..<lookback {
       let idx = i - lookback + j
-      if idx >= 0 && idx < observed.length() && idx < physical_forecast.length() {
+      // P0修复：避免数据泄露——idx在训练段用实际残差，
+      // idx在测试段用已产生的预测残差（ai_correction），其他用0.0
+      if idx >= 0 &&
+        idx < test_start &&
+        idx < observed.length() &&
+        idx < physical_forecast.length() {
         input.push(observed[idx] - physical_forecast[idx])
+      } else if idx >= test_start && idx < i {
+        input.push(ai_correction[idx - test_start])
       } else {
         input.push(0.0)
       }

@@ -31,7 +31,7 @@ pub fn update(model : AppModel, msg : Msg) -> AppModel {
     RunSimulation =>
       {
         ..model,
-        sim_result: { ..model.sim_result, is_running: true },
+        sim_result: { ..model.sim_result, is_running: true, has_result: false },
         ui_state: { ..model.ui_state, loading: true },
         error_message: "",
       }
@@ -57,7 +57,6 @@ pub fn update(model : AppModel, msg : Msg) -> AppModel {
           pbias: result.pbias,
           has_result: runoff.length() > 0, // P2-46修复：空序列时has_result为false
           is_running: false,
-          batch_summary: "",
         },
         ui_state: { ..model.ui_state, loading: false },
       }
@@ -102,20 +101,32 @@ pub fn update(model : AppModel, msg : Msg) -> AppModel {
         error_message: "",
       }
     // P1-4修复：EvaluationCompleted存入评价指标，不再为no-op
+    // P3修复：评价结果存入专用字段eval_nse/eval_kge/eval_pbias，避免与仿真结果混淆
     EvaluationCompleted(result) =>
       {
         ..model,
         sim_result: {
           ..model.sim_result,
-          nse: result.nse,
-          kge: result.kge,
-          pbias: result.pbias,
+          eval_nse: result.nse,
+          eval_kge: result.kge,
+          eval_pbias: result.pbias,
         },
         ui_state: { ..model.ui_state, loading: false },
       }
+    EvaluationFailed(err) =>
+      {
+        ..model,
+        ui_state: { ..model.ui_state, loading: false },
+        error_message: err,
+      }
     // 批量仿真
+    // P3修复：RunBatchSim清除error_message，与同类启动消息一致
     RunBatchSim(_tasks) =>
-      { ..model, ui_state: { ..model.ui_state, loading: true } }
+      {
+        ..model,
+        ui_state: { ..model.ui_state, loading: true },
+        error_message: "",
+      }
     BatchCompleted(result) =>
       {
         ..model,
@@ -124,6 +135,12 @@ pub fn update(model : AppModel, msg : Msg) -> AppModel {
           batch_summary: "任务=\{result.total_tasks}, 成功=\{result.success_count}, 失败=\{result.failure_count}, 平均NSE=\{result.summary_stats.mean_nse}, 平均KGE=\{result.summary_stats.mean_kge}",
         },
         ui_state: { ..model.ui_state, loading: false },
+      }
+    BatchFailed(err) =>
+      {
+        ..model,
+        ui_state: { ..model.ui_state, loading: false },
+        error_message: err,
       }
     // UI控制
     // P2-1修复：使用内置!操作符替代自定义not函数

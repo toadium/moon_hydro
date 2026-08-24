@@ -154,8 +154,14 @@ pub fn RiverNetwork::trace_to_outlet(
     if downstream.length() == 0 {
       return path
     }
-    // P2-34：汇流节点仅跟踪第一条下游河段，多出口时应选最大Strahler序
-    current = downstream[0].to_node
+    // P2-34修复：多下游时选Strahler order最大的河段，避免追溯至死胡同
+    let mut best_reach = downstream[0]
+    for reach in downstream {
+      if reach.order > best_reach.order {
+        best_reach = reach
+      }
+    }
+    current = best_reach.to_node
   }
   path
 }

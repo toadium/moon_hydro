@@ -66,19 +66,19 @@ pub fn classify_risk(depth : Double, velocity : Double) -> RiskLevel {
     return ExtremeRisk
   }
   if depth > 0.8 {
-    if danger > 1.2 {
+    if danger >= 1.2 {
       return ExtremeRisk
     }
     return HighRisk
   }
   if depth > 0.3 {
-    if danger > 0.6 {
+    if danger >= 0.6 {
       return HighRisk
     }
     return ModerateRisk
   }
   // depth in [0.05, 0.3]
-  if danger > 0.3 {
+  if danger >= 0.3 {
     return ModerateRisk
   }
   LowRisk
@@ -96,18 +96,22 @@ pub fn generate_risk_map(
   hv_final : Array[Double],
   nx~ : Int,
   ny~ : Int,
+  final_depth? : Array[Double] = [],
 ) -> RiskMap {
   let n_total = nx * ny
   let levels : Array[RiskLevel] = Array::make(n_total, Safe)
-  // T41修复：流速从最终时刻动量模长计算，不与max_depth（不同时刻）混用
+  // T41修复：流速用终态动量除以终态水深，避免与max_depth（不同时刻）混用。
+  // final_depth由调用方传入（如InundationResult.final_depth）；未提供时回退到max_depth（已知近似）。
+  let use_final_depth = final_depth.length() == n_total
   let final_velocity = Array::make(n_total, 0.0)
   for k in 0..<n_total {
     let h = max_depth[k]
     let hu = hu_final[k]
     let hv = hv_final[k]
+    let h_for_velocity = if use_final_depth { final_depth[k] } else { h }
     // P1修复：动量除以水深得流速(m/s)，非动量模长(m²/s)
-    let v = if h > 0.0 {
-      @math.pow(hu * hu + hv * hv, 0.5) / h
+    let v = if h_for_velocity > 0.0 {
+      @math.pow(hu * hu + hv * hv, 0.5) / h_for_velocity
     } else {
       0.0
     }

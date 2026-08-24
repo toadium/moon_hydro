@@ -123,7 +123,15 @@ pub(all) struct AuthManager {
 ///|
 /// 构造空AuthManager
 pub fn AuthManager::new() -> AuthManager {
-  { users: {}, usernames: {}, sessions: {}, scheme_owners: {}, token_counter: 0UL, user_counter: 0UL, login_attempts: {} }
+  {
+    users: {},
+    usernames: {},
+    sessions: {},
+    scheme_owners: {},
+    token_counter: 0UL,
+    user_counter: 0UL,
+    login_attempts: {},
+  }
 }
 
 ///|
@@ -356,12 +364,10 @@ pub fn AuthManager::grant_scheme_ownership(
   is_public? : Bool = false,
   by? : User,
 ) -> Unit {
-  // T31修复：提供by参数时校验请求者具备SchemeWrite权限，无权限则不授予
+  // S7修复：校验请求者对具体方案的写权限（方案级），与make_scheme_public一致
   match by {
     Some(requester) =>
-      try {
-        self.check_permission(requester, SchemeWrite)
-      } catch {
+      self.check_scheme_access(requester, scheme_id, write=true) catch {
         _ => return
       }
     None => ()
@@ -414,9 +420,7 @@ pub fn AuthManager::make_scheme_public(
   // T31修复：提供by参数时校验请求者对方案有写权限，无权限则返回false
   match by {
     Some(requester) =>
-      try {
-        self.check_scheme_access(requester, scheme_id, write=true)
-      } catch {
+      self.check_scheme_access(requester, scheme_id, write=true) catch {
         _ => return false
       }
     None => ()
@@ -466,6 +470,8 @@ pub fn AuthManager::delete_user(self : AuthManager, user_id : String) -> Bool {
   let user = self.users[user_id]
   ignore(self.users.remove(user_id))
   ignore(self.usernames.remove(user.username))
+  // 修复：清理登录失败计数，避免用户名复用继承历史失败计数
+  ignore(self.login_attempts.remove(user.username))
   // 清理会话
   let tokens_to_remove : Array[String] = []
   for token, session in self.sessions {

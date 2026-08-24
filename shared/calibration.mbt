@@ -86,8 +86,7 @@ fn gaussian_perturbation(
   let u1 = 1.0 - rng.next_double()
   let u2 = rng.next_double()
   // Box-Muller变换（P2-13：仅使用cos分量，sin分量未复用，可优化为交替输出）
-  let z = @math.pow(-2.0 * @math.ln(u1), 0.5) *
-    @math.cos(2.0 * @math.PI * u2)
+  let z = @math.pow(-2.0 * @math.ln(u1), 0.5) * @math.cos(2.0 * @math.PI * u2)
   mean + stddev * z
 }
 
@@ -176,11 +175,15 @@ pub fn params_to_xaj(params : Array[CalibParam]) -> XinanjiangParams {
       _ => ()
     }
   }
+  // 按默认比例同步缩放三层容量，保持 wm = wum + wlm + wdm 约束
+  let wum = wm * 20.0 / 120.0
+  let wlm = wm * 60.0 / 120.0
+  let wdm = wm * 40.0 / 120.0
   {
     wm,
-    wum: base.wum,
-    wlm: base.wlm,
-    wdm: base.wdm,
+    wum,
+    wlm,
+    wdm,
     b,
     im,
     c,

@@ -27,9 +27,11 @@ pub(all) enum Msg {
   // 评价
   RunEvaluation(Array[Double], Array[Double])
   EvaluationCompleted(@shared.EvaluationResult)
+  EvaluationFailed(String)
   // 批量仿真
   RunBatchSim(Array[@shared.SimTask])
   BatchCompleted(@shared.BatchSimResult)
+  BatchFailed(String)
   // UI控制
   ToggleParamsPanel
   ToggleChart

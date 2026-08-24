@@ -134,10 +134,10 @@ pub fn mock_multi_peak_rainfall(
 ) -> Array[ForcingData] {
   let forcings : Array[ForcingData] = []
   for peak in 0..<n_peaks {
-    // 每场暴雨
-    for t in 0..<peak_duration {
+    // 每场暴雨：半正弦波形自然闭合至零（修复：原三角波末端非零致阶跃）
+    for t in 0..<=peak_duration {
       let rainfall = peak_rainfall *
-        (1.0 - (2.0 * t.to_double() / peak_duration.to_double() - 1.0).abs())
+        @math.sin(@math.PI * t.to_double() / peak_duration.to_double())
       forcings.push({
         rainfall: if rainfall < 0.0 {
           0.0
@@ -186,8 +186,8 @@ pub fn mock_long_term_forcings(
   let rng = @splitmix.new(seed~)
   let forcings : Array[ForcingData] = []
   for day in 0..<n_days {
-    // 季节性降雨模式：夏季多雨，冬季少雨
-    let seasonal_factor = 0.5 +
+    // 季节性降雨模式：夏季多雨，冬季少雨（S9修复：相位反转修正）
+    let seasonal_factor = 0.5 -
       0.5 * @math.cos(2.0 * @math.PI * day.to_double() / 365.0)
     let base_rainfall = 20.0 * seasonal_factor
     // 随机扰动

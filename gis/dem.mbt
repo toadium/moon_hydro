@@ -46,14 +46,14 @@ let d8_offsets : Array[(Int, Int)] = [
 /// D8方向对应的距离权重（对角线为√2）
 let d8_distances : Array[Double] = [
   0.0, // 0
-   1.0, // 1: 东
-   @math.pow(2.0, 0.5), // 2: 东北
-   1.0, // 3: 北
-   @math.pow(2.0, 0.5), // 4: 西北
-   1.0, // 5: 西
-   @math.pow(2.0, 0.5), // 6: 西南
-   1.0, // 7: 南
-   @math.pow(2.0, 0.5), // 8: 东南
+  1.0, // 1: 东
+  @math.pow(2.0, 0.5), // 2: 东北
+  1.0, // 3: 北
+  @math.pow(2.0, 0.5), // 4: 西北
+  1.0, // 5: 西
+  @math.pow(2.0, 0.5), // 6: 西南
+  1.0, // 7: 南
+  @math.pow(2.0, 0.5), // 8: 东南
 ]
 
 ///|
@@ -84,7 +84,7 @@ pub fn compute_flow_direction(dem : DEMGrid) -> FlowDirection {
         let ni = i + di
         let nj = j + dj
         let neighbor = dem.get_elevation(ni, nj)
-        if neighbor == dem.nodata {
+        if !dem.has_data(ni, nj) {
           continue
         }
         let drop = (center - neighbor) / d8_distances[d]
@@ -167,11 +167,11 @@ pub fn compute_flow_accumulation(fd : FlowDirection) -> FlowAccumulation {
     }
   }
   // P2-5修复：处理洼地/循环中的未处理单元
-  // 拓扑排序后仍有in_count>0的单元属于循环或洼地，赋予基础累积值1
+  // 拓扑排序后仍有in_count>0的单元属于循环或洼地，补加自身贡献+1
   for i in 0..<fd.ny {
     for j in 0..<fd.nx {
-      if in_count[i][j] > 0 && accum[i][j] == 0 {
-        accum[i][j] = 1
+      if in_count[i][j] > 0 {
+        accum[i][j] = accum[i][j] + 1
       }
     }
   }
