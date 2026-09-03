@@ -203,7 +203,7 @@ pub fn DataStore::stats(self : DataStore) -> String {
 ///|
 /// 序列化为JSON字符串
 pub fn DataStore::to_json_string(self : DataStore) -> String {
-  self.to_json().stringify()
+  ToJson::to_json(self).stringify()
 }
 
 ///|

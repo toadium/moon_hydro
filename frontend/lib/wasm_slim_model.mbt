@@ -107,13 +107,13 @@ pub fn slim_json_endpoint(json_str : String) -> String {
         success: false,
         error: "请求格式无效",
       }
-      return err_response.to_json().stringify()
+      return ToJson::to_json(err_response).stringify()
     }
   }
   try {
     let request : SlimSimRequest = @json.from_json(json)
     let response = slim_run(request)
-    let resp_json = response.to_json()
+    let resp_json = ToJson::to_json(response)
     resp_json.stringify()
   } catch {
     _ => {
@@ -125,7 +125,7 @@ pub fn slim_json_endpoint(json_str : String) -> String {
         success: false,
         error: "服务内部错误",
       }
-      err_response.to_json().stringify()
+      ToJson::to_json(err_response).stringify()
     }
   }
 }

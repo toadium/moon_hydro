@@ -725,7 +725,7 @@ fn cli_auth() -> CliResult raise {
   // Token验证
   let verified = auth.verify_token(admin_token, current_time=now + 200UL)
   println(
-    "Token验证: admin -> \{verified.username}(\{verified.role.to_string()})",
+    "Token验证: admin -> \{verified.username}(\{Show::to_string(verified.role)})",
   )
   // 登出
   let mut logout_details = ""

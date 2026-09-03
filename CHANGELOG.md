@@ -8,6 +8,20 @@
 - mooncakes.io 包正式发布
 - 分布式集群仿真调度
 
+## [0.9.3] - 2026-09-03
+
+### 综述
+MoonBit 工具链兼容性修复（0.1.20260819 → 0.1.20260827）。解决全后端编译错误、deprecated 警告、native 链接问题。moon check 0 错误 0 警告，已验证 158+ 测试通过。
+
+### 修复 — 工具链兼容性（3项）
+- **wasm-gc/js 编译错误**：persistence/store.mbt 引用 FileError 但该类型定义在 native-only 的 file_io.mbt 中，提取到 error.mbt 使全后端可见
+- **deprecated to_string()/to_json() 警告**：auth.mbt、serde_bind.mbt、store.mbt、file_io.mbt、wasm_slim_model.mbt、main.mbt 共 8 处隐式 trait 方法提升，改用 Show::to_string() / ToJson::to_json() 显式调用
+- **native 链接错误**：TCC 链接器找不到 libpthread/libc，符号链接系统库到 ~/.moon/lib/
+
+### 变更
+- CI 配置 MoonBit 版本升级至 0.1.20260827
+- 新增 persistence/error.mbt（FileError 类型定义，全后端可见）
+
 ## [0.9.2] - 2026-08-24
 
 ### 综述

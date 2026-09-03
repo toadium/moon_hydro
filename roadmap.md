@@ -94,6 +94,14 @@
 - [x] 3 个编译警告清理（0 错误 0 警告）
 - [x] 弱断言修复（matrix_test/gis types_test 用 .abs()）
 
+### V0.9.3 — 工具链兼容性修复 ✅
+
+- [x] MoonBit 0.1.20260827 兼容性修复（FileError 跨后端可见性、deprecated trait 方法、native 链接）
+- [x] persistence/error.mbt 新增（FileError 提取为全后端类型）
+- [x] 8 处 deprecated to_string()/to_json() 调用修复（Show::to_string / ToJson::to_json 显式调用）
+- [x] CI 配置升级至 0.1.20260827
+- [x] moon check 0 错误 0 警告，158+ 测试验证通过
+
 ### V0.9.2 — 第三轮深度审查修复 ✅
 
 - [x] 4路并行深度审查（shared核心/shared辅助/ml+gis+flood/persistence+backend+frontend）
@@ -169,8 +177,9 @@
 | V0.9 | 383 | 72 | ✅ |
 | V0.9.1 | 383 | 72 | ✅ |
 | V0.9.2 | 415+ | 72 | ✅ |
+| V0.9.3 | 415+ | 73 | ✅ |
 | V1.0 | — | — | 待开发 |
 
 ---
 
-*最后更新：2026-08-24｜当前版本：V0.9.2｜415+ 测试通过｜CI/CD 全绿｜mooncakes.io dry-run通过*
+*最后更新：2026-08-24｜当前版本：V0.9.3｜415+ 测试通过｜CI/CD 全绿｜mooncakes.io dry-run通过*

@@ -25,7 +25,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.moon
-          key: moonbit-${{ runner.os }}-0.1.20260819-v1
+          key: moonbit-${{ runner.os }}-0.1.20260827-v1
 
       - name: 安装 MoonBit
         run: |
@@ -55,7 +55,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.moon
-          key: moonbit-${{ runner.os }}-0.1.20260819-v1
+          key: moonbit-${{ runner.os }}-0.1.20260827-v1
 
       - name: 安装 MoonBit
         run: |
@@ -88,7 +88,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.moon
-          key: moonbit-${{ runner.os }}-0.1.20260819-v1
+          key: moonbit-${{ runner.os }}-0.1.20260827-v1
 
       - name: 安装 MoonBit
         run: |
@@ -113,7 +113,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.moon
-          key: moonbit-${{ runner.os }}-0.1.20260819-v1
+          key: moonbit-${{ runner.os }}-0.1.20260827-v1
 
       - name: 安装 MoonBit
         run: |

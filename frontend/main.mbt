@@ -79,7 +79,7 @@ fn main {
     "快速试算: 洪峰=\{quick_result.peak_flow}, 总量=\{quick_result.total_volume}",
   )
   // 8. JSON端到端演示
-  let json_request = slim_request.to_json().stringify()
+  let json_request = ToJson::to_json(slim_request).stringify()
   let json_response = @lib.slim_json_endpoint(json_request)
   let resp_preview = safe_preview(json_response, 200)
   println("JSON响应: \{resp_preview}")

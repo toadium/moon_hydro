@@ -351,7 +351,7 @@ pub fn AuthManager::check_permission(
     raise UserNotFound(user.id)
   }
   if !role_has_permission(user.role, perm) {
-    raise PermissionDenied(perm.to_string())
+    raise PermissionDenied(Show::to_string(perm))
   }
 }
 

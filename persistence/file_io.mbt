@@ -3,16 +3,7 @@
 ///
 /// 使用C FFI实现文件读写，仅native后端可用。
 /// wasm/js后端需通过浏览器API（localStorage等）实现持久化。
-
-///|
-/// 文件操作错误
-pub(all) suberror FileError {
-  FileNotFound(String)
-  WriteFailed(String)
-  ReadFailed(String)
-  DeleteFailed(String)
-  InvalidPath(String)
-} derive(Debug, ToJson, FromJson)
+/// FileError 类型定义在 error.mbt 中（全后端可见）。
 
 ///|
 /// C FFI: 写入文件
@@ -161,7 +152,7 @@ pub fn SimulationScheme::save_to_file(
   self : SimulationScheme,
   path : String,
 ) -> Unit raise {
-  let json_str = self.to_json().stringify()
+  let json_str = ToJson::to_json(self).stringify()
   write_file(path, json_str)
 }
 
@@ -187,7 +178,7 @@ pub fn ParameterSet::save_to_file(
   self : ParameterSet,
   path : String,
 ) -> Unit raise {
-  let json_str = self.to_json().stringify()
+  let json_str = ToJson::to_json(self).stringify()
   write_file(path, json_str)
 }
 
