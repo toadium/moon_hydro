@@ -3,8 +3,25 @@
 #include <string.h>
 #include <limits.h>
 #include <stdint.h>
+
+#ifdef _WIN32
+/* Windows (MSVC/MinGW): no <unistd.h>, use <io.h> + <sys/stat.h> */
+#include <io.h>
+#include <sys/stat.h>
+/* fsync → _commit on Windows */
+#define fsync _commit
+/* fchmod not available on Windows; define as no-op (returns 0 = success) */
+static inline int fchmod(int fd, int mode) {
+    (void)fd; (void)mode;
+    return 0;
+}
+/* fileno is available in <stdio.h> on Windows */
+#else
+/* POSIX (Linux/macOS): <unistd.h> + <sys/stat.h> */
 #include <unistd.h>
 #include <sys/stat.h>
+#endif
+
 #include "moonbit.h"
 
 /* Maximum file size: 1GB to prevent OOM on large files */
