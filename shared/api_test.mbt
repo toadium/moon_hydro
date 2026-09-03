@@ -19,8 +19,8 @@ test "XajRunRequest JSON往返" {
     area: 100.0,
     dt: 1.0,
     forcings: [
-      { rainfall: 10.0, evaporation: 2.0, datetime: "t0" },
-      { rainfall: 20.0, evaporation: 1.0, datetime: "t1" },
+      { rainfall: 10.0, evaporation: 2.0, datetime: "t0", },
+      { rainfall: 20.0, evaporation: 1.0, datetime: "t1", },
     ],
     observed: [],
   }
@@ -54,8 +54,8 @@ test "xaj_json_endpoint 端到端JSON" {
     area: 50.0,
     dt: 1.0,
     forcings: [
-      { rainfall: 15.0, evaporation: 2.0, datetime: "t0" },
-      { rainfall: 25.0, evaporation: 1.0, datetime: "t1" },
+      { rainfall: 15.0, evaporation: 2.0, datetime: "t0", },
+      { rainfall: 25.0, evaporation: 1.0, datetime: "t1", },
     ],
     observed: [],
   }
@@ -79,7 +79,7 @@ test "SweRunRequest JSON往返" {
       right: SWEBoundaryType::Transmissive,
     },
   }
-  let request : SweRunRequest = { grid, config }
+  let request : SweRunRequest = { grid, config, }
   let json_str = to_json_string(request)
   let parsed = parse_swe_request(json_str)
   assert_eq(parsed.grid.nx, 10)
@@ -99,7 +99,7 @@ test "run_swe SWE仿真服务" {
       right: SWEBoundaryType::Transmissive,
     },
   }
-  let request : SweRunRequest = { grid, config }
+  let request : SweRunRequest = { grid, config, }
   let response = run_swe(request)
   assert_eq(response.max_depth.length(), 20)
   assert_eq(response.final_h.length(), 20)
@@ -117,7 +117,7 @@ test "swe_json_endpoint 端到端JSON" {
       right: SWEBoundaryType::Transmissive,
     },
   }
-  let request : SweRunRequest = { grid, config }
+  let request : SweRunRequest = { grid, config, }
   let request_json = to_json_string(request)
   let response_json = swe_json_endpoint(request_json)
   assert_true(response_json.contains("max_depth"))
@@ -205,8 +205,8 @@ test "run_calibrate 率定服务" {
       seed: 42,
       target_metric: "nse",
       params: [
-        { name: "wm", lower: 80.0, upper: 160.0, value: 100.0 },
-        { name: "b", lower: 0.2, upper: 0.6, value: 0.25 },
+        { name: "wm", lower: 80.0, upper: 160.0, value: 100.0, },
+        { name: "b", lower: 0.2, upper: 0.6, value: 0.25, },
       ],
       max_no_improve: 100,
     }),

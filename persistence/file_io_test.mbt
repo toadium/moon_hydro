@@ -52,8 +52,8 @@ test "DataStore save_to_file/load_from_file" {
     dt: 6.0,
     params: @shared.XinanjiangParams::default(),
     forcings: [
-      { rainfall: 10.0, evaporation: 2.0, datetime: "t0" },
-      { rainfall: 20.0, evaporation: 1.0, datetime: "t1" },
+      { rainfall: 10.0, evaporation: 2.0, datetime: "t0", },
+      { rainfall: 20.0, evaporation: 1.0, datetime: "t1", },
     ],
     created_at: 1723000000,
     updated_at: 1723000000,
@@ -119,7 +119,7 @@ test "SimulationScheme save_to_file/load_from_file" {
     area: 1930.0,
     dt: 3.0,
     params: @shared.XinanjiangParams::default(),
-    forcings: [{ rainfall: 15.0, evaporation: 1.5, datetime: "t0" }],
+    forcings: [{ rainfall: 15.0, evaporation: 1.5, datetime: "t0", }],
     created_at: 1723000000,
     updated_at: 1723000000,
   }

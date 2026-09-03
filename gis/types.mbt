@@ -110,7 +110,7 @@ pub(all) struct RiverNetwork {
 ///|
 /// 构造空河网
 pub fn RiverNetwork::new() -> RiverNetwork {
-  { nodes: Map([]), reaches: [], outlet_id: -1 }
+  { nodes: Map([]), reaches: [], outlet_id: -1, }
 }
 
 ///|
@@ -182,7 +182,7 @@ pub fn polygon_centroid(polygon : Polygon) -> XYPoint {
   let pts = polygon.exterior
   let n = pts.length()
   if n < 3 {
-    return { x: 0.0, y: 0.0 }
+    return { x: 0.0, y: 0.0, }
   }
   let mut cx = 0.0
   let mut cy = 0.0
@@ -202,9 +202,9 @@ pub fn polygon_centroid(polygon : Polygon) -> XYPoint {
       sx = sx + p.x
       sy = sy + p.y
     }
-    return { x: sx / n.to_double(), y: sy / n.to_double() }
+    return { x: sx / n.to_double(), y: sy / n.to_double(), }
   }
-  { x: cx / (6.0 * area), y: cy / (6.0 * area) }
+  { x: cx / (6.0 * area), y: cy / (6.0 * area), }
 }
 
 ///|
@@ -215,7 +215,7 @@ pub fn BasinBoundary::from_polygon(
 ) -> BasinBoundary {
   let area = polygon_area(polygon) / 1000000.0
   let centroid = polygon_centroid(polygon)
-  { name, polygon, area, centroid }
+  { name, polygon, area, centroid, }
 }
 
 ///|
@@ -238,7 +238,7 @@ pub fn DEMGrid::uniform(
     }
     elevations.push(row)
   }
-  { nx, ny, dx, dy, x0, y0, elevations, nodata }
+  { nx, ny, dx, dy, x0, y0, elevations, nodata, }
 }
 
 ///|

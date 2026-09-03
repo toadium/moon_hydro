@@ -16,7 +16,7 @@ pub fn XinanjiangModel::new(
   area~ : Double,
   dt~ : Double,
 ) -> XinanjiangModel {
-  { params, area, dt }
+  { params, area, dt, }
 }
 
 ///|
@@ -292,7 +292,7 @@ fn XinanjiangModel::run_impl(
   }
   // P2-1修复说明：nse/kge/pbias需要观测数据才能计算
   // 此处返回0.0作为占位符，调用方应通过evaluation模块计算指标
-  { runoff_series, state_series, nse: 0.0, kge: 0.0, pbias: 0.0 }
+  { runoff_series, state_series, nse: 0.0, kge: 0.0, pbias: 0.0, }
 }
 
 ///|

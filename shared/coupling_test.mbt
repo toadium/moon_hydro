@@ -27,7 +27,7 @@ test "couple_step 无降雨无入流耦合" {
     river_cells: [5, 6, 7, 8, 9],
     base_flow_threshold: 0.5,
   }
-  let boundary : SWEBoundary = { left: Transmissive, right: Transmissive }
+  let boundary : SWEBoundary = { left: Transmissive, right: Transmissive, }
   let forcing : ForcingData = {
     rainfall: 0.0,
     evaporation: 0.0,
@@ -62,7 +62,7 @@ test "couple_step 有降雨产生侧向入流" {
     river_cells: [5, 6, 7, 8, 9],
     base_flow_threshold: 0.5,
   }
-  let boundary : SWEBoundary = { left: SolidWall, right: Transmissive }
+  let boundary : SWEBoundary = { left: SolidWall, right: Transmissive, }
   let forcing : ForcingData = {
     rainfall: 50.0,
     evaporation: 2.0,
@@ -97,13 +97,13 @@ test "couple_run 完整耦合仿真" {
     river_cells: [10, 11, 12, 13, 14],
     base_flow_threshold: 0.3,
   }
-  let boundary : SWEBoundary = { left: SolidWall, right: Transmissive }
+  let boundary : SWEBoundary = { left: SolidWall, right: Transmissive, }
   let forcings : Array[ForcingData] = [
-    { rainfall: 20.0, evaporation: 1.0, datetime: "t0" },
-    { rainfall: 30.0, evaporation: 2.0, datetime: "t1" },
-    { rainfall: 10.0, evaporation: 1.0, datetime: "t2" },
-    { rainfall: 0.0, evaporation: 1.0, datetime: "t3" },
-    { rainfall: 0.0, evaporation: 1.0, datetime: "t4" },
+    { rainfall: 20.0, evaporation: 1.0, datetime: "t0", },
+    { rainfall: 30.0, evaporation: 2.0, datetime: "t1", },
+    { rainfall: 10.0, evaporation: 1.0, datetime: "t2", },
+    { rainfall: 0.0, evaporation: 1.0, datetime: "t3", },
+    { rainfall: 0.0, evaporation: 1.0, datetime: "t4", },
   ]
   let result = couple_run(
     xaj_model, swe_grid, coupling_params, boundary, forcings, 0.005,
@@ -135,10 +135,10 @@ test "couple_run 无河道单元时不注入" {
     river_cells: [],
     base_flow_threshold: 0.5,
   }
-  let boundary : SWEBoundary = { left: Transmissive, right: Transmissive }
+  let boundary : SWEBoundary = { left: Transmissive, right: Transmissive, }
   let forcings : Array[ForcingData] = [
-    { rainfall: 20.0, evaporation: 1.0, datetime: "t0" },
-    { rainfall: 0.0, evaporation: 1.0, datetime: "t1" },
+    { rainfall: 20.0, evaporation: 1.0, datetime: "t0", },
+    { rainfall: 0.0, evaporation: 1.0, datetime: "t1", },
   ]
   let result = couple_run(
     xaj_model, swe_grid, coupling_params, boundary, forcings, 0.01,
@@ -166,11 +166,11 @@ test "couple_run 河道水位反馈新安江" {
     river_cells: [8, 9, 10, 11, 12],
     base_flow_threshold: 0.5,
   }
-  let boundary : SWEBoundary = { left: SolidWall, right: Transmissive }
+  let boundary : SWEBoundary = { left: SolidWall, right: Transmissive, }
   let forcings : Array[ForcingData] = [
-    { rainfall: 10.0, evaporation: 1.0, datetime: "t0" },
-    { rainfall: 20.0, evaporation: 1.0, datetime: "t1" },
-    { rainfall: 0.0, evaporation: 1.0, datetime: "t2" },
+    { rainfall: 10.0, evaporation: 1.0, datetime: "t0", },
+    { rainfall: 20.0, evaporation: 1.0, datetime: "t1", },
+    { rainfall: 0.0, evaporation: 1.0, datetime: "t2", },
   ]
   let result = couple_run(
     xaj_model, swe_grid, coupling_params, boundary, forcings, 0.005,

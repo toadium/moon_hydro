@@ -55,7 +55,7 @@ pub(all) struct TaskScheduler {
 ///|
 /// 构造空调度器
 pub fn TaskScheduler::new() -> TaskScheduler {
-  { tasks: [], results: [], status: {} }
+  { tasks: [], results: [], status: {}, }
 }
 
 ///|

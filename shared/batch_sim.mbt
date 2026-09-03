@@ -316,28 +316,28 @@ pub fn set_xaj_param(
   value : Double,
 ) -> XinanjiangParams {
   match name {
-    "wm" => { ..base, wm: value }
-    "wum" => { ..base, wum: value }
-    "wlm" => { ..base, wlm: value }
-    "wdm" => { ..base, wdm: value }
-    "b" => { ..base, b: value }
-    "im" => { ..base, im: value }
-    "c" => { ..base, c: value }
-    "sm" => { ..base, sm: value }
-    "ex" => { ..base, ex: value }
-    "kg" => { ..base, kg: value }
-    "ki" => { ..base, ki: value }
-    "cg" => { ..base, cg: value }
-    "ci" => { ..base, ci: value }
-    "cs" => { ..base, cs: value }
-    "ke" => { ..base, ke: value }
-    "x" => { ..base, x: value }
-    "y" => { ..base, y: value }
-    "fr" => { ..base, fr: value }
-    "kg1" => { ..base, kg1: value }
-    "ki1" => { ..base, ki1: value }
-    "kg2" => { ..base, kg2: value }
-    "ki2" => { ..base, ki2: value }
+    "wm" => { ..base, wm: value, }
+    "wum" => { ..base, wum: value, }
+    "wlm" => { ..base, wlm: value, }
+    "wdm" => { ..base, wdm: value, }
+    "b" => { ..base, b: value, }
+    "im" => { ..base, im: value, }
+    "c" => { ..base, c: value, }
+    "sm" => { ..base, sm: value, }
+    "ex" => { ..base, ex: value, }
+    "kg" => { ..base, kg: value, }
+    "ki" => { ..base, ki: value, }
+    "cg" => { ..base, cg: value, }
+    "ci" => { ..base, ci: value, }
+    "cs" => { ..base, cs: value, }
+    "ke" => { ..base, ke: value, }
+    "x" => { ..base, x: value, }
+    "y" => { ..base, y: value, }
+    "fr" => { ..base, fr: value, }
+    "kg1" => { ..base, kg1: value, }
+    "ki1" => { ..base, ki1: value, }
+    "kg2" => { ..base, kg2: value, }
+    "ki2" => { ..base, ki2: value, }
     _ => abort("set_xaj_param: unknown param " + name) // fail-fast：未知参数名暴露配置错误
   }
 }

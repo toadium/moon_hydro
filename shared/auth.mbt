@@ -372,7 +372,7 @@ pub fn AuthManager::grant_scheme_ownership(
       }
     None => ()
   }
-  self.scheme_owners[scheme_id] = { scheme_id, owner_id: user_id, is_public }
+  self.scheme_owners[scheme_id] = { scheme_id, owner_id: user_id, is_public, }
 }
 
 ///|
@@ -427,7 +427,7 @@ pub fn AuthManager::make_scheme_public(
   }
   match self.scheme_owners.get(scheme_id) {
     Some(ownership) => {
-      self.scheme_owners[scheme_id] = { ..ownership, is_public: true }
+      self.scheme_owners[scheme_id] = { ..ownership, is_public: true, }
       true
     }
     None => false

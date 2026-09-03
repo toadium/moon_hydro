@@ -344,16 +344,16 @@ pub fn dds_calibrate(
 /// 返回11个核心参数的默认率定范围
 pub fn default_calib_params() -> Array[CalibParam] {
   [
-    { name: "wm", lower: 80.0, upper: 160.0, value: 120.0 },
-    { name: "b", lower: 0.2, upper: 0.6, value: 0.3 },
-    { name: "im", lower: 0.0, upper: 0.05, value: 0.01 },
-    { name: "c", lower: 0.5, upper: 1.0, value: 1.0 },
-    { name: "sm", lower: 10.0, upper: 40.0, value: 20.0 },
-    { name: "ex", lower: 1.0, upper: 2.5, value: 1.5 },
-    { name: "kg", lower: 0.2, upper: 0.5, value: 0.35 },
-    { name: "ki", lower: 0.2, upper: 0.5, value: 0.3 },
-    { name: "cg", lower: 0.9, upper: 0.99, value: 0.98 },
-    { name: "ci", lower: 0.5, upper: 0.8, value: 0.63 },
-    { name: "cs", lower: 0.1, upper: 0.4, value: 0.2 },
+    { name: "wm", lower: 80.0, upper: 160.0, value: 120.0, },
+    { name: "b", lower: 0.2, upper: 0.6, value: 0.3, },
+    { name: "im", lower: 0.0, upper: 0.05, value: 0.01, },
+    { name: "c", lower: 0.5, upper: 1.0, value: 1.0, },
+    { name: "sm", lower: 10.0, upper: 40.0, value: 20.0, },
+    { name: "ex", lower: 1.0, upper: 2.5, value: 1.5, },
+    { name: "kg", lower: 0.2, upper: 0.5, value: 0.35, },
+    { name: "ki", lower: 0.2, upper: 0.5, value: 0.3, },
+    { name: "cg", lower: 0.9, upper: 0.99, value: 0.98, },
+    { name: "ci", lower: 0.5, upper: 0.8, value: 0.63, },
+    { name: "cs", lower: 0.1, upper: 0.4, value: 0.2, },
   ]
 }

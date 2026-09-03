@@ -8,25 +8,25 @@ test "RiverNetwork::compute_strahler_orders - 简单河网" {
   // 源头2 -> 汇流点
   network.add_node({
     id: 1,
-    point: { x: 0.0, y: 100.0 },
+    point: { x: 0.0, y: 100.0, },
     elevation: 100.0,
     node_type: Source,
   })
   network.add_node({
     id: 2,
-    point: { x: 0.0, y: 200.0 },
+    point: { x: 0.0, y: 200.0, },
     elevation: 100.0,
     node_type: Source,
   })
   network.add_node({
     id: 3,
-    point: { x: 50.0, y: 150.0 },
+    point: { x: 50.0, y: 150.0, },
     elevation: 80.0,
     node_type: Confluence,
   })
   network.add_node({
     id: 4,
-    point: { x: 100.0, y: 150.0 },
+    point: { x: 100.0, y: 150.0, },
     elevation: 60.0,
     node_type: Outlet,
   })
@@ -66,13 +66,13 @@ test "RiverNetwork::topological_order" {
   let network = RiverNetwork::new()
   network.add_node({
     id: 1,
-    point: { x: 0.0, y: 0.0 },
+    point: { x: 0.0, y: 0.0, },
     elevation: 100.0,
     node_type: Source,
   })
   network.add_node({
     id: 2,
-    point: { x: 100.0, y: 0.0 },
+    point: { x: 100.0, y: 0.0, },
     elevation: 90.0,
     node_type: Outlet,
   })
@@ -94,19 +94,19 @@ test "RiverNetwork::trace_to_sources" {
   let network = RiverNetwork::new()
   network.add_node({
     id: 1,
-    point: { x: 0.0, y: 100.0 },
+    point: { x: 0.0, y: 100.0, },
     elevation: 100.0,
     node_type: Source,
   })
   network.add_node({
     id: 2,
-    point: { x: 0.0, y: 200.0 },
+    point: { x: 0.0, y: 200.0, },
     elevation: 100.0,
     node_type: Source,
   })
   network.add_node({
     id: 3,
-    point: { x: 50.0, y: 150.0 },
+    point: { x: 50.0, y: 150.0, },
     elevation: 80.0,
     node_type: Confluence,
   })
@@ -135,19 +135,19 @@ test "RiverNetwork::trace_to_outlet" {
   let network = RiverNetwork::new()
   network.add_node({
     id: 1,
-    point: { x: 0.0, y: 0.0 },
+    point: { x: 0.0, y: 0.0, },
     elevation: 100.0,
     node_type: Source,
   })
   network.add_node({
     id: 2,
-    point: { x: 50.0, y: 0.0 },
+    point: { x: 50.0, y: 0.0, },
     elevation: 80.0,
     node_type: Intermediate,
   })
   network.add_node({
     id: 3,
-    point: { x: 100.0, y: 0.0 },
+    point: { x: 100.0, y: 0.0, },
     elevation: 60.0,
     node_type: Outlet,
   })
@@ -178,13 +178,13 @@ test "RiverNetwork::stats" {
   let network = RiverNetwork::new()
   network.add_node({
     id: 1,
-    point: { x: 0.0, y: 0.0 },
+    point: { x: 0.0, y: 0.0, },
     elevation: 100.0,
     node_type: Source,
   })
   network.add_node({
     id: 2,
-    point: { x: 100.0, y: 0.0 },
+    point: { x: 100.0, y: 0.0, },
     elevation: 60.0,
     node_type: Outlet,
   })

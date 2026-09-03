@@ -88,7 +88,7 @@ pub fn slim_run(request : SlimSimRequest) -> SlimSimResponse {
   for v in runoff {
     total_volume = total_volume + v
   }
-  { runoff, peak_flow, peak_time, total_volume, success: true, error: "" }
+  { runoff, peak_flow, peak_time, total_volume, success: true, error: "", }
 }
 
 ///|

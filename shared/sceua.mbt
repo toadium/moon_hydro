@@ -218,7 +218,7 @@ fn cce_evolution(
     for v in p.params {
       copy.push(v)
     }
-    points.push({ params: copy, fitness: p.fitness })
+    points.push({ params: copy, fitness: p.fitness, })
   }
   // Nelder-Mead参数
   let alpha = 1.0 // 反射系数
@@ -360,7 +360,7 @@ fn cce_evolution(
             clamped, template, area, dt, forcings, observed, target_metric,
           )
           n_evals.val = n_evals.val + 1
-          points[i] = { params: clamped, fitness: new_fitness }
+          points[i] = { params: clamped, fitness: new_fitness, }
         }
       }
     }
@@ -419,7 +419,7 @@ pub fn sceua_calibrate(
       observed,
       config.target_metric,
     )
-    all_points.push({ params: values, fitness })
+    all_points.push({ params: values, fitness, })
   }
   let n_evals = Ref(s)
   // 2. 初始排序
@@ -454,7 +454,7 @@ pub fn sceua_calibrate(
         for v in all_points[k].params {
           copy.push(v)
         }
-        complex.push({ params: copy, fitness: all_points[k].fitness })
+        complex.push({ params: copy, fitness: all_points[k].fitness, })
         k = k + p
       }
       complexes.push(complex)

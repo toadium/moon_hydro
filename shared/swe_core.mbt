@@ -79,7 +79,7 @@ pub fn SWEGrid1D::uniform(
   let hu = Array::make(nx, 0.0)
   let z = Array::make(nx, z0)
   let n_manning = Array::make(nx, n0)
-  { nx, dx, h, hu, z, n_manning }
+  { nx, dx, h, hu, z, n_manning, }
 }
 
 ///|
@@ -175,7 +175,7 @@ fn apply_boundary(grid : SWEGrid1D, boundary : SWEBoundary) -> SWEGrid1D {
       hu[nx - 1] = 0.0
     }
   }
-  { ..grid, h, hu }
+  { ..grid, h, hu, }
 }
 
 ///|
@@ -252,7 +252,7 @@ pub fn SWEGrid1D::step_lf(
   hu_new[0] = bounded.hu[0]
   h_new[nx - 1] = bounded.h[nx - 1]
   hu_new[nx - 1] = bounded.hu[nx - 1]
-  { nx, dx, h: h_new, hu: hu_new, z: self.z, n_manning: self.n_manning }
+  { nx, dx, h: h_new, hu: hu_new, z: self.z, n_manning: self.n_manning, }
 }
 
 ///|
@@ -318,7 +318,7 @@ pub fn SWEGrid1D::run(self : SWEGrid1D, config : SWESolverConfig) -> SWEResult {
       stable = false
     }
   }
-  { h_series, hu_series, max_depth, stable }
+  { h_series, hu_series, max_depth, stable, }
 }
 
 ///|

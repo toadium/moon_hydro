@@ -140,11 +140,11 @@ pub fn AppModel::default() -> AppModel {
       dt: 1.0,
       params: @shared.XinanjiangParams::default(),
       forcings: [
-        { rainfall: 10.0, evaporation: 2.0, datetime: "t0" },
-        { rainfall: 20.0, evaporation: 1.0, datetime: "t1" },
-        { rainfall: 5.0, evaporation: 3.0, datetime: "t2" },
-        { rainfall: 0.0, evaporation: 1.0, datetime: "t3" },
-        { rainfall: 30.0, evaporation: 2.0, datetime: "t4" },
+        { rainfall: 10.0, evaporation: 2.0, datetime: "t0", },
+        { rainfall: 20.0, evaporation: 1.0, datetime: "t1", },
+        { rainfall: 5.0, evaporation: 3.0, datetime: "t2", },
+        { rainfall: 0.0, evaporation: 1.0, datetime: "t3", },
+        { rainfall: 30.0, evaporation: 2.0, datetime: "t4", },
       ],
     },
     sim_result: {

@@ -96,7 +96,7 @@ pub fn compute_flow_direction(dem : DEMGrid) -> FlowDirection {
       dirs[i][j] = best_dir
     }
   }
-  { nx: dem.nx, ny: dem.ny, dirs }
+  { nx: dem.nx, ny: dem.ny, dirs, }
 }
 
 ///|
@@ -175,7 +175,7 @@ pub fn compute_flow_accumulation(fd : FlowDirection) -> FlowAccumulation {
       }
     }
   }
-  { nx: fd.nx, ny: fd.ny, accum }
+  { nx: fd.nx, ny: fd.ny, accum, }
 }
 
 ///|

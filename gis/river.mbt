@@ -230,7 +230,7 @@ pub fn extract_network_from_dem(
         let y = dem.y0 - i.to_double() * dem.dy
         let node : RiverNode = {
           id: next_id,
-          point: { x, y },
+          point: { x, y, },
           elevation: dem.get_elevation(i, j),
           node_type: Intermediate,
         }

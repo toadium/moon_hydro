@@ -37,7 +37,7 @@ test "prepare_rainfall_runoff" {
 ///|
 test "HybridConfig 默认值" {
   let config : HybridConfig = {
-    lstm_config: { input_dim: 2, hidden_dim: 4, output_dim: 1 },
+    lstm_config: { input_dim: 2, hidden_dim: 4, output_dim: 1, },
     lookback: 3,
     n_forecast: 5,
     train_ratio: 0.7,
@@ -50,7 +50,7 @@ test "HybridConfig 默认值" {
 ///|
 test "hybrid_forecast - 基本功能" {
   let config : HybridConfig = {
-    lstm_config: { input_dim: 3, hidden_dim: 4, output_dim: 1 },
+    lstm_config: { input_dim: 3, hidden_dim: 4, output_dim: 1, },
     lookback: 3,
     n_forecast: 5,
     train_ratio: 0.6,
@@ -68,9 +68,9 @@ test "hybrid_forecast - 基本功能" {
 ///|
 test "extract_rainfall" {
   let forcings : Array[@shared.ForcingData] = [
-    { rainfall: 10.0, evaporation: 1.0, datetime: "t0" },
-    { rainfall: 20.0, evaporation: 1.0, datetime: "t1" },
-    { rainfall: 30.0, evaporation: 1.0, datetime: "t2" },
+    { rainfall: 10.0, evaporation: 1.0, datetime: "t0", },
+    { rainfall: 20.0, evaporation: 1.0, datetime: "t1", },
+    { rainfall: 30.0, evaporation: 1.0, datetime: "t2", },
   ]
   let rainfall = extract_rainfall(forcings)
   assert_eq(rainfall.length(), 3)
@@ -81,7 +81,7 @@ test "extract_rainfall" {
 ///|
 test "hybrid_forecast - NSE改进" {
   let config : HybridConfig = {
-    lstm_config: { input_dim: 5, hidden_dim: 8, output_dim: 1 },
+    lstm_config: { input_dim: 5, hidden_dim: 8, output_dim: 1, },
     lookback: 5,
     n_forecast: 3,
     train_ratio: 0.5,

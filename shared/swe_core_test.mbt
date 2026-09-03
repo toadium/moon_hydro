@@ -26,7 +26,7 @@ test "SWEGrid1D::uniform 自定义糙率和高程" {
 test "SWEGrid1D::step_lf 静止水面保持不变" {
   // 均匀水深、零流速、平底 → 应保持静止
   let grid = SWEGrid1D::uniform(nx=10, dx=1.0, h0=2.0)
-  let boundary : SWEBoundary = { left: Transmissive, right: Transmissive }
+  let boundary : SWEBoundary = { left: Transmissive, right: Transmissive, }
   let dt = 0.01
   let new_grid = grid.step_lf(dt, boundary)
   // 内部单元水深应保持2.0
@@ -46,7 +46,7 @@ test "SWEGrid1D::run 静止水面多步仿真" {
     dt: 0.01,
     n_steps: 10,
     cfl: 0.5,
-    boundary: { left: Transmissive, right: Transmissive },
+    boundary: { left: Transmissive, right: Transmissive, },
   }
   let result = grid.run(config)
   inspect(result.h_series.length(), content="10")
@@ -77,7 +77,7 @@ test "SWEGrid1D::run dam-break初始条件" {
     dt: 0.01,
     n_steps: 100,
     cfl: 0.4,
-    boundary: { left: SolidWall, right: Transmissive },
+    boundary: { left: SolidWall, right: Transmissive, },
   }
   let result = grid.run(config)
   inspect(result.h_series.length(), content="100")
@@ -115,7 +115,7 @@ test "SWEBoundary 固壁边界反射" {
   let grid = SWEGrid1D::uniform(nx=5, dx=1.0, h0=2.0)
   // 给左侧单元设置正流速
   grid.hu[1] = 1.0
-  let boundary : SWEBoundary = { left: SolidWall, right: SolidWall }
+  let boundary : SWEBoundary = { left: SolidWall, right: SolidWall, }
   let result = grid.step_lf(0.01, boundary)
   // 固壁边界后，边界单元流速应反射
   // hu[0] = -hu[1] = -1.0
@@ -127,7 +127,7 @@ test "SWEBoundary 透射边界" {
   let grid = SWEGrid1D::uniform(nx=5, dx=1.0, h0=2.0)
   grid.h[1] = 3.0
   grid.hu[1] = 0.5
-  let boundary : SWEBoundary = { left: Transmissive, right: Transmissive }
+  let boundary : SWEBoundary = { left: Transmissive, right: Transmissive, }
   let result = grid.step_lf(0.01, boundary)
   // 透射边界：h[0] = h[1], hu[0] = hu[1]
   assert_true((result.h[0] - 3.0).abs() < 0.001)
@@ -137,7 +137,7 @@ test "SWEBoundary 透射边界" {
 ///|
 test "SWEBoundary Dirichlet边界" {
   let grid = SWEGrid1D::uniform(nx=5, dx=1.0, h0=2.0)
-  let boundary : SWEBoundary = { left: Dirichlet(5.0), right: Dirichlet(1.0) }
+  let boundary : SWEBoundary = { left: Dirichlet(5.0), right: Dirichlet(1.0), }
   let result = grid.step_lf(0.01, boundary)
   // Dirichlet边界：固定水深值
   assert_true((result.h[0] - 5.0).abs() < 0.001)
@@ -159,7 +159,7 @@ test "SWEGrid1D::run 带底坡的流动" {
     dt: 0.005,
     n_steps: 50,
     cfl: 0.3,
-    boundary: { left: Dirichlet(1.0), right: Transmissive },
+    boundary: { left: Dirichlet(1.0), right: Transmissive, },
   }
   let result = grid.run(config)
   assert_true(result.stable)

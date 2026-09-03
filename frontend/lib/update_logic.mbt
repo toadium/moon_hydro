@@ -12,27 +12,27 @@ pub fn update(model : AppModel, msg : Msg) -> AppModel {
   match msg {
     // 页面导航
     NavigateTo(page) =>
-      { ..model, ui_state: { ..model.ui_state, current_page: page } }
+      { ..model, ui_state: { ..model.ui_state, current_page: page, }, }
     // 仿真配置
     SetBasinName(name) =>
       {
         ..model,
-        sim_params: { ..model.sim_params, basin_name: name },
-        ui_state: { ..model.ui_state, selected_basin: name },
+        sim_params: { ..model.sim_params, basin_name: name, },
+        ui_state: { ..model.ui_state, selected_basin: name, },
       }
-    SetArea(area) => { ..model, sim_params: { ..model.sim_params, area, } }
-    SetDt(dt) => { ..model, sim_params: { ..model.sim_params, dt, } }
+    SetArea(area) => { ..model, sim_params: { ..model.sim_params, area, }, }
+    SetDt(dt) => { ..model, sim_params: { ..model.sim_params, dt, }, }
     SetParams(params) =>
-      { ..model, sim_params: { ..model.sim_params, params, } }
+      { ..model, sim_params: { ..model.sim_params, params, }, }
     SetForcings(forcings) =>
-      { ..model, sim_params: { ..model.sim_params, forcings, } }
+      { ..model, sim_params: { ..model.sim_params, forcings, }, }
     LoadBasinCase(name) => load_basin_case(model, name)
     // 仿真执行
     RunSimulation =>
       {
         ..model,
-        sim_result: { ..model.sim_result, is_running: true, has_result: false },
-        ui_state: { ..model.ui_state, loading: true },
+        sim_result: { ..model.sim_result, is_running: true, has_result: false, },
+        ui_state: { ..model.ui_state, loading: true, },
         error_message: "",
       }
     SimulationCompleted(result) => {
@@ -58,21 +58,25 @@ pub fn update(model : AppModel, msg : Msg) -> AppModel {
           has_result: runoff.length() > 0, // P2-46修复：空序列时has_result为false
           is_running: false,
         },
-        ui_state: { ..model.ui_state, loading: false },
+        ui_state: { ..model.ui_state, loading: false, },
       }
     }
     SimulationFailed(err) =>
       {
         ..model,
-        sim_result: { ..model.sim_result, is_running: false, has_result: false }, // P2修复：失败时清除旧结果
-        ui_state: { ..model.ui_state, loading: false },
+        sim_result: {
+          ..model.sim_result,
+          is_running: false,
+          has_result: false,
+        }, // P2修复：失败时清除旧结果
+        ui_state: { ..model.ui_state, loading: false, },
         error_message: err,
       }
     // 率定
     StartCalibration(_algo) =>
       {
         ..model,
-        ui_state: { ..model.ui_state, loading: true },
+        ui_state: { ..model.ui_state, loading: true, },
         error_message: "",
       }
     // P1-5修复：率定结果存入专用字段calib_metric/calib_value，避免语义错乱
@@ -84,12 +88,12 @@ pub fn update(model : AppModel, msg : Msg) -> AppModel {
           calib_metric: "nse",
           calib_value: result.best_metric,
         },
-        ui_state: { ..model.ui_state, loading: false },
+        ui_state: { ..model.ui_state, loading: false, },
       }
     CalibrationFailed(err) =>
       {
         ..model,
-        ui_state: { ..model.ui_state, loading: false },
+        ui_state: { ..model.ui_state, loading: false, },
         error_message: err,
       }
     // 评价
@@ -97,7 +101,7 @@ pub fn update(model : AppModel, msg : Msg) -> AppModel {
     RunEvaluation(_obs, _sim) =>
       {
         ..model,
-        ui_state: { ..model.ui_state, loading: true },
+        ui_state: { ..model.ui_state, loading: true, },
         error_message: "",
       }
     // P1-4修复：EvaluationCompleted存入评价指标，不再为no-op
@@ -111,12 +115,12 @@ pub fn update(model : AppModel, msg : Msg) -> AppModel {
           eval_kge: result.kge,
           eval_pbias: result.pbias,
         },
-        ui_state: { ..model.ui_state, loading: false },
+        ui_state: { ..model.ui_state, loading: false, },
       }
     EvaluationFailed(err) =>
       {
         ..model,
-        ui_state: { ..model.ui_state, loading: false },
+        ui_state: { ..model.ui_state, loading: false, },
         error_message: err,
       }
     // 批量仿真
@@ -124,7 +128,7 @@ pub fn update(model : AppModel, msg : Msg) -> AppModel {
     RunBatchSim(_tasks) =>
       {
         ..model,
-        ui_state: { ..model.ui_state, loading: true },
+        ui_state: { ..model.ui_state, loading: true, },
         error_message: "",
       }
     BatchCompleted(result) =>
@@ -134,12 +138,12 @@ pub fn update(model : AppModel, msg : Msg) -> AppModel {
           ..model.sim_result,
           batch_summary: "任务=\{result.total_tasks}, 成功=\{result.success_count}, 失败=\{result.failure_count}, 平均NSE=\{result.summary_stats.mean_nse}, 平均KGE=\{result.summary_stats.mean_kge}",
         },
-        ui_state: { ..model.ui_state, loading: false },
+        ui_state: { ..model.ui_state, loading: false, },
       }
     BatchFailed(err) =>
       {
         ..model,
-        ui_state: { ..model.ui_state, loading: false },
+        ui_state: { ..model.ui_state, loading: false, },
         error_message: err,
       }
     // UI控制
@@ -155,14 +159,15 @@ pub fn update(model : AppModel, msg : Msg) -> AppModel {
     ToggleChart =>
       {
         ..model,
-        ui_state: { ..model.ui_state, show_chart: !model.ui_state.show_chart },
+        ui_state: { ..model.ui_state, show_chart: !model.ui_state.show_chart, },
       }
     SetChartType(ct) =>
-      { ..model, ui_state: { ..model.ui_state, chart_type: ct } }
-    SetLoading(loading) => { ..model, ui_state: { ..model.ui_state, loading, } }
+      { ..model, ui_state: { ..model.ui_state, chart_type: ct, }, }
+    SetLoading(loading) =>
+      { ..model, ui_state: { ..model.ui_state, loading, }, }
     // 错误处理
-    SetError(err) => { ..model, error_message: err }
-    ClearError => { ..model, error_message: "" }
+    SetError(err) => { ..model, error_message: err, }
+    ClearError => { ..model, error_message: "", }
     // 历史记录
     // P1-3修复：使用+操作符函数式追加，仅截断时用循环
     AddHistory(entry) => {
@@ -170,17 +175,17 @@ pub fn update(model : AppModel, msg : Msg) -> AppModel {
       // 保留最近100条
       let len = new_history.length()
       if len <= 100 {
-        { ..model, history: new_history }
+        { ..model, history: new_history, }
       } else {
         let start = len - 100
         let trimmed : Array[HistoryEntry] = []
         for i in start..<len {
           trimmed.push(new_history[i])
         }
-        { ..model, history: trimmed }
+        { ..model, history: trimmed, }
       }
     }
-    ClearHistory => { ..model, history: [] }
+    ClearHistory => { ..model, history: [], }
     // 重置
     ResetToDefault => AppModel::default()
   }
@@ -193,7 +198,7 @@ fn load_basin_case(model : AppModel, name : String) -> AppModel {
   {
     ..model,
     sim_params: config,
-    ui_state: { ..model.ui_state, selected_basin: config.basin_name },
+    ui_state: { ..model.ui_state, selected_basin: config.basin_name, },
   }
 }
 

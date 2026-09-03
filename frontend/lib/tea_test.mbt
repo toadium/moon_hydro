@@ -67,8 +67,8 @@ test "update SimulationCompleted 仿真完成" {
     dt=1.0,
   )
   let forcings : Array[@shared.ForcingData] = [
-    { rainfall: 10.0, evaporation: 2.0, datetime: "t0" },
-    { rainfall: 20.0, evaporation: 1.0, datetime: "t1" },
+    { rainfall: 10.0, evaporation: 2.0, datetime: "t0", },
+    { rainfall: 20.0, evaporation: 1.0, datetime: "t1", },
   ]
   let result = xaj_model.run(forcings)
   let m1 = update(model, SimulationCompleted(result))
@@ -181,7 +181,7 @@ test "update SetParams/SetForcings 设置参数与驱动" {
   let m1 = update(model, SetParams(params))
   assert_eq(m1.sim_params.params.wm, params.wm)
   let forcings : Array[@shared.ForcingData] = [
-    { rainfall: 5.0, evaporation: 1.0, datetime: "t0" },
+    { rainfall: 5.0, evaporation: 1.0, datetime: "t0", },
   ]
   let m2 = update(m1, SetForcings(forcings))
   assert_eq(m2.sim_params.forcings.length(), 1)

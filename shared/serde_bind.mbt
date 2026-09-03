@@ -101,7 +101,7 @@ pub fn run_swe(request : SweRunRequest) -> SweRunResponse raise {
   let n = result.h_series.length()
   let final_h = if n > 0 { result.h_series[n - 1] } else { [] }
   let final_hu = if n > 0 { result.hu_series[n - 1] } else { [] }
-  { max_depth: result.max_depth, stable: result.stable, final_h, final_hu }
+  { max_depth: result.max_depth, stable: result.stable, final_h, final_hu, }
 }
 
 ///|

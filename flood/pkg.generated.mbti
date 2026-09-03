@@ -19,11 +19,11 @@ pub fn estimate_damage(Array[Double], LandUseMap) -> DamageResult
 
 pub fn extract_inundation_extent(InundationResult, threshold? : Double) -> Array[(Int, Int)]
 
-pub fn generate_risk_map(Array[Double], Array[Double], Array[Double], nx~ : Int, ny~ : Int) -> RiskMap
+pub fn generate_risk_map(Array[Double], Array[Double], Array[Double], nx~ : Int, ny~ : Int, final_depth? : Array[Double]) -> RiskMap
 
 pub fn generate_risk_map_depth_only(Array[Double], nx~ : Int, ny~ : Int) -> RiskMap
 
-pub fn inundation_stats(InundationResult) -> (Int, Double, Double, Double)
+pub fn inundation_stats(InundationResult, threshold? : Double) -> (Int, Double, Double, Double)
 
 pub fn risk_statistics(RiskMap, cell_area? : Double) -> RiskStatistics
 

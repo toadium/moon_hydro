@@ -29,7 +29,7 @@ test "sceua_default_calib_params 默认参数集" {
 test "sceua_calibrate 空参数" {
   let cfg = SCEUAConfig::default()
   let forcings : Array[ForcingData] = [
-    { rainfall: 10.0, evaporation: 2.0, datetime: "t0" },
+    { rainfall: 10.0, evaporation: 2.0, datetime: "t0", },
   ]
   let result = sceua_calibrate(cfg, area=100.0, dt=1.0, forcings, [10.0])
   assert_eq(result.best_params.length(), 0)
@@ -43,8 +43,8 @@ test "sceua_calibrate 小规模率定" {
   let case = synthetic_benchmark_case()
   // 只率定2个参数，减少迭代次数以加速测试
   let calib_params : Array[CalibParam] = [
-    { name: "wm", lower: 80.0, upper: 160.0, value: 120.0 },
-    { name: "b", lower: 0.2, upper: 0.6, value: 0.3 },
+    { name: "wm", lower: 80.0, upper: 160.0, value: 120.0, },
+    { name: "b", lower: 0.2, upper: 0.6, value: 0.3, },
   ]
   let cfg : SCEUAConfig = {
     max_iter: 30,
@@ -76,7 +76,7 @@ test "sceua_calibrate 小规模率定" {
 test "sceua_calibrate KGE目标" {
   let case = synthetic_benchmark_case()
   let calib_params : Array[CalibParam] = [
-    { name: "kg", lower: 0.2, upper: 0.5, value: 0.35 },
+    { name: "kg", lower: 0.2, upper: 0.5, value: 0.35, },
   ]
   let cfg : SCEUAConfig = {
     max_iter: 20,
@@ -106,7 +106,7 @@ test "sceua_calibrate KGE目标" {
 test "sceua_calibrate 收敛性" {
   let case = synthetic_benchmark_case()
   let calib_params : Array[CalibParam] = [
-    { name: "cs", lower: 0.1, upper: 0.4, value: 0.2 },
+    { name: "cs", lower: 0.1, upper: 0.4, value: 0.2, },
   ]
   let cfg : SCEUAConfig = {
     max_iter: 50,

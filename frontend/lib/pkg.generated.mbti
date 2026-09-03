@@ -16,7 +16,7 @@ pub fn quick_batch(Array[Array[Double]], area? : Double, dt? : Double) -> Array[
 
 pub fn quick_run(Array[Double], area? : Double, dt? : Double, evap? : Double) -> SlimSimResponse
 
-pub fn slim_json_endpoint(String) -> String raise
+pub fn slim_json_endpoint(String) -> String
 
 pub fn slim_run(SlimSimRequest) -> SlimSimResponse
 
@@ -37,7 +37,7 @@ pub(all) struct AppModel {
   ui_state : UiState
   history : Array[HistoryEntry]
   error_message : String
-} derive(Default, ToJson, @debug.Debug, @json.FromJson)
+} derive(ToJson, @debug.Debug, @json.FromJson)
 pub fn AppModel::default() -> Self
 pub fn AppModel::initial() -> Self
 
@@ -74,8 +74,10 @@ pub(all) enum Msg {
   CalibrationFailed(String)
   RunEvaluation(Array[Double], Array[Double])
   EvaluationCompleted(@shared.EvaluationResult)
+  EvaluationFailed(String)
   RunBatchSim(Array[@shared.SimTask])
   BatchCompleted(@shared.BatchSimResult)
+  BatchFailed(String)
   ToggleParamsPanel
   ToggleChart
   SetChartType(ChartType)
@@ -118,6 +120,9 @@ pub(all) struct SimResultState {
   calib_metric : String
   calib_value : Double
   batch_summary : String
+  eval_nse : Double
+  eval_kge : Double
+  eval_pbias : Double
 } derive(Default, ToJson, @debug.Debug, @json.FromJson)
 
 pub(all) struct SlimSimRequest {

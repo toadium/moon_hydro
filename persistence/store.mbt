@@ -58,7 +58,7 @@ pub(all) struct DataStore {
 ///|
 /// 构造空DataStore
 pub fn DataStore::new() -> DataStore {
-  { schemes: {}, results: [], param_sets: {} }
+  { schemes: {}, results: [], param_sets: {}, }
 }
 
 ///|
@@ -136,7 +136,7 @@ pub fn DataStore::list_results(
   let found : Array[ResultRecord] = []
   for r in self.results {
     if r.scheme_id == scheme_id {
-      found.push({ ..r, runoff_series: r.runoff_series.copy() })
+      found.push({ ..r, runoff_series: r.runoff_series.copy(), })
     }
   }
   found
@@ -149,7 +149,7 @@ pub fn DataStore::list_results(
 pub fn DataStore::list_all_results(self : DataStore) -> Array[ResultRecord] {
   let copied : Array[ResultRecord] = []
   for r in self.results {
-    copied.push({ ..r, runoff_series: r.runoff_series.copy() })
+    copied.push({ ..r, runoff_series: r.runoff_series.copy(), })
   }
   copied
 }
@@ -233,7 +233,7 @@ pub(all) suberror StoreError {
 ///
 /// 注意：非线程安全——全局可变Ref计数器，多协程并发调用存在竞争。
 /// 测试间存在隐式顺序耦合（计数器值取决于先前调用次数）。
-let id_counter : Ref[UInt64] = { val: 0UL }
+let id_counter : Ref[UInt64] = { val: 0UL, }
 
 ///|
 /// 生成方案ID

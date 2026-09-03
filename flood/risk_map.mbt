@@ -118,7 +118,7 @@ pub fn generate_risk_map(
     final_velocity[k] = v
     levels[k] = classify_risk(h, v)
   }
-  { nx, ny, levels, max_depth, final_velocity }
+  { nx, ny, levels, max_depth, final_velocity, }
 }
 
 ///|
@@ -135,7 +135,7 @@ pub fn generate_risk_map_depth_only(
   for k in 0..<n_total {
     levels[k] = classify_risk(max_depth[k], 0.0)
   }
-  { nx, ny, levels, max_depth, final_velocity }
+  { nx, ny, levels, max_depth, final_velocity, }
 }
 
 ///|

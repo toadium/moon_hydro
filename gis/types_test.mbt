@@ -3,15 +3,15 @@
 
 ///|
 test "XYPoint 构造" {
-  let p : XYPoint = { x: 100.0, y: 200.0 }
+  let p : XYPoint = { x: 100.0, y: 200.0, }
   assert_eq(p.x, 100.0)
   assert_eq(p.y, 200.0)
 }
 
 ///|
 test "xy_distance" {
-  let a : XYPoint = { x: 0.0, y: 0.0 }
-  let b : XYPoint = { x: 3.0, y: 4.0 }
+  let a : XYPoint = { x: 0.0, y: 0.0, }
+  let b : XYPoint = { x: 3.0, y: 4.0, }
   assert_eq(xy_distance(a, b), 5.0)
 }
 
@@ -19,10 +19,10 @@ test "xy_distance" {
 test "polygon_area - 正方形" {
   let polygon : Polygon = {
     exterior: [
-      { x: 0.0, y: 0.0 },
-      { x: 100.0, y: 0.0 },
-      { x: 100.0, y: 100.0 },
-      { x: 0.0, y: 100.0 },
+      { x: 0.0, y: 0.0, },
+      { x: 100.0, y: 0.0, },
+      { x: 100.0, y: 100.0, },
+      { x: 0.0, y: 100.0, },
     ],
     holes: [],
     name: "正方形",
@@ -35,10 +35,10 @@ test "polygon_area - 正方形" {
 test "polygon_centroid - 正方形" {
   let polygon : Polygon = {
     exterior: [
-      { x: 0.0, y: 0.0 },
-      { x: 100.0, y: 0.0 },
-      { x: 100.0, y: 100.0 },
-      { x: 0.0, y: 100.0 },
+      { x: 0.0, y: 0.0, },
+      { x: 100.0, y: 0.0, },
+      { x: 100.0, y: 100.0, },
+      { x: 0.0, y: 100.0, },
     ],
     holes: [],
     name: "正方形",
@@ -52,10 +52,10 @@ test "polygon_centroid - 正方形" {
 test "BasinBoundary::from_polygon" {
   let polygon : Polygon = {
     exterior: [
-      { x: 0.0, y: 0.0 },
-      { x: 1000.0, y: 0.0 },
-      { x: 1000.0, y: 1000.0 },
-      { x: 0.0, y: 1000.0 },
+      { x: 0.0, y: 0.0, },
+      { x: 1000.0, y: 0.0, },
+      { x: 1000.0, y: 1000.0, },
+      { x: 0.0, y: 1000.0, },
     ],
     holes: [],
     name: "流域A",
@@ -68,7 +68,7 @@ test "BasinBoundary::from_polygon" {
 ///|
 test "polyline_length" {
   let polyline : Polyline = {
-    points: [{ x: 0.0, y: 0.0 }, { x: 3.0, y: 4.0 }, { x: 3.0, y: 9.0 }],
+    points: [{ x: 0.0, y: 0.0, }, { x: 3.0, y: 4.0, }, { x: 3.0, y: 9.0, }],
     name: "河流1",
   }
   let len = polyline_length(polyline)
@@ -88,13 +88,13 @@ test "RiverNetwork 基本操作" {
   let network = RiverNetwork::new()
   let node1 : RiverNode = {
     id: 1,
-    point: { x: 0.0, y: 0.0 },
+    point: { x: 0.0, y: 0.0, },
     elevation: 100.0,
     node_type: Source,
   }
   let node2 : RiverNode = {
     id: 2,
-    point: { x: 100.0, y: 0.0 },
+    point: { x: 100.0, y: 0.0, },
     elevation: 90.0,
     node_type: Outlet,
   }

@@ -45,7 +45,7 @@ pub(all) struct LSTM {
 ///|
 /// 构造初始隐藏状态（全零）
 pub fn LSTMState::initial(hidden_dim : Int) -> LSTMState {
-  { h: vec_zeros(hidden_dim), c: vec_zeros(hidden_dim) }
+  { h: vec_zeros(hidden_dim), c: vec_zeros(hidden_dim), }
 }
 
 ///|
@@ -73,13 +73,13 @@ pub fn LSTMWeights::random_init(
 ///|
 /// 构造LSTM模型（随机初始化）
 pub fn LSTM::new(config : LSTMConfig, seed? : UInt64 = 42) -> LSTM {
-  { config, weights: LSTMWeights::random_init(config, seed~) }
+  { config, weights: LSTMWeights::random_init(config, seed~), }
 }
 
 ///|
 /// 用指定权重构造LSTM模型
 pub fn LSTM::with_weights(config : LSTMConfig, weights : LSTMWeights) -> LSTM {
-  { config, weights }
+  { config, weights, }
 }
 
 ///|
@@ -107,7 +107,7 @@ pub fn LSTM::step(
   let h_t = vec_mul(o_t, vec_tanh(c_t))
   // 输出: y_t = w_out * h_t + b_out
   let y_t = vec_add(mat_vec_mul(w.w_out, h_t), w.b_out)
-  (y_t, { h: h_t, c: c_t })
+  (y_t, { h: h_t, c: c_t, })
 }
 
 ///|
@@ -321,7 +321,7 @@ pub fn LSTMWeights::from_flat(
     b_out[i] = flat[idx]
     idx = idx + 1
   }
-  { w_i, w_f, w_g, w_o, b_i, b_f, b_g, b_o, w_out, b_out }
+  { w_i, w_f, w_g, w_o, b_i, b_f, b_g, b_o, w_out, b_out, }
 }
 
 ///|

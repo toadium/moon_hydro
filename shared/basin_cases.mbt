@@ -262,14 +262,14 @@ pub fn synthetic_benchmark_case() -> BasinCase {
   let dt = 1.0
   let params = XinanjiangParams::default()
   let forcings : Array[ForcingData] = [
-    { rainfall: 10.0, evaporation: 2.0, datetime: "t0" },
-    { rainfall: 20.0, evaporation: 1.0, datetime: "t1" },
-    { rainfall: 5.0, evaporation: 3.0, datetime: "t2" },
-    { rainfall: 0.0, evaporation: 1.0, datetime: "t3" },
-    { rainfall: 30.0, evaporation: 2.0, datetime: "t4" },
-    { rainfall: 15.0, evaporation: 1.5, datetime: "t5" },
-    { rainfall: 0.0, evaporation: 2.0, datetime: "t6" },
-    { rainfall: 0.0, evaporation: 2.0, datetime: "t7" },
+    { rainfall: 10.0, evaporation: 2.0, datetime: "t0", },
+    { rainfall: 20.0, evaporation: 1.0, datetime: "t1", },
+    { rainfall: 5.0, evaporation: 3.0, datetime: "t2", },
+    { rainfall: 0.0, evaporation: 1.0, datetime: "t3", },
+    { rainfall: 30.0, evaporation: 2.0, datetime: "t4", },
+    { rainfall: 15.0, evaporation: 1.5, datetime: "t5", },
+    { rainfall: 0.0, evaporation: 2.0, datetime: "t6", },
+    { rainfall: 0.0, evaporation: 2.0, datetime: "t7", },
   ]
   let model = XinanjiangModel::new(params~, area~, dt~)
   let result = model.run(forcings)

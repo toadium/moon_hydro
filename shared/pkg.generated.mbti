@@ -153,9 +153,9 @@ pub fn run_all_benchmarks() -> String
 
 pub fn run_batch_sim(Array[SimTask]) -> BatchSimResult
 
-pub fn run_calibrate(CalibrateRequest) -> CalibrateResponse
+pub fn run_calibrate(CalibrateRequest) -> CalibrateResponse raise
 
-pub fn run_couple(CoupleRunRequest) -> CoupleRunResponse
+pub fn run_couple(CoupleRunRequest) -> CoupleRunResponse raise
 
 pub fn run_ensemble_sim(basin_name~ : String, Array[XinanjiangParams], area~ : Double, dt~ : Double, Array[ForcingData], observed? : Array[Double]) -> BatchSimResult
 
@@ -163,13 +163,13 @@ pub fn run_evaluate(EvaluateRequest) -> EvaluateResponse
 
 pub fn run_sim_task(SimTask) -> SimTaskResult
 
-pub fn run_swe(SweRunRequest) -> SweRunResponse
+pub fn run_swe(SweRunRequest) -> SweRunResponse raise
 
 pub fn run_task(SimTask) -> TaskExecResult
 
 pub fn run_tasks(Array[SimTask], (ProgressInfo) -> Unit) -> Array[TaskExecResult]
 
-pub fn run_xaj(XajRunRequest) -> XajRunResponse
+pub fn run_xaj(XajRunRequest) -> XajRunResponse raise
 
 pub fn sceua_calibrate(SCEUAConfig, area~ : Double, dt~ : Double, Array[ForcingData], Array[Double]) -> SCEUAResult
 
@@ -217,6 +217,10 @@ pub(all) suberror AuthError {
   RateLimited(String)
 } derive(ToJson, @debug.Debug, @json.FromJson)
 pub impl Show for AuthError
+
+pub(all) suberror SimError {
+  InvalidInput(String)
+} derive(ToJson, @debug.Debug, @json.FromJson)
 
 // Types and methods
 pub(all) struct ApiResponse[T] {
@@ -331,7 +335,7 @@ pub(all) struct CalibConfig {
   params_range : Array[(String, Double, Double)]
   max_iter : Int
   target_metric : String
-} derive(Default, ToJson, @debug.Debug, @json.FromJson)
+} derive(ToJson, @debug.Debug, @json.FromJson)
 
 pub(all) struct CalibParam {
   name : String
@@ -349,7 +353,7 @@ pub(all) struct CalibResult {
 } derive(ToJson, @debug.Debug, @json.FromJson)
 
 pub(all) struct CalibrateRequest {
-  config : DDSConfig
+  config : DDSConfig?
   area : Double
   dt : Double
   forcings : Array[ForcingData]
@@ -688,7 +692,7 @@ pub(all) struct TaskScheduler {
   results : Array[TaskExecResult]
   status : Map[String, TaskStatus]
 } derive(ToJson, @debug.Debug, @json.FromJson)
-pub fn TaskScheduler::add_task(Self, SimTask) -> Unit
+pub fn TaskScheduler::add_task(Self, SimTask) -> Bool
 pub fn TaskScheduler::add_tasks(Self, Array[SimTask]) -> Unit
 pub fn TaskScheduler::completed_count(Self) -> Int
 pub fn TaskScheduler::get_results(Self) -> Array[TaskExecResult]

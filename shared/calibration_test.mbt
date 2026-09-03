@@ -46,9 +46,9 @@ test "params_to_xaj 参数转换" {
 ///|
 test "params_to_xaj 自定义参数转换" {
   let params : Array[CalibParam] = [
-    { name: "wm", lower: 80.0, upper: 160.0, value: 140.0 },
-    { name: "b", lower: 0.2, upper: 0.6, value: 0.4 },
-    { name: "kg", lower: 0.2, upper: 0.5, value: 0.45 },
+    { name: "wm", lower: 80.0, upper: 160.0, value: 140.0, },
+    { name: "b", lower: 0.2, upper: 0.6, value: 0.4, },
+    { name: "kg", lower: 0.2, upper: 0.5, value: 0.45, },
   ]
   let xaj = params_to_xaj(params)
   assert_true((xaj.wm - 140.0).abs() < 0.001)
@@ -62,7 +62,7 @@ test "params_to_xaj 自定义参数转换" {
 ///|
 test "params_to_xaj 未知参数名忽略" {
   let params : Array[CalibParam] = [
-    { name: "unknown", lower: 0.0, upper: 1.0, value: 0.5 },
+    { name: "unknown", lower: 0.0, upper: 1.0, value: 0.5, },
   ]
   let xaj = params_to_xaj(params)
   let default_p = XinanjiangParams::default()
@@ -80,9 +80,9 @@ test "dds_calibrate 小规模率定" {
   let observed = obs_result.runoff_series
   // 配置DDS：小规模快速率定
   let calib_params : Array[CalibParam] = [
-    { name: "wm", lower: 80.0, upper: 160.0, value: 100.0 },
-    { name: "b", lower: 0.2, upper: 0.6, value: 0.25 },
-    { name: "kg", lower: 0.2, upper: 0.5, value: 0.3 },
+    { name: "wm", lower: 80.0, upper: 160.0, value: 100.0, },
+    { name: "b", lower: 0.2, upper: 0.6, value: 0.25, },
+    { name: "kg", lower: 0.2, upper: 0.5, value: 0.3, },
   ]
   let cfg : DDSConfig = {
     max_iter: 50,

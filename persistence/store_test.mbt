@@ -20,8 +20,8 @@ test "DataStore 仿真方案CRUD" {
     dt: 6.0,
     params: @shared.XinanjiangParams::default(),
     forcings: [
-      { rainfall: 10.0, evaporation: 2.0, datetime: "t0" },
-      { rainfall: 20.0, evaporation: 1.0, datetime: "t1" },
+      { rainfall: 10.0, evaporation: 2.0, datetime: "t0", },
+      { rainfall: 20.0, evaporation: 1.0, datetime: "t1", },
     ],
     created_at: 1723000000,
     updated_at: 1723000000,
@@ -136,7 +136,7 @@ test "DataStore JSON序列化与反序列化" {
     area: 100.0,
     dt: 1.0,
     params: @shared.XinanjiangParams::default(),
-    forcings: [{ rainfall: 10.0, evaporation: 2.0, datetime: "t0" }],
+    forcings: [{ rainfall: 10.0, evaporation: 2.0, datetime: "t0", }],
     created_at: 1723000000,
     updated_at: 1723000000,
   }

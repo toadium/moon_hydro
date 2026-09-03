@@ -96,7 +96,7 @@ pub fn bench_suite(
   for r in benchmarks {
     total = total + r.total_ms
   }
-  { suite_name, results: benchmarks, total_ms: total }
+  { suite_name, results: benchmarks, total_ms: total, }
 }
 
 ///|
@@ -142,7 +142,7 @@ pub fn run_all_benchmarks() -> String {
     } else {
       0.0
     }
-    xaj_forcings.push({ rainfall: r, evaporation: 1.0, datetime: "t\{i}" })
+    xaj_forcings.push({ rainfall: r, evaporation: 1.0, datetime: "t\{i}", })
   }
   let xaj_bench = bench(name="新安江模型仿真(100步)", n_iters=50, fn() {
     ignore(xaj_model.run(xaj_forcings))
@@ -244,7 +244,7 @@ pub fn run_all_benchmarks() -> String {
   let coup_grid = SWEGrid1D::uniform(nx=50, dx=1.0, h0=0.5)
   let coup_forcings : Array[ForcingData] = []
   for i in 0..<20 {
-    coup_forcings.push({ rainfall: 15.0, evaporation: 1.0, datetime: "t\{i}" })
+    coup_forcings.push({ rainfall: 15.0, evaporation: 1.0, datetime: "t\{i}", })
   }
   let coup_bench = bench(name="耦合仿真(20步)", n_iters=20, fn() {
     ignore(
@@ -265,7 +265,7 @@ pub fn run_all_benchmarks() -> String {
   // 9. 蒙特卡洛
   let mc_forcings : Array[ForcingData] = []
   for i in 0..<20 {
-    mc_forcings.push({ rainfall: 10.0, evaporation: 1.0, datetime: "t\{i}" })
+    mc_forcings.push({ rainfall: 10.0, evaporation: 1.0, datetime: "t\{i}", })
   }
   let mc_bench = bench(name="蒙特卡洛不确定性(20采样)", n_iters=3, fn() {
     ignore(

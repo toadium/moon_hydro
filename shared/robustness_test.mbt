@@ -12,9 +12,9 @@ test "新安江模型-零降雨仿真" {
     dt=1.0,
   )
   let forcings : Array[ForcingData] = [
-    { rainfall: 0.0, evaporation: 5.0, datetime: "t0" },
-    { rainfall: 0.0, evaporation: 5.0, datetime: "t1" },
-    { rainfall: 0.0, evaporation: 5.0, datetime: "t2" },
+    { rainfall: 0.0, evaporation: 5.0, datetime: "t0", },
+    { rainfall: 0.0, evaporation: 5.0, datetime: "t1", },
+    { rainfall: 0.0, evaporation: 5.0, datetime: "t2", },
   ]
   let result = model.run(forcings)
   for v in result.runoff_series {
@@ -30,9 +30,9 @@ test "新安江模型-极端暴雨仿真" {
     dt=1.0,
   )
   let forcings : Array[ForcingData] = [
-    { rainfall: 500.0, evaporation: 0.0, datetime: "t0" },
-    { rainfall: 1000.0, evaporation: 0.0, datetime: "t1" },
-    { rainfall: 800.0, evaporation: 0.0, datetime: "t2" },
+    { rainfall: 500.0, evaporation: 0.0, datetime: "t0", },
+    { rainfall: 1000.0, evaporation: 0.0, datetime: "t1", },
+    { rainfall: 800.0, evaporation: 0.0, datetime: "t2", },
   ]
   let result = model.run(forcings)
   assert_eq(result.runoff_series.length(), 3)
@@ -50,8 +50,8 @@ test "新安江模型-负降雨容错" {
     dt=1.0,
   )
   let forcings : Array[ForcingData] = [
-    { rainfall: -10.0, evaporation: 2.0, datetime: "t0" },
-    { rainfall: 20.0, evaporation: -5.0, datetime: "t1" },
+    { rainfall: -10.0, evaporation: 2.0, datetime: "t0", },
+    { rainfall: 20.0, evaporation: -5.0, datetime: "t1", },
   ]
   let result = model.run(forcings)
   assert_eq(result.runoff_series.length(), 2)
@@ -68,7 +68,7 @@ test "新安江模型-零面积容错" {
     dt=1.0,
   )
   let forcings : Array[ForcingData] = [
-    { rainfall: 10.0, evaporation: 2.0, datetime: "t0" },
+    { rainfall: 10.0, evaporation: 2.0, datetime: "t0", },
   ]
   let result = model.run(forcings)
   assert_eq(result.runoff_series.length(), 1)
@@ -82,8 +82,8 @@ test "新安江模型-极小时段容错" {
     dt=0.1,
   )
   let forcings : Array[ForcingData] = [
-    { rainfall: 10.0, evaporation: 2.0, datetime: "t0" },
-    { rainfall: 20.0, evaporation: 1.0, datetime: "t1" },
+    { rainfall: 10.0, evaporation: 2.0, datetime: "t0", },
+    { rainfall: 20.0, evaporation: 1.0, datetime: "t1", },
   ]
   let result = model.run(forcings)
   assert_eq(result.runoff_series.length(), 2)
@@ -162,7 +162,7 @@ test "DDS率定-空参数容错" {
     max_no_improve: 100,
   }
   let forcings : Array[ForcingData] = [
-    { rainfall: 10.0, evaporation: 2.0, datetime: "t0" },
+    { rainfall: 10.0, evaporation: 2.0, datetime: "t0", },
   ]
   let result = dds_calibrate(config, area=100.0, dt=1.0, forcings, [10.0])
   assert_eq(result.best_params.length(), 0)
@@ -182,7 +182,7 @@ test "SCE-UA率定-空参数容错" {
     max_no_improve: 5,
   }
   let forcings : Array[ForcingData] = [
-    { rainfall: 10.0, evaporation: 2.0, datetime: "t0" },
+    { rainfall: 10.0, evaporation: 2.0, datetime: "t0", },
   ]
   let result = sceua_calibrate(config, area=100.0, dt=1.0, forcings, [10.0])
   assert_eq(result.best_params.length(), 0)
@@ -200,10 +200,10 @@ test "批量仿真-空任务列表" {
 ///|
 test "蒙特卡洛-零采样容错" {
   let forcings : Array[ForcingData] = [
-    { rainfall: 10.0, evaporation: 2.0, datetime: "t0" },
+    { rainfall: 10.0, evaporation: 2.0, datetime: "t0", },
   ]
   let calib_params : Array[CalibParam] = [
-    { name: "wm", lower: 80.0, upper: 160.0, value: 120.0 },
+    { name: "wm", lower: 80.0, upper: 160.0, value: 120.0, },
   ]
   let result = monte_carlo_uncertainty(
     XinanjiangParams::default(),
@@ -239,7 +239,7 @@ test "长期仿真稳定性-100时段" {
   let rng = @splitmix.new(seed=42)
   for i in 0..<100 {
     let rainfall = rng.next_double() * 50.0
-    forcings.push({ rainfall, evaporation: 2.0, datetime: "t\{i}" })
+    forcings.push({ rainfall, evaporation: 2.0, datetime: "t\{i}", })
   }
   let result = model.run(forcings)
   assert_eq(result.runoff_series.length(), 100)
@@ -258,13 +258,13 @@ test "长期仿真稳定性-含干旱期" {
   )
   let forcings : Array[ForcingData] = []
   for i in 0..<10 {
-    forcings.push({ rainfall: 20.0, evaporation: 2.0, datetime: "flood1_\{i}" })
+    forcings.push({ rainfall: 20.0, evaporation: 2.0, datetime: "flood1_\{i}", })
   }
   for i in 0..<20 {
-    forcings.push({ rainfall: 0.0, evaporation: 5.0, datetime: "dry_\{i}" })
+    forcings.push({ rainfall: 0.0, evaporation: 5.0, datetime: "dry_\{i}", })
   }
   for i in 0..<10 {
-    forcings.push({ rainfall: 15.0, evaporation: 2.0, datetime: "flood2_\{i}" })
+    forcings.push({ rainfall: 15.0, evaporation: 2.0, datetime: "flood2_\{i}", })
   }
   let result = model.run(forcings)
   assert_eq(result.runoff_series.length(), 40)

@@ -150,7 +150,7 @@ pub fn mock_multi_peak_rainfall(
     }
     // 间歇期
     for _ in 0..<peak_interval {
-      forcings.push({ rainfall: 0.0, evaporation: 2.0, datetime: "gap\{peak}" })
+      forcings.push({ rainfall: 0.0, evaporation: 2.0, datetime: "gap\{peak}", })
     }
   }
   forcings
@@ -168,7 +168,7 @@ pub fn mock_dry_period(
   let forcings : Array[ForcingData] = []
   for t in 0..<duration {
     let rainfall = if t < wet_days { initial_rainfall } else { 0.0 }
-    forcings.push({ rainfall, evaporation: 3.0, datetime: "dry_t\{t}" })
+    forcings.push({ rainfall, evaporation: 3.0, datetime: "dry_t\{t}", })
   }
   forcings
 }
@@ -198,7 +198,7 @@ pub fn mock_long_term_forcings(
       0.0
     }
     let evaporation = 2.0 + rng.next_double() * 2.0
-    forcings.push({ rainfall, evaporation, datetime: "day\{day}" })
+    forcings.push({ rainfall, evaporation, datetime: "day\{day}", })
   }
   forcings
 }
@@ -392,7 +392,7 @@ pub fn mock_scenario(
   )
   let swe_nx = 50
   let coupling_params = mock_coupling_params(basin~, swe_nx~)
-  let boundary : SWEBoundary = { left: SolidWall, right: Transmissive }
+  let boundary : SWEBoundary = { left: SolidWall, right: Transmissive, }
   match scenario {
     FloodEvent => {
       let forcings = mock_flood_rainfall(

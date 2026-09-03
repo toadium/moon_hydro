@@ -124,11 +124,11 @@ pub(all) struct ApiResponse[T] {
 ///|
 /// 构造成功响应
 pub fn[T] ApiResponse::ok(data : T) -> ApiResponse[T] {
-  { success: true, data: Some(data), error: "" }
+  { success: true, data: Some(data), error: "", }
 }
 
 ///|
 /// 构造错误响应
 pub fn[T] ApiResponse::err(error~ : String) -> ApiResponse[T] {
-  { success: false, data: None, error }
+  { success: false, data: None, error, }
 }

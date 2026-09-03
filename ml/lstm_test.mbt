@@ -14,7 +14,7 @@ test "LSTMState::initial" {
 
 ///|
 test "LSTMWeights::random_init" {
-  let config : LSTMConfig = { input_dim: 2, hidden_dim: 3, output_dim: 1 }
+  let config : LSTMConfig = { input_dim: 2, hidden_dim: 3, output_dim: 1, }
   let weights = LSTMWeights::random_init(config, seed=42)
   assert_eq(weights.w_i.length(), 3) // hidden_dim
   assert_eq(weights.w_i[0].length(), 5) // input+hidden
@@ -26,7 +26,7 @@ test "LSTMWeights::random_init" {
 
 ///|
 test "LSTM::new" {
-  let config : LSTMConfig = { input_dim: 2, hidden_dim: 4, output_dim: 1 }
+  let config : LSTMConfig = { input_dim: 2, hidden_dim: 4, output_dim: 1, }
   let lstm = LSTM::new(config, seed=42)
   assert_eq(lstm.config.input_dim, 2)
   assert_eq(lstm.config.hidden_dim, 4)
@@ -35,7 +35,7 @@ test "LSTM::new" {
 
 ///|
 test "LSTM::step - 单步前向传播" {
-  let config : LSTMConfig = { input_dim: 1, hidden_dim: 2, output_dim: 1 }
+  let config : LSTMConfig = { input_dim: 1, hidden_dim: 2, output_dim: 1, }
   let lstm = LSTM::new(config, seed=42)
   let x_t = [0.5]
   let state = LSTMState::initial(2)
@@ -47,7 +47,7 @@ test "LSTM::step - 单步前向传播" {
 
 ///|
 test "LSTM::forward - 序列前向传播" {
-  let config : LSTMConfig = { input_dim: 1, hidden_dim: 4, output_dim: 1 }
+  let config : LSTMConfig = { input_dim: 1, hidden_dim: 4, output_dim: 1, }
   let lstm = LSTM::new(config, seed=42)
   let inputs : Array[Array[Double]] = [[0.1], [0.2], [0.3], [0.4], [0.5]]
   let outputs = lstm.forward(inputs)
@@ -59,7 +59,7 @@ test "LSTM::forward - 序列前向传播" {
 
 ///|
 test "LSTM::forward_with_state" {
-  let config : LSTMConfig = { input_dim: 1, hidden_dim: 3, output_dim: 1 }
+  let config : LSTMConfig = { input_dim: 1, hidden_dim: 3, output_dim: 1, }
   let lstm = LSTM::new(config, seed=42)
   let inputs : Array[Array[Double]] = [[0.1], [0.2], [0.3]]
   let (outputs, final_state) = lstm.forward_with_state(inputs)
@@ -70,7 +70,7 @@ test "LSTM::forward_with_state" {
 
 ///|
 test "LSTM::forecast - 多步预报" {
-  let config : LSTMConfig = { input_dim: 1, hidden_dim: 4, output_dim: 1 }
+  let config : LSTMConfig = { input_dim: 1, hidden_dim: 4, output_dim: 1, }
   let lstm = LSTM::new(config, seed=42)
   let history : Array[Array[Double]] = [[0.1], [0.2], [0.3], [0.4], [0.5]]
   let forecasts = lstm.forecast(history, 3)
@@ -82,7 +82,7 @@ test "LSTM::forecast - 多步预报" {
 
 ///|
 test "LSTMWeights::flatten 和 from_flat" {
-  let config : LSTMConfig = { input_dim: 1, hidden_dim: 2, output_dim: 1 }
+  let config : LSTMConfig = { input_dim: 1, hidden_dim: 2, output_dim: 1, }
   let weights = LSTMWeights::random_init(config, seed=42)
   let flat = weights.flatten()
   let count = lstm_weight_count(config)
@@ -100,7 +100,7 @@ test "LSTMWeights::flatten 和 from_flat" {
 
 ///|
 test "lstm_weight_count" {
-  let config : LSTMConfig = { input_dim: 2, hidden_dim: 3, output_dim: 1 }
+  let config : LSTMConfig = { input_dim: 2, hidden_dim: 3, output_dim: 1, }
   // combined = 2+3 = 5
   // 4 * 3 * 5 + 4 * 3 + 1 * 3 + 1 = 60 + 12 + 3 + 1 = 76
   assert_eq(lstm_weight_count(config), 76)
@@ -108,7 +108,7 @@ test "lstm_weight_count" {
 
 ///|
 test "LSTM::mse" {
-  let config : LSTMConfig = { input_dim: 1, hidden_dim: 4, output_dim: 1 }
+  let config : LSTMConfig = { input_dim: 1, hidden_dim: 4, output_dim: 1, }
   let lstm = LSTM::new(config, seed=42)
   let inputs : Array[Array[Double]] = [[0.1], [0.2], [0.3], [0.4], [0.5]]
   let targets : Array[Array[Double]] = [[0.2], [0.3], [0.4], [0.5], [0.6]]
@@ -118,7 +118,7 @@ test "LSTM::mse" {
 
 ///|
 test "LSTM::mse - 空序列" {
-  let config : LSTMConfig = { input_dim: 1, hidden_dim: 2, output_dim: 1 }
+  let config : LSTMConfig = { input_dim: 1, hidden_dim: 2, output_dim: 1, }
   let lstm = LSTM::new(config, seed=42)
   let inputs : Array[Array[Double]] = []
   let targets : Array[Array[Double]] = []

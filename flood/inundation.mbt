@@ -23,7 +23,7 @@ pub(all) struct InundationConfig {
 ///|
 /// 默认配置
 pub fn InundationConfig::default() -> InundationConfig {
-  { dt: 0.1, n_steps: 500, cfl: 0.5, depth_threshold: 0.05 }
+  { dt: 0.1, n_steps: 500, cfl: 0.5, depth_threshold: 0.05, }
 }
 
 ///|

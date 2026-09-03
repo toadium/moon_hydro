@@ -12,8 +12,8 @@ test "SimTask 基本结构" {
     area: 100.0,
     dt: 1.0,
     forcings: [
-      { rainfall: 10.0, evaporation: 2.0, datetime: "t0" },
-      { rainfall: 20.0, evaporation: 1.0, datetime: "t1" },
+      { rainfall: 10.0, evaporation: 2.0, datetime: "t0", },
+      { rainfall: 20.0, evaporation: 1.0, datetime: "t1", },
     ],
     observed: [],
   }
@@ -31,9 +31,9 @@ test "run_sim_task 单任务执行" {
     area: 100.0,
     dt: 1.0,
     forcings: [
-      { rainfall: 10.0, evaporation: 2.0, datetime: "t0" },
-      { rainfall: 20.0, evaporation: 1.0, datetime: "t1" },
-      { rainfall: 5.0, evaporation: 3.0, datetime: "t2" },
+      { rainfall: 10.0, evaporation: 2.0, datetime: "t0", },
+      { rainfall: 20.0, evaporation: 1.0, datetime: "t1", },
+      { rainfall: 5.0, evaporation: 3.0, datetime: "t2", },
     ],
     observed: [],
   }
@@ -50,9 +50,9 @@ test "run_sim_task 单任务执行" {
 ///|
 test "run_sim_task 带观测评价" {
   let forcings : Array[ForcingData] = [
-    { rainfall: 10.0, evaporation: 2.0, datetime: "t0" },
-    { rainfall: 20.0, evaporation: 1.0, datetime: "t1" },
-    { rainfall: 5.0, evaporation: 3.0, datetime: "t2" },
+    { rainfall: 10.0, evaporation: 2.0, datetime: "t0", },
+    { rainfall: 20.0, evaporation: 1.0, datetime: "t1", },
+    { rainfall: 5.0, evaporation: 3.0, datetime: "t2", },
   ]
   // 先生成"观测"数据
   let model = XinanjiangModel::new(
@@ -89,8 +89,8 @@ test "run_batch_sim 批量执行" {
       area: 100.0 + i.to_double() * 50.0,
       dt: 1.0,
       forcings: [
-        { rainfall: 10.0, evaporation: 2.0, datetime: "t0" },
-        { rainfall: 20.0, evaporation: 1.0, datetime: "t1" },
+        { rainfall: 10.0, evaporation: 2.0, datetime: "t0", },
+        { rainfall: 20.0, evaporation: 1.0, datetime: "t1", },
       ],
       observed: [],
     })
@@ -107,12 +107,12 @@ test "run_ensemble_sim 集合仿真" {
   let params_set : Array[XinanjiangParams] = []
   for i in 0..<5 {
     let base = XinanjiangParams::default()
-    params_set.push({ ..base, wm: 80.0 + i.to_double() * 20.0 })
+    params_set.push({ ..base, wm: 80.0 + i.to_double() * 20.0, })
   }
   let forcings : Array[ForcingData] = [
-    { rainfall: 15.0, evaporation: 2.0, datetime: "t0" },
-    { rainfall: 25.0, evaporation: 1.0, datetime: "t1" },
-    { rainfall: 5.0, evaporation: 3.0, datetime: "t2" },
+    { rainfall: 15.0, evaporation: 2.0, datetime: "t0", },
+    { rainfall: 25.0, evaporation: 1.0, datetime: "t1", },
+    { rainfall: 5.0, evaporation: 3.0, datetime: "t2", },
   ]
   let result = run_ensemble_sim(
     basin_name="测试",
@@ -139,9 +139,9 @@ test "set_xaj_param 参数设置" {
 ///|
 test "param_sensitivity_scan 参数扫描" {
   let forcings : Array[ForcingData] = [
-    { rainfall: 10.0, evaporation: 2.0, datetime: "t0" },
-    { rainfall: 20.0, evaporation: 1.0, datetime: "t1" },
-    { rainfall: 5.0, evaporation: 3.0, datetime: "t2" },
+    { rainfall: 10.0, evaporation: 2.0, datetime: "t0", },
+    { rainfall: 20.0, evaporation: 1.0, datetime: "t1", },
+    { rainfall: 5.0, evaporation: 3.0, datetime: "t2", },
   ]
   let model = XinanjiangModel::new(
     params=XinanjiangParams::default(),
@@ -170,13 +170,13 @@ test "param_sensitivity_scan 参数扫描" {
 ///|
 test "monte_carlo_uncertainty 蒙特卡洛分析" {
   let forcings : Array[ForcingData] = [
-    { rainfall: 10.0, evaporation: 2.0, datetime: "t0" },
-    { rainfall: 20.0, evaporation: 1.0, datetime: "t1" },
-    { rainfall: 5.0, evaporation: 3.0, datetime: "t2" },
+    { rainfall: 10.0, evaporation: 2.0, datetime: "t0", },
+    { rainfall: 20.0, evaporation: 1.0, datetime: "t1", },
+    { rainfall: 5.0, evaporation: 3.0, datetime: "t2", },
   ]
   let calib_params : Array[CalibParam] = [
-    { name: "wm", lower: 80.0, upper: 160.0, value: 120.0 },
-    { name: "b", lower: 0.2, upper: 0.6, value: 0.3 },
+    { name: "wm", lower: 80.0, upper: 160.0, value: 120.0, },
+    { name: "b", lower: 0.2, upper: 0.6, value: 0.3, },
   ]
   let result = monte_carlo_uncertainty(
     XinanjiangParams::default(),

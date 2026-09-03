@@ -197,7 +197,7 @@ pub fn couple_step(
     h_copy[i] = swe_grid.h[i]
     hu_copy[i] = swe_grid.hu[i]
   }
-  let swe_work = { ..swe_grid, h: h_copy, hu: hu_copy }
+  let swe_work = { ..swe_grid, h: h_copy, hu: hu_copy, }
   // 4-5. SWE子步循环推进（XAJ dt单位小时，SWE dt单位秒）
   //      每个子步注入该子步对应的侧向入流量，保证时段内水量连续补给
   let n_substeps = if swe_dt <= 0.0 {

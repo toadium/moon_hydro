@@ -8,15 +8,15 @@ import {
 }
 
 // Values
-pub fn delete_file(String) -> Unit raise
+pub fn delete_file(String) -> Unit raise FileError
 
-pub fn file_exists(String) -> Bool raise
+pub fn file_exists(String) -> Bool raise FileError
 
 pub fn generate_id(String, UInt64) -> String
 
-pub fn read_file(String) -> String raise
+pub fn read_file(String) -> String raise FileError
 
-pub fn write_file(String, String) -> Unit raise
+pub fn write_file(String, String) -> Unit raise FileError
 
 // Errors
 pub(all) suberror FileError {
@@ -28,7 +28,7 @@ pub(all) suberror FileError {
 } derive(ToJson, @debug.Debug, @json.FromJson)
 
 pub(all) suberror StoreError {
-  FileError(String)
+  FileError(FileError)
   JsonError(String)
 } derive(ToJson, @debug.Debug, @json.FromJson)
 

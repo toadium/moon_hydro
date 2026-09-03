@@ -97,11 +97,11 @@ fn cli_sim() -> CliResult {
     dt=1.0,
   )
   let forcings : Array[@shared.ForcingData] = [
-    { rainfall: 10.0, evaporation: 2.0, datetime: "2026-09-01T00:00" },
-    { rainfall: 20.0, evaporation: 1.0, datetime: "2026-09-01T01:00" },
-    { rainfall: 5.0, evaporation: 3.0, datetime: "2026-09-01T02:00" },
-    { rainfall: 0.0, evaporation: 1.0, datetime: "2026-09-01T03:00" },
-    { rainfall: 30.0, evaporation: 2.0, datetime: "2026-09-01T04:00" },
+    { rainfall: 10.0, evaporation: 2.0, datetime: "2026-09-01T00:00", },
+    { rainfall: 20.0, evaporation: 1.0, datetime: "2026-09-01T01:00", },
+    { rainfall: 5.0, evaporation: 3.0, datetime: "2026-09-01T02:00", },
+    { rainfall: 0.0, evaporation: 1.0, datetime: "2026-09-01T03:00", },
+    { rainfall: 30.0, evaporation: 2.0, datetime: "2026-09-01T04:00", },
   ]
   let result = model.run(forcings)
   let runoff_str = result.runoff_series.map(fn(x) { x.to_string() }).join(", ")
@@ -117,11 +117,11 @@ fn cli_sim() -> CliResult {
 /// 子命令: calibrate - SCE-UA参数率定
 fn cli_calibrate() -> CliResult {
   let forcings : Array[@shared.ForcingData] = [
-    { rainfall: 10.0, evaporation: 2.0, datetime: "t0" },
-    { rainfall: 20.0, evaporation: 1.0, datetime: "t1" },
-    { rainfall: 15.0, evaporation: 1.5, datetime: "t2" },
-    { rainfall: 5.0, evaporation: 2.0, datetime: "t3" },
-    { rainfall: 0.0, evaporation: 1.0, datetime: "t4" },
+    { rainfall: 10.0, evaporation: 2.0, datetime: "t0", },
+    { rainfall: 20.0, evaporation: 1.0, datetime: "t1", },
+    { rainfall: 15.0, evaporation: 1.5, datetime: "t2", },
+    { rainfall: 5.0, evaporation: 2.0, datetime: "t3", },
+    { rainfall: 0.0, evaporation: 1.0, datetime: "t4", },
   ]
   let model = @shared.XinanjiangModel::new(
     params=@shared.XinanjiangParams::default(),
@@ -160,10 +160,10 @@ fn cli_calibrate() -> CliResult {
 /// 子命令: dds - DDS动态维度搜索率定
 fn cli_dds() -> CliResult {
   let forcings : Array[@shared.ForcingData] = [
-    { rainfall: 12.0, evaporation: 2.0, datetime: "t0" },
-    { rainfall: 18.0, evaporation: 1.0, datetime: "t1" },
-    { rainfall: 8.0, evaporation: 1.5, datetime: "t2" },
-    { rainfall: 3.0, evaporation: 1.0, datetime: "t3" },
+    { rainfall: 12.0, evaporation: 2.0, datetime: "t0", },
+    { rainfall: 18.0, evaporation: 1.0, datetime: "t1", },
+    { rainfall: 8.0, evaporation: 1.5, datetime: "t2", },
+    { rainfall: 3.0, evaporation: 1.0, datetime: "t3", },
   ]
   let model = @shared.XinanjiangModel::new(
     params=@shared.XinanjiangParams::default(),
@@ -224,10 +224,10 @@ fn cli_validate() -> CliResult {
 /// 子命令: batch - 批量多流域仿真
 fn cli_batch() -> CliResult {
   let forcings : Array[@shared.ForcingData] = [
-    { rainfall: 10.0, evaporation: 2.0, datetime: "t0" },
-    { rainfall: 20.0, evaporation: 1.0, datetime: "t1" },
-    { rainfall: 5.0, evaporation: 3.0, datetime: "t2" },
-    { rainfall: 0.0, evaporation: 1.0, datetime: "t3" },
+    { rainfall: 10.0, evaporation: 2.0, datetime: "t0", },
+    { rainfall: 20.0, evaporation: 1.0, datetime: "t1", },
+    { rainfall: 5.0, evaporation: 3.0, datetime: "t2", },
+    { rainfall: 0.0, evaporation: 1.0, datetime: "t3", },
   ]
   let model = @shared.XinanjiangModel::new(
     params=@shared.XinanjiangParams::default(),
@@ -264,10 +264,10 @@ fn cli_batch() -> CliResult {
 /// 子命令: ensemble - 集合仿真
 fn cli_ensemble() -> CliResult {
   let forcings : Array[@shared.ForcingData] = [
-    { rainfall: 15.0, evaporation: 2.0, datetime: "t0" },
-    { rainfall: 25.0, evaporation: 1.0, datetime: "t1" },
-    { rainfall: 10.0, evaporation: 1.5, datetime: "t2" },
-    { rainfall: 2.0, evaporation: 1.0, datetime: "t3" },
+    { rainfall: 15.0, evaporation: 2.0, datetime: "t0", },
+    { rainfall: 25.0, evaporation: 1.0, datetime: "t1", },
+    { rainfall: 10.0, evaporation: 1.5, datetime: "t2", },
+    { rainfall: 2.0, evaporation: 1.0, datetime: "t3", },
   ]
   let params_set : Array[@shared.XinanjiangParams] = []
   let base = @shared.XinanjiangParams::default()
@@ -295,11 +295,11 @@ fn cli_ensemble() -> CliResult {
 /// 子命令: uncertainty - 蒙特卡洛不确定性分析
 fn cli_uncertainty() -> CliResult {
   let forcings : Array[@shared.ForcingData] = [
-    { rainfall: 12.0, evaporation: 2.0, datetime: "t0" },
-    { rainfall: 22.0, evaporation: 1.0, datetime: "t1" },
-    { rainfall: 8.0, evaporation: 1.5, datetime: "t2" },
-    { rainfall: 1.0, evaporation: 1.0, datetime: "t3" },
-    { rainfall: 0.0, evaporation: 0.5, datetime: "t4" },
+    { rainfall: 12.0, evaporation: 2.0, datetime: "t0", },
+    { rainfall: 22.0, evaporation: 1.0, datetime: "t1", },
+    { rainfall: 8.0, evaporation: 1.5, datetime: "t2", },
+    { rainfall: 1.0, evaporation: 1.0, datetime: "t3", },
+    { rainfall: 0.0, evaporation: 0.5, datetime: "t4", },
   ]
   let result = @shared.monte_carlo_uncertainty(
     @shared.XinanjiangParams::default(),
@@ -323,9 +323,9 @@ fn cli_uncertainty() -> CliResult {
 /// 子命令: sensitivity - 参数敏感性扫描
 fn cli_sensitivity() -> CliResult {
   let forcings : Array[@shared.ForcingData] = [
-    { rainfall: 15.0, evaporation: 2.0, datetime: "t0" },
-    { rainfall: 20.0, evaporation: 1.0, datetime: "t1" },
-    { rainfall: 5.0, evaporation: 1.5, datetime: "t2" },
+    { rainfall: 15.0, evaporation: 2.0, datetime: "t0", },
+    { rainfall: 20.0, evaporation: 1.0, datetime: "t1", },
+    { rainfall: 5.0, evaporation: 1.5, datetime: "t2", },
   ]
   let model = @shared.XinanjiangModel::new(
     params=@shared.XinanjiangParams::default(),
@@ -405,11 +405,11 @@ fn cli_coupling() -> CliResult {
     dt=1.0,
   )
   let forcings : Array[@shared.ForcingData] = [
-    { rainfall: 10.0, evaporation: 2.0, datetime: "t0" },
-    { rainfall: 20.0, evaporation: 1.0, datetime: "t1" },
-    { rainfall: 5.0, evaporation: 3.0, datetime: "t2" },
-    { rainfall: 0.0, evaporation: 1.0, datetime: "t3" },
-    { rainfall: 30.0, evaporation: 2.0, datetime: "t4" },
+    { rainfall: 10.0, evaporation: 2.0, datetime: "t0", },
+    { rainfall: 20.0, evaporation: 1.0, datetime: "t1", },
+    { rainfall: 5.0, evaporation: 3.0, datetime: "t2", },
+    { rainfall: 0.0, evaporation: 1.0, datetime: "t3", },
+    { rainfall: 30.0, evaporation: 2.0, datetime: "t4", },
   ]
   let coupling_params : @shared.CouplingParams = {
     lateral_inflow_coeff: 0.8,
@@ -439,11 +439,11 @@ fn cli_coupling() -> CliResult {
 /// 子命令: timeseries - 时间序列分析
 fn cli_timeseries() -> CliResult {
   let forcings : Array[@shared.ForcingData] = [
-    { rainfall: 10.0, evaporation: 2.0, datetime: "t0" },
-    { rainfall: 20.0, evaporation: 1.0, datetime: "t1" },
-    { rainfall: 5.0, evaporation: 3.0, datetime: "t2" },
-    { rainfall: 0.0, evaporation: 1.0, datetime: "t3" },
-    { rainfall: 30.0, evaporation: 2.0, datetime: "t4" },
+    { rainfall: 10.0, evaporation: 2.0, datetime: "t0", },
+    { rainfall: 20.0, evaporation: 1.0, datetime: "t1", },
+    { rainfall: 5.0, evaporation: 3.0, datetime: "t2", },
+    { rainfall: 0.0, evaporation: 1.0, datetime: "t3", },
+    { rainfall: 30.0, evaporation: 2.0, datetime: "t4", },
   ]
   let model = @shared.XinanjiangModel::new(
     params=@shared.XinanjiangParams::default(),
@@ -467,11 +467,11 @@ fn cli_timeseries() -> CliResult {
 /// 子命令: metrics - 扩展评价指标
 fn cli_metrics() -> CliResult {
   let forcings : Array[@shared.ForcingData] = [
-    { rainfall: 10.0, evaporation: 2.0, datetime: "t0" },
-    { rainfall: 20.0, evaporation: 1.0, datetime: "t1" },
-    { rainfall: 5.0, evaporation: 3.0, datetime: "t2" },
-    { rainfall: 0.0, evaporation: 1.0, datetime: "t3" },
-    { rainfall: 30.0, evaporation: 2.0, datetime: "t4" },
+    { rainfall: 10.0, evaporation: 2.0, datetime: "t0", },
+    { rainfall: 20.0, evaporation: 1.0, datetime: "t1", },
+    { rainfall: 5.0, evaporation: 3.0, datetime: "t2", },
+    { rainfall: 0.0, evaporation: 1.0, datetime: "t3", },
+    { rainfall: 30.0, evaporation: 2.0, datetime: "t4", },
   ]
   let model = @shared.XinanjiangModel::new(
     params=@shared.XinanjiangParams::default(),
@@ -498,8 +498,8 @@ fn cli_json() -> CliResult raise {
     area: 100.0,
     dt: 1.0,
     forcings: [
-      { rainfall: 10.0, evaporation: 2.0, datetime: "t0" },
-      { rainfall: 20.0, evaporation: 1.0, datetime: "t1" },
+      { rainfall: 10.0, evaporation: 2.0, datetime: "t0", },
+      { rainfall: 20.0, evaporation: 1.0, datetime: "t1", },
     ],
     observed: [],
   }
@@ -563,8 +563,8 @@ fn cli_persistence() -> CliResult raise {
     dt: 6.0,
     params: @shared.XinanjiangParams::default(),
     forcings: [
-      { rainfall: 10.0, evaporation: 2.0, datetime: "t0" },
-      { rainfall: 20.0, evaporation: 1.0, datetime: "t1" },
+      { rainfall: 10.0, evaporation: 2.0, datetime: "t0", },
+      { rainfall: 20.0, evaporation: 1.0, datetime: "t1", },
     ],
     created_at: now,
     updated_at: now,
@@ -587,9 +587,9 @@ fn cli_persistence() -> CliResult raise {
     dt=1.0,
   )
   let forcings : Array[@shared.ForcingData] = [
-    { rainfall: 10.0, evaporation: 2.0, datetime: "t0" },
-    { rainfall: 20.0, evaporation: 1.0, datetime: "t1" },
-    { rainfall: 5.0, evaporation: 3.0, datetime: "t2" },
+    { rainfall: 10.0, evaporation: 2.0, datetime: "t0", },
+    { rainfall: 20.0, evaporation: 1.0, datetime: "t1", },
+    { rainfall: 5.0, evaporation: 3.0, datetime: "t2", },
   ]
   let sim_result = xaj_model.run(forcings)
   // 计算洪峰
@@ -763,7 +763,7 @@ fn cli_ai_forecast() -> CliResult {
     } else {
       3.0
     }
-    forcings.push({ rainfall: r, evaporation: 1.0, datetime: "t\{i}" })
+    forcings.push({ rainfall: r, evaporation: 1.0, datetime: "t\{i}", })
     // 合成径流：非线性变换 + 噪声
     let q = r * 0.8 + r * r * 0.01 + 2.0
     observed.push(q)
@@ -780,7 +780,7 @@ fn cli_ai_forecast() -> CliResult {
   println("物理模型(新安江)预报完成: \{physical.length()}步")
   // AI混合预报
   let config : @ml.HybridConfig = {
-    lstm_config: { input_dim: 5, hidden_dim: 8, output_dim: 1 },
+    lstm_config: { input_dim: 5, hidden_dim: 8, output_dim: 1, },
     lookback: 5,
     n_forecast: 5,
     train_ratio: 0.6,
@@ -891,10 +891,10 @@ fn cli_gis() -> CliResult {
   // 7. 流域边界多边形演示
   println("\n--- 7. 流域边界多边形 ---")
   let boundary_pts : Array[@gis.XYPoint] = [
-    { x: 0.0, y: 1000.0 },
-    { x: 5000.0, y: 1000.0 },
-    { x: 5000.0, y: 0.0 },
-    { x: 0.0, y: 0.0 },
+    { x: 0.0, y: 1000.0, },
+    { x: 5000.0, y: 1000.0, },
+    { x: 5000.0, y: 0.0, },
+    { x: 0.0, y: 0.0, },
   ]
   let polygon : @gis.Polygon = {
     exterior: boundary_pts,

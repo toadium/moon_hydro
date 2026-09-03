@@ -80,11 +80,11 @@ test "XinanjiangModel::run 完整仿真-多时段" {
     dt=1.0,
   )
   let forcings : Array[ForcingData] = [
-    { rainfall: 10.0, evaporation: 2.0, datetime: "t0" },
-    { rainfall: 20.0, evaporation: 1.0, datetime: "t1" },
-    { rainfall: 5.0, evaporation: 3.0, datetime: "t2" },
-    { rainfall: 0.0, evaporation: 1.0, datetime: "t3" },
-    { rainfall: 30.0, evaporation: 2.0, datetime: "t4" },
+    { rainfall: 10.0, evaporation: 2.0, datetime: "t0", },
+    { rainfall: 20.0, evaporation: 1.0, datetime: "t1", },
+    { rainfall: 5.0, evaporation: 3.0, datetime: "t2", },
+    { rainfall: 0.0, evaporation: 1.0, datetime: "t3", },
+    { rainfall: 30.0, evaporation: 2.0, datetime: "t4", },
   ]
   let result = model.run(forcings)
   // 径流序列长度应等于输入长度
@@ -105,10 +105,10 @@ test "XinanjiangModel::run 完整仿真-退水过程" {
   )
   // 先降雨后无雨，应出现退水过程
   let forcings : Array[ForcingData] = [
-    { rainfall: 50.0, evaporation: 0.0, datetime: "t0" },
-    { rainfall: 0.0, evaporation: 0.0, datetime: "t1" },
-    { rainfall: 0.0, evaporation: 0.0, datetime: "t2" },
-    { rainfall: 0.0, evaporation: 0.0, datetime: "t3" },
+    { rainfall: 50.0, evaporation: 0.0, datetime: "t0", },
+    { rainfall: 0.0, evaporation: 0.0, datetime: "t1", },
+    { rainfall: 0.0, evaporation: 0.0, datetime: "t2", },
+    { rainfall: 0.0, evaporation: 0.0, datetime: "t3", },
   ]
   let result = model.run(forcings)
   // 第一时段有降雨，应有产流
@@ -136,8 +136,8 @@ test "HydroModel trait 通过trait接口调用step/run" {
   assert_true(new_state.r >= 0.0)
   // 通过HydroModel trait接口调用run
   let forcings : Array[ForcingData] = [
-    { rainfall: 10.0, evaporation: 2.0, datetime: "t0" },
-    { rainfall: 20.0, evaporation: 1.0, datetime: "t1" },
+    { rainfall: 10.0, evaporation: 2.0, datetime: "t0", },
+    { rainfall: 20.0, evaporation: 1.0, datetime: "t1", },
   ]
   let result = HydroModel::run(model, forcings)
   inspect(result.runoff_series.length(), content="2")
