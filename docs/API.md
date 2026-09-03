@@ -30,7 +30,7 @@
 | 函数 | 签名 | 说明 |
 |------|------|------|
 | `XinanjiangModel::new` | `(params~, area~, dt~) -> XinanjiangModel` | 构造新安江模型实例 |
-| `XinanjiangModel::step` | `(Self, ForcingData, XinanjiangState) -> XinanjiangState` | 单步仿真（V1.0.0修复：保持汇流状态qs/qi/qg） |
+| `XinanjiangModel::step` | `(Self, ForcingData, XinanjiangState) -> XinanjiangState` | 单步仿真（V0.9修复：保持汇流状态qs/qi/qg） |
 | `XinanjiangModel::run` | `(Self, Array[ForcingData]) -> SimResult` | 执行仿真，返回径流过程和状态序列 |
 | `XinanjiangParams::default` | `() -> XinanjiangParams` | 默认参数（三水源典型值） |
 | `XinanjiangState::initial` | `() -> XinanjiangState` | 构造初始状态（全零，含qs/qi/qg=0） |
@@ -38,7 +38,7 @@
 | `params_to_xaj` | `(Array[CalibParam]) -> XinanjiangParams` | 率定参数数组转新安江参数 |
 | `default_calib_params` | `() -> Array[CalibParam]` | 默认率定参数（11个） |
 
-### XinanjiangState 字段（V1.0.0更新）
+### XinanjiangState 字段（V0.9更新）
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
@@ -47,9 +47,9 @@
 | r/rs/ri/rg | Double | 产流量/地表径流/壤中流/地下径流 |
 | e | Double | 时段蒸散发量 |
 | q | Double | 出口断面流量 |
-| **qs/qi/qg** | **Double** | **V1.0.0新增：地表水/壤中流/地下水汇流分量，修复逐步仿真路由状态丢失** |
+| **qs/qi/qg** | **Double** | **V0.9新增：地表水/壤中流/地下水汇流分量，修复逐步仿真路由状态丢失** |
 
-### HydroModel Trait（V1.0.0更新）
+### HydroModel Trait（V0.9更新）
 
 ```moonbit
 pub trait HydroModel {
@@ -58,7 +58,7 @@ pub trait HydroModel {
 }
 ```
 
-> V1.0.0说明：当前trait签名绑定XinanjiangState，未来泛化方案：引入ModelState trait或关联类型。
+> V0.9说明：当前trait签名绑定XinanjiangState，未来泛化方案：引入ModelState trait或关联类型。
 
 ---
 
@@ -69,10 +69,10 @@ pub trait HydroModel {
 | 函数 | 签名 | 说明 |
 |------|------|------|
 | `SWEGrid1D::uniform` | `(nx~, dx~, h0~) -> SWEGrid1D` | 均匀网格 |
-| `SWEGrid1D::step_lf` | `(Self, Double, SWEBoundary) -> SWEGrid1D` | 单步Lax-Friedrichs推进（V1.0.0：不可变边界，返回新网格） |
+| `SWEGrid1D::step_lf` | `(Self, Double, SWEBoundary) -> SWEGrid1D` | 单步Lax-Friedrichs推进（V0.9：不可变边界，返回新网格） |
 | `SWEGrid1D::run` | `(Self, SWESolverConfig) -> SWESolverResult` | 执行 1D 求解（CFL自适应步长） |
 
-> V1.0.0变更：`apply_boundary`返回网格副本不修改输入；Manning阈值从0.000001提高到0.001避免极浅水不稳定。
+> V0.9变更：`apply_boundary`返回网格副本不修改输入；Manning阈值从0.000001提高到0.001避免极浅水不稳定。
 
 ### 2D SWE
 
@@ -91,7 +91,7 @@ pub trait HydroModel {
 | `couple_run` | `(XinanjiangModel, SWEGrid1D, CouplingParams, SWEBoundary, Array[ForcingData], Double) -> CouplingResult` | 新安江+SWE 耦合仿真 |
 | `couple_step` | `(XinanjiangModel, SWEGrid1D, CouplingParams, SWEBoundary, ForcingData, XinanjiangState, Double) -> (XinanjiangState, SWEGrid1D, Double, Double)` | 单步耦合，返回(状态,网格,侧向入流,河道水位) |
 
-> V1.0.0变更：`couple_run`状态序列包含qs/qi/qg字段；`run_couple` JSON端点正确返回runoff_series。
+> V0.9变更：`couple_run`状态序列包含qs/qi/qg字段；`run_couple` JSON端点正确返回runoff_series。
 
 ---
 
@@ -103,7 +103,7 @@ pub trait HydroModel {
 |------|------|------|
 | `sceua_calibrate` | `(SCEUAConfig, area~, dt~, Array[ForcingData], Array[Double]) -> SCEUAResult` | SCE-UA 全局优化率定 |
 
-> V1.0.0：SCE-UA支持target_metric配置("nse"或"kge")，不再硬编码NSE。
+> V0.9：SCE-UA支持target_metric配置("nse"或"kge")，不再硬编码NSE。
 
 ### DDS
 
@@ -111,16 +111,16 @@ pub trait HydroModel {
 |------|------|------|
 | `dds_calibrate` | `(DDSConfig, area~, dt~, Array[ForcingData], Array[Double]) -> CalibResult` | DDS 动态维度搜索率定 |
 
-### DDSConfig 字段（V1.0.0更新）
+### DDSConfig 字段（V0.9更新）
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
 | max_iter | Int | 最大迭代次数 |
 | r | Double | 扰动率(默认0.2) |
 | seed | UInt64 | 随机种子 |
-| target_metric | String | 目标指标("nse"或"kge")，V1.0.0修复：DDS正确传递此参数 |
+| target_metric | String | 目标指标("nse"或"kge")，V0.9修复：DDS正确传递此参数 |
 | params | Array[CalibParam] | 待率定参数 |
-| **max_no_improve** | **Int** | **V1.0.0新增：最大无改进迭代次数(默认100)，替代硬编码收敛阈值** |
+| **max_no_improve** | **Int** | **V0.9新增：最大无改进迭代次数(默认100)，替代硬编码收敛阈值** |
 
 ---
 
@@ -133,7 +133,7 @@ pub trait HydroModel {
 | `param_sensitivity_scan` | `(XinanjiangParams, param_name~, lower~, upper~, n_samples~, area~, dt~, Array[ForcingData], Array[Double]) -> Array[(Double, SimTaskResult)]` | 参数敏感性扫描 |
 | `monte_carlo_uncertainty` | `(XinanjiangParams, Array[CalibParam], n_samples~, area~, dt~, Array[ForcingData], seed?) -> MonteCarloResult` | 蒙特卡洛不确定性分析 |
 
-### SimTaskResult 字段（V1.0.0更新）
+### SimTaskResult 字段（V0.9更新）
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
@@ -141,7 +141,7 @@ pub trait HydroModel {
 | runoff_series | Array[Double] | 径流过程 |
 | peak_flow/peak_time | Double/Int | 洪峰流量/时段索引 |
 | nse/kge/pbias | Double | 评价指标(若有观测) |
-| **has_obs** | **Bool** | **V1.0.0新增：标记是否有观测数据，替代nse!=0过滤** |
+| **has_obs** | **Bool** | **V0.9新增：标记是否有观测数据，替代nse!=0过滤** |
 | success/error_message | Bool/String | 执行状态/错误信息 |
 
 ---
@@ -289,9 +289,9 @@ pub trait HydroModel {
 | `write_file` | `(String, String) -> Unit raise` | 写入文件 |
 | `read_file` | `(String) -> String raise` | 读取文件 |
 | `file_exists` | `(String) -> Bool` | 检查文件是否存在 |
-| `delete_file` | `(String) -> Unit raise` | 删除文件（V1.0.0新增C FFI） |
-| `hydro_file_exists` | `(String) -> Bool` | C FFI文件存在检查（V1.0.0新增） |
-| `hydro_delete_file` | `(String) -> Int` | C FFI文件删除（V1.0.0新增） |
+| `delete_file` | `(String) -> Unit raise` | 删除文件（V0.9新增C FFI） |
+| `hydro_file_exists` | `(String) -> Bool` | C FFI文件存在检查（V0.9新增） |
+| `hydro_delete_file` | `(String) -> Int` | C FFI文件删除（V0.9新增） |
 | `DataStore::save_to_file` | `(Self, String) -> Unit raise` | DataStore 保存到 JSON 文件 |
 | `DataStore::load_from_file` | `(String) -> DataStore raise` | 从 JSON 文件加载 DataStore |
 | `SimulationScheme::save_to_file` | `(Self, String) -> Unit raise` | 方案保存到文件 |
@@ -382,7 +382,7 @@ pub trait HydroModel {
 ## 权限框架
 
 > 模块 `shared/auth.mbt`，提供用户管理、API 鉴权、方案隔离三大功能。
-> 密码哈希使用 FNV-1a + splitmix 多轮哈希（V1.0.0增强），Token 使用 splitmix 伪随机生成。
+> 密码哈希使用 FNV-1a + splitmix 多轮哈希（V0.9增强），Token 使用 splitmix 伪随机生成。
 > 安全提示：当前为轻量级哈希，生产环境应替换为 bcrypt/argon2。
 
 ### 数据类型
@@ -565,4 +565,4 @@ pub trait HydroModel {
 
 ---
 
-*生成时间：2026-09-03｜MoonBit 0.1.20260827｜230+ 个公开函数｜415+ 测试通过｜V1.0.0*
+*生成时间：2026-09-03｜MoonBit 0.1.20260827｜230+ 个公开函数｜415+ 测试通过｜V0.8.1*

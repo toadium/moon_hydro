@@ -5,9 +5,25 @@
 ## [Unreleased]
 
 ### 计划中
-- mooncakes.io 包正式发布（待账号匹配）
 - 分布式集群仿真调度
 
+
+
+## [0.8.1] - 2026-09-03
+### 综述
+mooncakes.io 发布版本。因 mooncakes.io 早期阶段要求主版本号为 0，将发布版本定为 0.8.1。
+
+### 变更
+- 包名从 `toadium/moon_hydro` 改为 `walkzzz/moon_hydro`（匹配 mooncakes.io 账号）
+- 6 个 moon.pkg 内部导入同步更新
+- 版本号从 1.0.0 改为 0.8.1（mooncakes.io 要求 0.x.y 格式）
+- 全部文档版本同步至 V0.8.1
+- 历史代码审查引用修正为 V0.9（实际审查版本）
+
+### 验证
+- moon publish --dry-run: 202 Accepted ✅
+- moon check: 0 错误 0 警告
+- 151 测试通过
 
 ## [1.0.0] - 2026-09-03
 ### 综述

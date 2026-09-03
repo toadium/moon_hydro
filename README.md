@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![MoonBit](https://img.shields.io/badge/MoonBit-0.1.20260827-blue)](https://moonbitlang.com)
 [![Tests](https://img.shields.io/badge/tests-415+%20%C3%97%204%20backends-green)]()
-[![Version](https://img.shields.io/badge/version-1.0.0-blue)]()
+[![Version](https://img.shields.io/badge/version-0.8.1-blue)]()
 
 ---
 
@@ -257,7 +257,7 @@ moon_hydro/
 
 ## 开发路线
 
-详见 [roadmap.md](roadmap.md)。当前版本 **V1.0.0**，四后端 415+ 测试全通过。
+详见 [roadmap.md](roadmap.md)。当前版本 **V0.8.1**，四后端 415+ 测试全通过。
 
 | 版本 | 状态 | 核心内容 |
 |------|------|----------|
