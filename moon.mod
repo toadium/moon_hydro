@@ -1,4 +1,4 @@
-name = "toadium/moon_hydro"
+name = "walkzzz/moon_hydro"
 
 version = "1.0.0"
 

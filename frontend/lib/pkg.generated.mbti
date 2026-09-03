@@ -1,10 +1,10 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "toadium/moon_hydro/frontend/lib"
+package "walkzzz/moon_hydro/frontend/lib"
 
 import {
   "moonbitlang/core/debug",
   "moonbitlang/core/json",
-  "toadium/moon_hydro/shared",
+  "walkzzz/moon_hydro/shared",
 }
 
 // Values
