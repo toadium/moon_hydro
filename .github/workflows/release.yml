@@ -5,7 +5,11 @@ on:
     tags:
       - "v*"
 
+env:
+  MOONBIT_VERSION: "0.1.20260827"
+
 jobs:
+  # ── 测试门禁：4 后端全通过才允许构建 ──
   test:
     name: 测试门禁 (${{ matrix.target }})
     runs-on: ubuntu-22.04
@@ -21,7 +25,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.moon
-          key: moonbit-${{ runner.os }}-v1
+          key: moonbit-${{ runner.os }}-${{ env.MOONBIT_VERSION }}-v1
 
       - name: 安装 MoonBit
         run: |
@@ -36,7 +40,8 @@ jobs:
       - name: 运行测试 (${{ matrix.target }})
         run: moon test --target ${{ matrix.target }}
 
-  build:
+  # ── WebAssembly / JS 构建（平台无关，只需 Linux）──
+  build-web:
     name: 构建 (${{ matrix.target }})
     needs: test
     runs-on: ubuntu-22.04
@@ -44,7 +49,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [wasm-gc, wasm, js, native]
+        target: [wasm-gc, wasm, js]
     steps:
       - uses: actions/checkout@v5
 
@@ -52,7 +57,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.moon
-          key: moonbit-${{ runner.os }}-v1
+          key: moonbit-${{ runner.os }}-${{ env.MOONBIT_VERSION }}-v1
 
       - name: 安装 MoonBit
         run: |
@@ -64,13 +69,13 @@ jobs:
       - name: 构建
         run: moon build --target ${{ matrix.target }}
 
-      - name: 打包构建产物
+      - name: 打包
         run: |
           mkdir -p dist
           cp -r target/${{ matrix.target }}/release/* dist/
           tar -czf hydro-${{ github.ref_name }}-${{ matrix.target }}.tar.gz -C dist .
-          # P3-11: 生成 SHA256 校验和
-          sha256sum hydro-${{ github.ref_name }}-${{ matrix.target }}.tar.gz > hydro-${{ github.ref_name }}-${{ matrix.target }}.tar.gz.sha256
+          sha256sum hydro-${{ github.ref_name }}-${{ matrix.target }}.tar.gz \
+            > hydro-${{ github.ref_name }}-${{ matrix.target }}.tar.gz.sha256
 
       - name: 上传产物
         uses: actions/upload-artifact@v4
@@ -80,11 +85,85 @@ jobs:
             hydro-*.tar.gz
             hydro-*.sha256
 
+  # ── Native 构建（平台相关，需多 OS 矩阵）──
+  build-native:
+    name: 构建 native (${{ matrix.platform }})
+    needs: test
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            platform: linux-x64
+          - os: macos-14
+            platform: macos-arm64
+          - os: windows-2022
+            platform: windows-x64
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: 缓存 MoonBit 工具链
+        uses: actions/cache@v4
+        with:
+          path: ~/.moon
+          key: moonbit-${{ runner.os }}-${{ env.MOONBIT_VERSION }}-v1
+
+      - name: 安装 MoonBit (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          if ! command -v moon &> /dev/null; then
+            curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          fi
+          echo "$HOME/.moon/bin" >> $GITHUB_PATH
+
+      - name: 安装 MoonBit (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          if (-not (Get-Command moon -ErrorAction SilentlyContinue)) {
+            curl -fsSL https://cli.moonbitlang.com/install/windows.ps1 | pwsh -
+          }
+          echo "$HOME\.moon\bin" >> $GITHUB_PATH
+
+      - name: 构建
+        run: moon build --target native
+
+      - name: 打包 (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          mkdir -p dist
+          cp -r target/native/release/* dist/
+          tar -czf hydro-${{ github.ref_name }}-${{ matrix.platform }}.tar.gz -C dist .
+          sha256sum hydro-${{ github.ref_name }}-${{ matrix.platform }}.tar.gz \
+            > hydro-${{ github.ref_name }}-${{ matrix.platform }}.tar.gz.sha256
+
+      - name: 打包 (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist
+          Copy-Item -Path target/native/release/* -Destination dist/ -Recurse
+          tar -czf hydro-${{ github.ref_name }}-${{ matrix.platform }}.tar.gz -C dist .
+          $hash = (Get-FileHash hydro-${{ github.ref_name }}-${{ matrix.platform }}.tar.gz -Algorithm SHA256).Hash
+          "$hash  hydro-${{ github.ref_name }}-${{ matrix.platform }}.tar.gz" |
+            Out-File -Encoding ascii hydro-${{ github.ref_name }}-${{ matrix.platform }}.tar.gz.sha256
+
+      - name: 上传产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: hydro-native-${{ matrix.platform }}
+          path: |
+            hydro-*.tar.gz
+            hydro-*.sha256
+
+  # ── GitHub Release：汇总所有产物 ──
   release:
     name: 发布 Release
-    needs: build
+    needs: [build-web, build-native]
     runs-on: ubuntu-22.04
-    timeout-minutes: 30
+    timeout-minutes: 15
     permissions:
       contents: write
     steps:
@@ -95,10 +174,44 @@ jobs:
         with:
           path: artifacts
 
+      - name: 列出产物
+        run: |
+          echo "## 构建产物" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| 平台 | 文件 | SHA256 |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|------|--------|" >> $GITHUB_STEP_SUMMARY
+          find artifacts -name "*.tar.gz" | sort | while read f; do
+            name=$(basename "$f")
+            sha_file="${f}.sha256"
+            sha=$(cut -d' ' -f1 "$sha_file" 2>/dev/null || echo "N/A")
+            echo "| - | \`$name\` | \`${sha:0:16}...\` |" >> $GITHUB_STEP_SUMMARY
+          done
+
       - name: 创建 GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
+          body: |
+            ## 安装
+
+            下载对应平台的 `tar.gz` 包，解压后将可执行文件放入 PATH。
+
+            ### 验证
+
+            ```bash
+            sha256sum -c hydro-*.tar.gz.sha256
+            ```
+
+            ### 后端产物
+
+            | 产物 | 说明 |
+            |------|------|
+            | `wasm-gc` | WebAssembly + GC，浏览器嵌入 |
+            | `wasm` | WebAssembly，兼容性优先 |
+            | `js` | JavaScript，Node.js / 浏览器 |
+            | `native-linux-x64` | Linux x64 原生可执行文件 |
+            | `native-macos-arm64` | macOS Apple Silicon 原生 |
+            | `native-windows-x64` | Windows x64 原生 |
           files: |
             artifacts/**/*.tar.gz
             artifacts/**/*.sha256
